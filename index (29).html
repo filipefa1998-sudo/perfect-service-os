@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Perfect Service OS</title>
+<style>
+  :root {
+    --navy: #0C2340;
+    --navy-mid: #163558;
+    --navy-light: #1e4a7a;
+    --gold: #C9973A;
+    --gold-light: #E8B96A;
+    --gold-pale: #FDF3E3;
+    --white: #FFFFFF;
+    --surface: #F4F7FB;
+    --surface2: #E8EEF6;
+    --text-primary: #0C2340;
+    --text-secondary: #4A6080;
+    --text-muted: #7A95B0;
+    --border: rgba(12,35,64,0.12);
+    --success: #1D9E75;
+    --danger: #E24B4A;
+    --font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; }
+  body { font-family: var(--font-ui); background: #0C2340; display: flex; align-items: center; justify-content: center; }
+
+  .app { width: 100%; max-width: 430px; height: 100vh; max-height: 900px; background: var(--white); display: flex; flex-direction: column; overflow: hidden; position: relative; }
+
+  /* ── TOPBAR ── */
+  .topbar { background: var(--navy); color: var(--white); padding: 14px 20px 12px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  .topbar-brand { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: var(--gold-light); text-transform: uppercase; }
+  .topbar-title { font-size: 15px; font-weight: 600; color: var(--white); }
+  .topbar-back { font-size: 13px; color: var(--gold-light); cursor: pointer; padding: 4px 0; }
+  .topbar-action { font-size: 13px; color: var(--gold-light); cursor: pointer; }
+
+  /* ── PROGRESS ── */
+  .progress-bar { background: var(--navy-mid); height: 3px; flex-shrink: 0; }
+  .progress-fill { height: 3px; background: var(--gold); transition: width 0.4s ease; }
+
+  /* ── SCROLLABLE BODY ── */
+  .screen-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+  /* ── BOTTOM BAR ── */
+  .bottom-bar { padding: 14px 20px 18px; border-top: 1px solid var(--border); background: var(--white); flex-shrink: 0; }
+  .btn-primary { width: 100%; background: var(--gold); color: var(--navy); font-size: 16px; font-weight: 700; padding: 16px; border: none; border-radius: 10px; cursor: pointer; transition: all 0.15s; }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-navy { width: 100%; background: var(--navy); color: var(--white); font-size: 16px; font-weight: 700; padding: 16px; border: none; border-radius: 10px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn-navy:active { transform: scale(0.98); }
+
+  /* ── NAV TABS ── */
+  .nav-tabs { display: flex; background: var(--surface); border-top: 1px solid var(--border); flex-shrink: 0; }
+  .nav-tab { flex: 1; padding: 11px 8px 10px; text-align: center; cursor: pointer; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); border-top: 2px solid transparent; transition: all 0.15s; }
+  .nav-tab.active { color: var(--navy); border-top-color: var(--gold); }
+
+  /* ── AUTH SCREEN ── */
+  #screen-auth { flex: 1; display: flex; flex-direction: column; }
+  .auth-header { background: var(--navy); padding: 48px 28px 36px; text-align: center; }
+  .auth-logo { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold-light); margin-bottom: 8px; }
+  .auth-title { font-size: 28px; font-weight: 800; color: var(--white); line-height: 1.2; margin-bottom: 6px; }
+  .auth-sub { font-size: 14px; color: rgba(255,255,255,0.5); }
+  .auth-body { padding: 32px 24px; flex: 1; }
+  .auth-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); margin-bottom: 6px; }
+  .auth-input { width: 100%; border: 1.5px solid var(--border); border-radius: 10px; padding: 14px 16px; font-size: 16px; font-family: var(--font-ui); color: var(--text-primary); background: var(--surface); outline: none; margin-bottom: 16px; transition: border-color 0.15s; }
+  .auth-input:focus { border-color: var(--navy-light); background: var(--white); }
+  .auth-error { background: #FCEBEB; border-radius: 8px; padding: 12px 14px; font-size: 13px; color: #A32D2D; margin-bottom: 16px; display: none; }
+  .auth-switch { text-align: center; margin-top: 16px; font-size: 13px; color: var(--text-muted); }
+  .auth-switch span { color: var(--navy); font-weight: 700; cursor: pointer; }
+
+  /* ── HOME ── */
+  .home-header { background: var(--navy); padding: 24px 24px 20px; }
+  .home-greeting { font-size: 12px; color: var(--gold-light); font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 4px; }
+  .home-name { font-size: 24px; font-weight: 800; color: var(--white); margin-bottom: 2px; }
+  .home-sub { font-size: 13px; color: rgba(255,255,255,0.5); }
+  .home-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px; background: rgba(255,255,255,0.1); margin: 16px 0 0; border-radius: 10px; overflow: hidden; }
+  .home-stat { background: rgba(255,255,255,0.06); padding: 14px 8px; text-align: center; }
+  .home-stat-val { font-size: 20px; font-weight: 800; color: var(--gold-light); }
+  .home-stat-label { font-size: 9px; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.07em; margin-top: 2px; }
+  .home-body { padding: 20px; }
+  .quick-links { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+  .quick-link { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; cursor: pointer; transition: all 0.15s; }
+  .quick-link:active { background: var(--surface2); }
+  .quick-link-icon { font-size: 20px; margin-bottom: 6px; }
+  .quick-link-label { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+  .quick-link-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  /* ── CALL TYPE ── */
+  .call-types-body { padding: 20px; }
+  .screen-title { font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px; }
+  .screen-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 18px; }
+  .call-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .call-type-btn { background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px; padding: 14px 12px; cursor: pointer; text-align: left; transition: all 0.15s; }
+  .call-type-btn.selected { border-color: var(--navy); background: var(--navy); }
+  .call-type-btn.selected .ct-label { color: var(--white); }
+  .call-type-btn.selected .ct-icon { background: var(--gold); color: var(--navy); }
+  .ct-icon { width: 30px; height: 30px; border-radius: 7px; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 13px; margin-bottom: 7px; transition: all 0.15s; }
+  .ct-label { font-size: 12px; font-weight: 700; color: var(--text-primary); transition: color 0.15s; }
+
+  /* ── JOB DASHBOARD ── */
+  .job-card { background: var(--navy); padding: 18px 24px; }
+  .job-customer { font-size: 20px; font-weight: 800; color: var(--white); }
+  .job-address { font-size: 13px; color: rgba(255,255,255,0.55); margin-top: 2px; }
+  .job-meta { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .job-badge { background: rgba(255,255,255,0.1); border-radius: 5px; padding: 4px 10px; font-size: 11px; font-weight: 700; color: var(--gold-light); text-transform: uppercase; letter-spacing: 0.05em; }
+  .step-list { padding: 14px 18px; }
+  .step-item { display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-radius: 10px; margin-bottom: 7px; cursor: pointer; border: 1.5px solid var(--border); background: var(--surface); transition: all 0.15s; }
+  .step-item.active { background: var(--navy); border-color: var(--navy); }
+  .step-item.active .step-name { color: var(--white); font-weight: 700; }
+  .step-item.active .step-num { background: var(--gold); color: var(--navy); }
+  .step-item.done { opacity: 0.7; }
+  .step-num { width: 28px; height: 28px; border-radius: 50%; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--text-secondary); flex-shrink: 0; transition: all 0.15s; }
+  .step-num.check { background: var(--success); color: var(--white); }
+  .step-name { font-size: 14px; color: var(--text-primary); font-weight: 500; flex: 1; }
+  .step-arrow { font-size: 11px; color: var(--text-muted); }
+
+  /* ── STEP SCREENS ── */
+  .step-header { background: var(--navy); padding: 18px 24px; flex-shrink: 0; }
+  .step-label { font-size: 10px; color: var(--gold-light); font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; margin-bottom: 3px; }
+  .step-title { font-size: 22px; font-weight: 800; color: var(--white); }
+  .step-content { padding: 18px 20px; }
+
+  /* Script */
+  .script-box { background: var(--gold-pale); border-left: 4px solid var(--gold); border-radius: 8px; padding: 14px 16px; margin-bottom: 18px; }
+  .script-box-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.09em; color: var(--gold); margin-bottom: 6px; }
+  .script-box-text { font-size: 14px; color: var(--navy); line-height: 1.65; font-style: italic; }
+
+  /* Checklist */
+  .check-section-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 10px; }
+  .check-item { display: flex; align-items: center; gap: 12px; padding: 13px 14px; background: var(--surface); border-radius: 8px; margin-bottom: 8px; cursor: pointer; border: 1.5px solid var(--border); transition: all 0.15s; }
+  .check-item.checked { background: #EAF7F2; border-color: var(--success); }
+  .check-item.checked .check-label { color: var(--text-secondary); text-decoration: line-through; }
+  .check-box { width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: var(--white); transition: all 0.15s; }
+  .check-item.checked .check-box { background: var(--success); border-color: var(--success); }
+  .check-mark { color: white; font-size: 11px; font-weight: 700; display: none; }
+  .check-item.checked .check-mark { display: block; }
+  .check-label { font-size: 14px; color: var(--text-primary); font-weight: 500; }
+
+  /* Discovery */
+  .discovery-q { margin-bottom: 16px; }
+  .discovery-q-label { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+  .discovery-q-sub { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; }
+  .discovery-input { width: 100%; border: 1.5px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 14px; font-family: var(--font-ui); color: var(--text-primary); background: var(--surface); outline: none; min-height: 64px; resize: none; transition: border-color 0.15s; }
+  .discovery-input:focus { border-color: var(--navy-light); background: var(--white); }
+
+  /* Inspect */
+  .section-divider { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin: 18px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  .inspect-item { display: flex; align-items: center; gap: 12px; padding: 13px 14px; background: var(--surface); border-radius: 8px; margin-bottom: 8px; cursor: pointer; border: 1.5px solid var(--border); transition: all 0.15s; }
+  .inspect-item.flagged { background: #FFF8EC; border-color: var(--gold); }
+  .inspect-item.ok { background: #EAF7F2; border-color: var(--success); }
+  .inspect-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border); flex-shrink: 0; transition: all 0.15s; }
+  .inspect-item.flagged .inspect-dot { background: var(--gold); }
+  .inspect-item.ok .inspect-dot { background: var(--success); }
+  .inspect-label { flex: 1; font-size: 14px; font-weight: 500; color: var(--text-primary); }
+  .inspect-status { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+  .inspect-item.flagged .inspect-status { color: var(--gold); }
+  .inspect-item.ok .inspect-status { color: var(--success); }
+  .opp-flag { display: flex; align-items: center; gap: 10px; background: #FFF8EC; border: 1.5px solid var(--gold); border-radius: 8px; padding: 12px 14px; margin-bottom: 8px; cursor: pointer; transition: all 0.15s; }
+  .opp-flag.added { background: #EAF7F2; border-color: var(--success); }
+  .opp-text { flex: 1; font-size: 13px; font-weight: 600; color: var(--navy); }
+  .opp-add { font-size: 10px; font-weight: 800; color: var(--gold); text-transform: uppercase; }
+  .opp-flag.added .opp-add { color: var(--success); }
+
+  /* Photos */
+  .photo-counter { display: flex; align-items: center; gap: 10px; background: var(--navy); border-radius: 8px; padding: 14px 16px; margin-bottom: 18px; }
+  .photo-counter-text { flex: 1; font-size: 14px; color: var(--white); font-weight: 600; }
+  .photo-counter-num { font-size: 20px; font-weight: 800; color: var(--gold-light); }
+  .photo-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .photo-slot { aspect-ratio: 1; border-radius: 8px; border: 2px dashed var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: var(--surface); transition: all 0.15s; }
+  .photo-slot.captured { border: 2px solid var(--success); background: #EAF7F2; }
+  .photo-slot-icon { font-size: 22px; margin-bottom: 4px; }
+  .photo-slot-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); text-align: center; padding: 0 4px; }
+
+  /* Options */
+  .option-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+  .option-card.best { border-color: var(--gold); background: var(--gold-pale); }
+  .option-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .option-tier { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; padding: 4px 10px; border-radius: 20px; }
+  .tier-good { background: var(--surface2); color: var(--text-secondary); }
+  .tier-better { background: #E6F1FB; color: #185FA5; }
+  .tier-best { background: var(--gold-pale); color: #854F0B; border: 1px solid var(--gold); }
+  .option-price-row { display: flex; align-items: center; gap: 4px; }
+  .option-dollar { font-size: 20px; font-weight: 800; color: var(--navy); }
+  .option-price-input { border: none; font-size: 20px; font-weight: 800; color: var(--navy); background: transparent; outline: none; font-family: var(--font-ui); width: 90px; }
+  .option-input { width: 100%; border: 1.5px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 13px; font-family: var(--font-ui); color: var(--text-primary); background: var(--white); margin-bottom: 8px; outline: none; }
+  .option-input:focus { border-color: var(--navy-light); }
+  textarea.option-input { resize: none; height: 58px; }
+
+  /* Objection */
+  .obj-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+  .obj-btn { background: var(--surface); border: 1.5px solid var(--border); border-radius: 8px; padding: 12px 10px; cursor: pointer; text-align: center; font-size: 12px; font-weight: 700; color: var(--text-primary); transition: all 0.15s; }
+  .obj-btn.selected { background: var(--navy); color: var(--white); border-color: var(--navy); }
+  .obj-response { background: var(--surface); border-radius: 10px; padding: 16px; border: 1.5px solid var(--border); display: none; }
+  .obj-response.visible { display: block; }
+  .obj-section { margin-bottom: 14px; }
+  .obj-section:last-child { margin-bottom: 0; }
+  .obj-section-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 6px; }
+  .obj-section-text { font-size: 13px; color: var(--text-primary); line-height: 1.6; }
+  .obj-section-text.script { font-style: italic; color: var(--navy); background: var(--gold-pale); padding: 10px 12px; border-radius: 6px; border-left: 3px solid var(--gold); }
+
+  /* KPI */
+  .kpi-period { display: flex; gap: 8px; margin-bottom: 18px; }
+  .period-btn { flex: 1; padding: 8px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--surface); font-size: 12px; font-weight: 700; color: var(--text-secondary); cursor: pointer; text-align: center; transition: all 0.15s; }
+  .period-btn.active { background: var(--navy); color: var(--white); border-color: var(--navy); }
+  .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+  .kpi-card { background: var(--surface); border-radius: 10px; padding: 14px; }
+  .kpi-val { font-size: 26px; font-weight: 800; color: var(--navy); }
+  .kpi-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+  .kpi-bar-section { margin-bottom: 14px; }
+  .kpi-bar-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; }
+  .kpi-bar-track { background: var(--surface2); border-radius: 4px; height: 8px; }
+  .kpi-bar-fill { height: 8px; border-radius: 4px; background: var(--navy); transition: width 0.6s ease; }
+  .kpi-bar-fill.gold { background: var(--gold); }
+  .kpi-bar-fill.success { background: var(--success); }
+
+  /* Utility */
+  .hidden { display: none !important; }
+  .fade-in { animation: fi 0.22s ease; }
+  @keyframes fi { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
+  .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-overlay { position: absolute; inset: 0; background: var(--navy); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; z-index: 100; }
+  .loading-overlay span { color: var(--gold-light); font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- LOADING -->
+  <div class="loading-overlay" id="loading">
+    <div class="spinner"></div>
+    <span>Perfect Service OS</span>
+  </div>
+
+  <!-- ═══════════════════════════════════ AUTH ═══════════════════════════════════ -->
+  <div id="screen-auth" class="hidden" style="display:flex;flex-direction:column;flex:1;">
+    <div class="auth-header">
+      <div class="auth-logo">Perfect Service OS</div>
+      <div class="auth-title">Close More.<br>Every Call.</div>
+      <div class="auth-sub">Built for plumbing professionals</div>
+    </div>
+    <div class="auth-body screen-body">
+      <div id="auth-error" class="auth-error"></div>
+      <div id="auth-login-form">
+        <div class="auth-label">Email</div>
+        <input class="auth-input" type="email" id="login-email" placeholder="you@company.com" autocomplete="email" />
+        <div class="auth-label">Password</div>
+        <input class="auth-input" type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" />
+        <button class="btn-navy" id="btn-login" onclick="doLogin()">Sign In</button>
+        <div class="auth-switch">Don't have an account? <span onclick="showAuthMode('register')">Create one</span></div>
+      </div>
+      <div id="auth-register-form" class="hidden">
+        <div class="auth-label">Full Name</div>
+        <input class="auth-input" type="text" id="reg-name" placeholder="Jake Tuilagi" autocomplete="name" />
+        <div class="auth-label">Email</div>
+        <input class="auth-input" type="email" id="reg-email" placeholder="you@company.com" autocomplete="email" />
+        <div class="auth-label">Password</div>
+        <input class="auth-input" type="password" id="reg-password" placeholder="Min 6 characters" autocomplete="new-password" />
+        <button class="btn-navy" id="btn-register" onclick="doRegister()">Create Account</button>
+        <div class="auth-switch">Already have an account? <span onclick="showAuthMode('login')">Sign in</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ HOME ═══════════════════════════════════ -->
+  <div id="screen-home" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar">
+      <span class="topbar-brand">Perfect Service OS</span>
+      <span class="topbar-action" onclick="doLogout()" style="font-size:12px;">Sign Out</span>
+    </div>
+    <div class="screen-body">
+      <div class="home-header">
+        <div class="home-greeting">Good to see you</div>
+        <div class="home-name" id="home-name">Loading...</div>
+        <div class="home-sub" id="home-company">Technician</div>
+        <div class="home-stats">
+          <div class="home-stat"><div class="home-stat-val" id="stat-calls">–</div><div class="home-stat-label">Calls Today</div></div>
+          <div class="home-stat"><div class="home-stat-val" id="stat-close">–</div><div class="home-stat-label">Close Rate</div></div>
+          <div class="home-stat"><div class="home-stat-val" id="stat-ticket">–</div><div class="home-stat-label">Avg Ticket</div></div>
+        </div>
+      </div>
+      <div class="home-body">
+        <button class="btn-primary" onclick="startNewJob()">Start New Job</button>
+        <div class="quick-links">
+          <div class="quick-link" onclick="showScreen('screen-jobs')">
+            <div class="quick-link-icon">📋</div>
+            <div class="quick-link-label">Past Jobs</div>
+            <div class="quick-link-sub">View history</div>
+          </div>
+          <div class="quick-link" onclick="showScreen('screen-kpi')">
+            <div class="quick-link-icon">📊</div>
+            <div class="quick-link-label">My Stats</div>
+            <div class="quick-link-sub">Performance</div>
+          </div>
+          <div class="quick-link" onclick="showScreen('screen-objections-ref')">
+            <div class="quick-link-icon">💬</div>
+            <div class="quick-link-label">Objections</div>
+            <div class="quick-link-sub">Quick reference</div>
+          </div>
+          <div class="quick-link" onclick="showScreen('screen-scripts')">
+            <div class="quick-link-icon">🎯</div>
+            <div class="quick-link-label">Scripts</div>
+            <div class="quick-link-sub">Full library</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="nav-tabs">
+      <div class="nav-tab active" onclick="showScreen('screen-home')">Home</div>
+      <div class="nav-tab" onclick="showScreen('screen-kpi')">Stats</div>
+      <div class="nav-tab" onclick="showScreen('screen-jobs')">Jobs</div>
+      <div class="nav-tab" onclick="showScreen('screen-objections-ref')">Scripts</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ CALL TYPE ═══════════════════════════════════ -->
+  <div id="screen-calltype" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar">
+      <span class="topbar-back" onclick="showScreen('screen-home')">← Back</span>
+      <span class="topbar-title">New Job</span>
+      <span></span>
+    </div>
+    <div class="screen-body">
+      <div class="call-types-body">
+        <div class="screen-title">What's the call type?</div>
+        <div class="screen-sub">Select to load the right inspection checklist.</div>
+        <div class="call-grid" id="call-type-grid">
+          <div class="call-type-btn" onclick="selectCallType(this,'Water Heater')"><div class="ct-icon">🔥</div><div class="ct-label">Water Heater</div></div>
+          <div class="call-type-btn" onclick="selectCallType(this,'Drain')"><div class="ct-icon">🌀</div><div class="ct-label">Drain</div></div>
+          <div class="call-type-btn" onclick="selectCallType(this,'Leak')"><div class="ct-icon">💧</div><div class="ct-label">Leak</div></div>
+          <div class="call-type-btn" onclick="selectCallType(this,'Toilet')"><div class="ct-icon">🚽</div><div class="ct-label">Toilet</div></div>
+          <div class="call-type-btn" onclick="selectCallType(this,'Faucet')"><div class="ct-icon">🚰</div><div class="ct-label">Faucet</div></div>
+          <div class="call-type-btn" onclick="selectCallType(this,'Sewer')"><div class="ct-icon">⚙️</div><div class="ct-label">Sewer</div></div>
+          <div class="call-type-btn" onclick="selectCallType(this,'Repipe')"><div class="ct-icon">🔧</div><div class="ct-label">Repipe</div></div>
+          <div class="call-type-btn" onclick="selectCallType(this,'Filtration')"><div class="ct-icon">💎</div><div class="ct-label">Filtration</div></div>
+          <div class="call-type-btn" onclick="selectCallType(this,'Pressure')"><div class="ct-icon">📊</div><div class="ct-label">Pressure</div></div>
+          <div class="call-type-btn" onclick="selectCallType(this,'Gas Line')"><div class="ct-icon">⚠️</div><div class="ct-label">Gas Line</div></div>
+          <div class="call-type-btn" onclick="selectCallType(this,'Sump Pump')"><div class="ct-icon">⛽</div><div class="ct-label">Sump Pump</div></div>
+          <div class="call-type-btn" onclick="selectCallType(this,'Emergency')"><div class="ct-icon">🚨</div><div class="ct-label">Emergency</div></div>
+        </div>
+        <div style="margin-top:20px;">
+          <div class="auth-label" style="margin-bottom:6px;">Customer Name</div>
+          <input class="auth-input" type="text" id="job-customer" placeholder="e.g. Sarah Mitchell" style="margin-bottom:12px;" />
+          <div class="auth-label" style="margin-bottom:6px;">Address</div>
+          <input class="auth-input" type="text" id="job-address" placeholder="e.g. 1847 Maple Creek Dr, Riverton" />
+        </div>
+      </div>
+    </div>
+    <div class="bottom-bar">
+      <button class="btn-navy" onclick="createJob()">Start Job Flow →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ JOB DASHBOARD ═══════════════════════════════════ -->
+  <div id="screen-dashboard" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar">
+      <span class="topbar-back" onclick="showScreen('screen-home')">← Home</span>
+      <span class="topbar-title">Job Overview</span>
+      <span></span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="job-progress-bar" style="width:5%"></div></div>
+    <div class="job-card">
+      <div class="job-customer" id="dash-customer">–</div>
+      <div class="job-address" id="dash-address">–</div>
+      <div class="job-meta">
+        <div class="job-badge" id="dash-calltype">–</div>
+        <div class="job-badge" id="dash-status">In Progress</div>
+      </div>
+    </div>
+    <div class="screen-body">
+      <div class="step-list" id="step-list-container"></div>
+    </div>
+    <div class="bottom-bar">
+      <button class="btn-navy" onclick="goToStep(currentStep)">Continue Step <span id="continue-step-num">1</span> →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════ STEP SCREENS ═══════════════════════════════ -->
+  <!-- Step 0: Pre-Call -->
+  <div id="screen-step-0" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="topbar-back" onclick="showScreen('screen-dashboard')">← Overview</span><span class="topbar-title">Step 1 · Pre-Call</span><span></span></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:9%"></div></div>
+    <div class="step-header"><div class="step-label">Step 1 of 11</div><div class="step-title">Pre-Call Prep</div></div>
+    <div class="screen-body"><div class="step-content">
+      <div class="script-box"><div class="script-box-label">Mindset Reset</div><div class="script-box-text">"I'm not just a plumber today. I'm a trusted advisor. My job is to find out what this homeowner needs and give them options to protect their home."</div></div>
+      <div class="check-section-title">Before You Drive</div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Reviewed call notes and job history</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Truck stocked and tools ready</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Tablet charged and working</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Uniform clean and professional</div></div>
+    </div></div>
+    <div class="bottom-bar"><button class="btn-navy" onclick="completeStep(0)">Complete & Continue →</button></div>
+  </div>
+
+  <!-- Step 1: Arrival -->
+  <div id="screen-step-1" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="topbar-back" onclick="showScreen('screen-dashboard')">← Overview</span><span class="topbar-title">Step 2 · Arrival</span><span></span></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:18%"></div></div>
+    <div class="step-header"><div class="step-label">Step 2 of 11</div><div class="step-title">Arrival & Setup</div></div>
+    <div class="screen-body"><div class="step-content">
+      <div class="check-section-title">On-Site Checklist</div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Truck parked professionally</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Boot covers on before entry</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Tools organized and clean</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Tablet ready for photos</div></div>
+      <div style="background:var(--surface);border-radius:8px;padding:14px 16px;border:1px solid var(--border);margin-top:16px;">
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:4px;">Arrival Timestamp</div>
+        <div id="arrival-timestamp" style="font-size:16px;font-weight:800;color:var(--navy);">Not logged yet</div>
+      </div>
+    </div></div>
+    <div class="bottom-bar"><button class="btn-navy" onclick="logArrivalAndContinue()">Log Arrival & Continue →</button></div>
+  </div>
+
+  <!-- Step 2: Introduction -->
+  <div id="screen-step-2" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="topbar-back" onclick="showScreen('screen-dashboard')">← Overview</span><span class="topbar-title">Step 3 · Introduction</span><span></span></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:27%"></div></div>
+    <div class="step-header"><div class="step-label">Step 3 of 11</div><div class="step-title">Introduction</div></div>
+    <div class="screen-body"><div class="step-content">
+      <div class="script-box"><div class="script-box-label">Opening Script</div><div class="script-box-text">"Hi, I'm [Your Name] with [Company]. You reached out about [issue], correct? Great. I'm going to take a full look at everything related to this, then walk you through exactly what I find and what your options are. Sound good?"</div></div>
+      <div class="check-section-title">Introduction Checklist</div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Introduced by name and company</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Confirmed reason for visit</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Set expectations for the visit</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Warm, professional first impression</div></div>
+    </div></div>
+    <div class="bottom-bar"><button class="btn-navy" onclick="completeStep(2)">Introduction Done →</button></div>
+  </div>
+
+  <!-- Step 3: Agenda -->
+  <div id="screen-step-3" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="topbar-back" onclick="showScreen('screen-dashboard')">← Overview</span><span class="topbar-title">Step 4 · Agenda</span><span></span></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:36%"></div></div>
+    <div class="step-header"><div class="step-label">Step 4 of 11</div><div class="step-title">Set the Agenda</div></div>
+    <div class="screen-body"><div class="step-content">
+      <div class="script-box"><div class="script-box-label">Agenda Script</div><div class="script-box-text">"Before I get started, I want to make sure I'm covering everything for you today. Do you have any other concerns beyond the main issue? And is there anyone else who needs to be part of the conversation?"</div></div>
+      <div class="check-section-title">Confirm Before You Inspect</div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Confirmed primary issue</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Asked about additional concerns</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Decision maker is present</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Confirmed time availability</div></div>
+    </div></div>
+    <div class="bottom-bar"><button class="btn-navy" onclick="completeStep(3)">Agenda Set →</button></div>
+  </div>
+
+  <!-- Step 4: Discovery -->
+  <div id="screen-step-4" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="topbar-back" onclick="showScreen('screen-dashboard')">← Overview</span><span class="topbar-title">Step 5 · Discovery</span><span></span></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:45%"></div></div>
+    <div class="step-header"><div class="step-label">Step 5 of 11</div><div class="step-title">Discovery Questions</div></div>
+    <div class="screen-body"><div class="step-content">
+      <div class="script-box"><div class="script-box-label">The Rule</div><div class="script-box-text">"Ask, don't tell. Their answers tell you how to present your findings — and which option they'll choose."</div></div>
+      <div class="discovery-q"><div class="discovery-q-label">When did this issue start?</div><textarea class="discovery-input" id="disc-1" placeholder="Note their answer..."></textarea></div>
+      <div class="discovery-q"><div class="discovery-q-label">How often does it happen?</div><textarea class="discovery-input" id="disc-2" placeholder="Note their answer..."></textarea></div>
+      <div class="discovery-q"><div class="discovery-q-label">Has anything been done before?</div><textarea class="discovery-input" id="disc-3" placeholder="Note their answer..."></textarea></div>
+      <div class="discovery-q"><div class="discovery-q-label">What concerns you most?</div><div class="discovery-q-sub">This is the gold. Use it in your close.</div><textarea class="discovery-input" id="disc-4" placeholder="Note their answer — this drives your close..."></textarea></div>
+      <div class="discovery-q"><div class="discovery-q-label">How long do you plan to stay in this home?</div><textarea class="discovery-input" id="disc-5" placeholder="Long-term owners respond differently..."></textarea></div>
+    </div></div>
+    <div class="bottom-bar"><button class="btn-navy" onclick="saveDiscoveryAndContinue()">Save & Continue →</button></div>
+  </div>
+
+  <!-- Step 5: Inspection -->
+  <div id="screen-step-5" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="topbar-back" onclick="showScreen('screen-dashboard')">← Overview</span><span class="topbar-title">Step 6 · Inspection</span><span></span></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:54%"></div></div>
+    <div class="step-header"><div class="step-label" id="inspect-calltype-label">Step 6 of 11 · Water Heater</div><div class="step-title">Inspection</div></div>
+    <div class="screen-body"><div class="step-content" id="inspect-content">
+      <!-- Dynamically populated by call type -->
+    </div></div>
+    <div class="bottom-bar"><button class="btn-navy" onclick="saveInspectionAndContinue()">Inspection Complete →</button></div>
+  </div>
+
+  <!-- Step 6: Photos -->
+  <div id="screen-step-6" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="topbar-back" onclick="showScreen('screen-dashboard')">← Overview</span><span class="topbar-title">Step 7 · Photos</span><span></span></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:63%"></div></div>
+    <div class="step-header"><div class="step-label">Step 7 of 11</div><div class="step-title">Photo Capture</div></div>
+    <div class="screen-body"><div class="step-content">
+      <div class="photo-counter"><div class="photo-counter-text">Photos captured</div><div class="photo-counter-num" id="photo-count-display">0 / 5</div></div>
+      <div class="photo-grid" id="photo-grid">
+        <div class="photo-slot" onclick="capturePhoto(this,'Model Tag')"><div class="photo-slot-icon">📷</div><div class="photo-slot-label">Model Tag</div></div>
+        <div class="photo-slot" onclick="capturePhoto(this,'Full Unit')"><div class="photo-slot-icon">📷</div><div class="photo-slot-label">Full Unit</div></div>
+        <div class="photo-slot" onclick="capturePhoto(this,'Connections')"><div class="photo-slot-icon">📷</div><div class="photo-slot-label">Connections</div></div>
+        <div class="photo-slot" onclick="capturePhoto(this,'Risk Item')"><div class="photo-slot-icon">📷</div><div class="photo-slot-label">Risk Item</div></div>
+        <div class="photo-slot" onclick="capturePhoto(this,'Before Work')"><div class="photo-slot-icon">📷</div><div class="photo-slot-label">Before Work</div></div>
+      </div>
+      <div style="font-size:13px;color:var(--text-muted);line-height:1.7;padding:14px;background:var(--surface);border-radius:8px;">Photos protect you legally and build homeowner trust. Showing what you found is more powerful than telling them.</div>
+    </div></div>
+    <div class="bottom-bar"><button class="btn-navy" onclick="completeStep(6)">Photos Done →</button></div>
+  </div>
+
+  <!-- Step 7: Build Options -->
+  <div id="screen-step-7" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="topbar-back" onclick="showScreen('screen-dashboard')">← Overview</span><span class="topbar-title">Step 8 · Options</span><span></span></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:72%"></div></div>
+    <div class="step-header"><div class="step-label">Step 8 of 11</div><div class="step-title">Build Options</div></div>
+    <div class="screen-body"><div class="step-content">
+      <div class="script-box"><div class="script-box-label">The Rule</div><div class="script-box-text">"Always present three options. Homeowners who choose feel respected. Homeowners who are told a single price feel sold to."</div></div>
+      <div class="option-card">
+        <div class="option-header"><span class="option-tier tier-good">Good</span><div class="option-price-row"><span class="option-dollar">$</span><input class="option-price-input" type="number" id="opt-good-price" placeholder="0" /></div></div>
+        <textarea class="option-input" id="opt-good-desc" placeholder="What this option includes..."></textarea>
+        <input type="text" class="option-input" id="opt-good-warranty" placeholder="Warranty (e.g. 1 Year Parts & Labor)" />
+      </div>
+      <div class="option-card">
+        <div class="option-header"><span class="option-tier tier-better">Better</span><div class="option-price-row"><span class="option-dollar">$</span><input class="option-price-input" type="number" id="opt-better-price" placeholder="0" /></div></div>
+        <textarea class="option-input" id="opt-better-desc" placeholder="What this option includes..."></textarea>
+        <input type="text" class="option-input" id="opt-better-warranty" placeholder="Warranty" />
+      </div>
+      <div class="option-card best">
+        <div class="option-header"><span class="option-tier tier-best">Best</span><div class="option-price-row"><span class="option-dollar">$</span><input class="option-price-input" type="number" id="opt-best-price" placeholder="0" /></div></div>
+        <textarea class="option-input" id="opt-best-desc" placeholder="What this option includes..."></textarea>
+        <input type="text" class="option-input" id="opt-best-warranty" placeholder="Warranty" />
+        <div style="display:flex;align-items:center;gap:8px;margin-top:4px;"><input type="checkbox" id="opt-financing" /><label for="opt-financing" style="font-size:13px;font-weight:700;color:var(--navy);">Financing available</label></div>
+      </div>
+    </div></div>
+    <div class="bottom-bar"><button class="btn-navy" onclick="saveOptionsAndContinue()">Save Options →</button></div>
+  </div>
+
+  <!-- Step 8: Present -->
+  <div id="screen-step-8" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="topbar-back" onclick="showScreen('screen-dashboard')">← Overview</span><span class="topbar-title">Step 9 · Present</span><span></span></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:81%"></div></div>
+    <div class="step-header"><div class="step-label">Step 9 of 11</div><div class="step-title">Present Findings</div></div>
+    <div class="screen-body"><div class="step-content">
+      <div class="script-box"><div class="script-box-label">Presentation Script</div><div class="script-box-text">"Here's what I found today. [Walk through photos.] Based on what you told me earlier about [their concern from discovery], here are three ways we can take care of this for you."</div></div>
+      <div class="script-box" style="border-left-color:var(--navy-light);"><div class="script-box-label" style="color:var(--navy);">Price Script</div><div class="script-box-text">"Most homeowners in your situation choose this option because it solves the problem permanently. But I want you to have all three in front of you — whatever works best for you."</div></div>
+      <div class="check-section-title">Presentation Checklist</div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Walked through photos with homeowner</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Referenced their discovery answers</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Presented all three options clearly</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Stayed silent after presenting price</div></div>
+    </div></div>
+    <div class="bottom-bar"><button class="btn-navy" onclick="completeStep(8)">Presentation Done →</button></div>
+  </div>
+
+  <!-- Step 9: Objections -->
+  <div id="screen-step-9" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="topbar-back" onclick="showScreen('screen-dashboard')">← Overview</span><span class="topbar-title">Step 10 · Objections</span><span></span></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:90%"></div></div>
+    <div class="step-header"><div class="step-label">Step 10 of 11</div><div class="step-title">Handle Objections</div></div>
+    <div class="screen-body"><div class="step-content">
+      <div class="screen-sub" style="margin-bottom:14px;">Tap the objection you're hearing:</div>
+      <div class="obj-grid">
+        <div class="obj-btn" onclick="showObjInStep(this,'price')">Price Too High</div>
+        <div class="obj-btn" onclick="showObjInStep(this,'think')">Need to Think</div>
+        <div class="obj-btn" onclick="showObjInStep(this,'spouse')">Need Spouse</div>
+        <div class="obj-btn" onclick="showObjInStep(this,'patch')">Just Patch It</div>
+        <div class="obj-btn" onclick="showObjInStep(this,'quotes')">Other Quotes</div>
+        <div class="obj-btn" onclick="showObjInStep(this,'afford')">Can't Afford</div>
+        <div class="obj-btn" onclick="showObjInStep(this,'trust')">Trust Issue</div>
+        <div class="obj-btn" onclick="showObjInStep(this,'wait')">Not Urgent</div>
+      </div>
+      <div class="obj-response" id="step-obj-response">
+        <div class="obj-section"><div class="obj-section-label">What they really mean</div><div class="obj-section-text" id="step-obj-meaning"></div></div>
+        <div class="obj-section"><div class="obj-section-label">Your response</div><div class="obj-section-text script" id="step-obj-script"></div></div>
+        <div class="obj-section"><div class="obj-section-label">Follow-up question</div><div class="obj-section-text" id="step-obj-followup" style="font-style:italic;color:var(--navy-light);"></div></div>
+      </div>
+    </div></div>
+    <div class="bottom-bar"><button class="btn-navy" onclick="completeStep(9)">Move to Close →</button></div>
+  </div>
+
+  <!-- Step 10: Close -->
+  <div id="screen-step-10" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="topbar-back" onclick="showScreen('screen-dashboard')">← Overview</span><span class="topbar-title">Step 11 · Close</span><span></span></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+    <div class="step-header"><div class="step-label">Step 11 of 11</div><div class="step-title">Close & Complete</div></div>
+    <div class="screen-body"><div class="step-content">
+      <div class="script-box"><div class="script-box-label">The Close</div><div class="script-box-text">"Which option works best for you today?" — Then stay silent. The next person to speak loses.</div></div>
+      <div class="check-section-title">Final Steps</div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Option selected by homeowner</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Payment collected or financing processed</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Google review asked — by name</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Membership plan offered</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Work area left clean</div></div>
+      <div class="section-divider">Job Outcome</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;">
+        <div class="call-type-btn" id="outcome-sold" onclick="setOutcome('sold',this)" style="text-align:center;"><div class="ct-icon" style="margin:0 auto 6px;">✅</div><div class="ct-label" style="font-size:11px;">Sold</div></div>
+        <div class="call-type-btn" id="outcome-callback" onclick="setOutcome('callback',this)" style="text-align:center;"><div class="ct-icon" style="margin:0 auto 6px;">📞</div><div class="ct-label" style="font-size:11px;">Callback</div></div>
+        <div class="call-type-btn" id="outcome-nosale" onclick="setOutcome('nosale',this)" style="text-align:center;"><div class="ct-icon" style="margin:0 auto 6px;">❌</div><div class="ct-label" style="font-size:11px;">No Sale</div></div>
+      </div>
+      <div class="auth-label" style="margin-bottom:6px;">Final Ticket Amount ($)</div>
+      <input class="auth-input" type="number" id="final-ticket" placeholder="0" style="margin-bottom:0;" />
+    </div></div>
+    <div class="bottom-bar"><button class="btn-primary" onclick="completeJob()">Complete Job ✓</button></div>
+  </div>
+
+  <!-- ═══════════════════════════════════ PAST JOBS ═══════════════════════════════════ -->
+  <div id="screen-jobs" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="topbar-back" onclick="showScreen('screen-home')">← Home</span><span class="topbar-title">Past Jobs</span><span></span></div>
+    <div class="screen-body">
+      <div style="padding:16px 20px;" id="jobs-list">
+        <div style="text-align:center;padding:40px 20px;color:var(--text-muted);font-size:14px;">Loading jobs...</div>
+      </div>
+    </div>
+    <div class="nav-tabs">
+      <div class="nav-tab" onclick="showScreen('screen-home')">Home</div>
+      <div class="nav-tab" onclick="showScreen('screen-kpi')">Stats</div>
+      <div class="nav-tab active">Jobs</div>
+      <div class="nav-tab" onclick="showScreen('screen-objections-ref')">Scripts</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ KPI ═══════════════════════════════════ -->
+  <div id="screen-kpi" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="topbar-back" onclick="showScreen('screen-home')">← Home</span><span class="topbar-title">My Performance</span><span></span></div>
+    <div class="screen-body">
+      <div style="padding:20px;">
+        <div class="kpi-period">
+          <div class="period-btn active" onclick="setPeriod(this,'today')">Today</div>
+          <div class="period-btn" onclick="setPeriod(this,'week')">This Week</div>
+          <div class="period-btn" onclick="setPeriod(this,'month')">Month</div>
+        </div>
+        <div class="kpi-grid">
+          <div class="kpi-card"><div class="kpi-val" id="kpi-calls">–</div><div class="kpi-label">Calls</div></div>
+          <div class="kpi-card"><div class="kpi-val" id="kpi-close">–</div><div class="kpi-label">Close Rate</div></div>
+          <div class="kpi-card"><div class="kpi-val" id="kpi-ticket">–</div><div class="kpi-label">Avg Ticket</div></div>
+          <div class="kpi-card"><div class="kpi-val" id="kpi-revenue">–</div><div class="kpi-label">Revenue</div></div>
+        </div>
+        <div class="section-divider">Compliance</div>
+        <div class="kpi-bar-section"><div class="kpi-bar-label"><span>Photo Compliance</span><span id="bar-photo">–</span></div><div class="kpi-bar-track"><div class="kpi-bar-fill gold" id="bar-photo-fill" style="width:0%"></div></div></div>
+        <div class="kpi-bar-section"><div class="kpi-bar-label"><span>Inspection Rate</span><span id="bar-inspect">–</span></div><div class="kpi-bar-track"><div class="kpi-bar-fill" id="bar-inspect-fill" style="width:0%"></div></div></div>
+        <div class="kpi-bar-section"><div class="kpi-bar-label"><span>Options Built / Call</span><span id="bar-options">–</span></div><div class="kpi-bar-track"><div class="kpi-bar-fill success" id="bar-options-fill" style="width:0%"></div></div></div>
+      </div>
+    </div>
+    <div class="nav-tabs">
+      <div class="nav-tab" onclick="showScreen('screen-home')">Home</div>
+      <div class="nav-tab active">Stats</div>
+      <div class="nav-tab" onclick="showScreen('screen-jobs')">Jobs</div>
+      <div class="nav-tab" onclick="showScreen('screen-objections-ref')">Scripts</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ OBJECTIONS REF ═══════════════════════════════════ -->
+  <div id="screen-objections-ref" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="topbar-back" onclick="showScreen('screen-home')">← Home</span><span class="topbar-title">Scripts & Objections</span><span></span></div>
+    <div class="screen-body">
+      <div style="padding:18px 20px;">
+        <div class="screen-title">Handle Any Objection</div>
+        <div class="screen-sub" style="margin-bottom:16px;">Tap to load your response strategy.</div>
+        <div class="obj-grid">
+          <div class="obj-btn" onclick="showObjRef(this,'price')">Price Too High</div>
+          <div class="obj-btn" onclick="showObjRef(this,'think')">Need to Think</div>
+          <div class="obj-btn" onclick="showObjRef(this,'spouse')">Need Spouse</div>
+          <div class="obj-btn" onclick="showObjRef(this,'patch')">Just Patch It</div>
+          <div class="obj-btn" onclick="showObjRef(this,'quotes')">Other Quotes</div>
+          <div class="obj-btn" onclick="showObjRef(this,'afford')">Can't Afford</div>
+          <div class="obj-btn" onclick="showObjRef(this,'trust')">Trust Issue</div>
+          <div class="obj-btn" onclick="showObjRef(this,'wait')">Not Urgent</div>
+        </div>
+        <div class="obj-response" id="ref-obj-response" style="margin-top:8px;">
+          <div class="obj-section"><div class="obj-section-label">What they really mean</div><div class="obj-section-text" id="ref-obj-meaning"></div></div>
+          <div class="obj-section"><div class="obj-section-label">Your response</div><div class="obj-section-text script" id="ref-obj-script"></div></div>
+          <div class="obj-section"><div class="obj-section-label">Follow-up question</div><div class="obj-section-text" id="ref-obj-followup" style="font-style:italic;color:var(--navy-light);"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="nav-tabs">
+      <div class="nav-tab" onclick="showScreen('screen-home')">Home</div>
+      <div class="nav-tab" onclick="showScreen('screen-kpi')">Stats</div>
+      <div class="nav-tab" onclick="showScreen('screen-jobs')">Jobs</div>
+      <div class="nav-tab active">Scripts</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ SCRIPTS ═══════════════════════════════════ -->
+  <div id="screen-scripts" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="topbar-back" onclick="showScreen('screen-home')">← Home</span><span class="topbar-title">Script Library</span><span></span></div>
+    <div class="screen-body"><div style="padding:18px 20px;">
+      <div class="script-box"><div class="script-box-label">Opening / Intro</div><div class="script-box-text">"Hi, I'm [Name] with [Company]. You reached out about [issue], correct? Great. I'm going to take a full look at everything related to this, then walk you through exactly what I find and your options. Sound good?"</div></div>
+      <div class="script-box"><div class="script-box-label">Transition to Inspect</div><div class="script-box-text">"I'm going to take a closer look and see exactly what's causing this. Give me a few minutes and I'll walk you through everything I find."</div></div>
+      <div class="script-box"><div class="script-box-label">Findings Presentation</div><div class="script-box-text">"Here's what I found today. [Walk through photos.] Based on what you told me about [their main concern], here are three ways we can take care of this for you."</div></div>
+      <div class="script-box"><div class="script-box-label">Price Presentation</div><div class="script-box-text">"Most homeowners in your situation choose this option because it solves the problem permanently and protects your home long-term. But I want you to have all three options — whatever works best for you."</div></div>
+      <div class="script-box"><div class="script-box-label">The Close</div><div class="script-box-text">"Which option works best for you today?" — Then stop talking. Stay silent. The next person to speak, loses.</div></div>
+      <div class="script-box"><div class="script-box-label">Review Ask</div><div class="script-box-text">"Hey [Name], I have a favor to ask — if you felt like I took care of you today, would you mind leaving us a quick Google review? It takes about 60 seconds and it means a lot to us."</div></div>
+      <div class="script-box"><div class="script-box-label">Membership Offer</div><div class="script-box-text">"One more thing — we have a maintenance plan that covers annual inspections and gives you priority scheduling and a discount on all services. A lot of homeowners add it on for peace of mind. Want me to go over what's included?"</div></div>
+    </div></div>
+    <div class="nav-tabs">
+      <div class="nav-tab" onclick="showScreen('screen-home')">Home</div>
+      <div class="nav-tab" onclick="showScreen('screen-kpi')">Stats</div>
+      <div class="nav-tab" onclick="showScreen('screen-jobs')">Jobs</div>
+      <div class="nav-tab active">Scripts</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════ FIREBASE ═══════════════════ -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, doc, setDoc, getDoc, addDoc, updateDoc, collection, query, where, orderBy, getDocs, serverTimestamp, increment } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBjFq_iD0wrLqgzbiAgd1zbPEkf-kvYawE",
+  authDomain: "perfect-service-os.firebaseapp.com",
+  projectId: "perfect-service-os",
+  storageBucket: "perfect-service-os.firebasestorage.app",
+  messagingSenderId: "7540754161",
+  appId: "1:7540754161:web:56bd56999da60d7f8d8b50"
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const auth = getAuth(fbApp);
+const db = getFirestore(fbApp);
+
+// ── STATE ──
+let currentUser = null;
+let currentJobId = null;
+let currentJobData = {};
+let currentStep = 0;
+let photosCaptured = 0;
+let selectedOutcome = null;
+let selectedCallType = null;
+let kpiPeriod = 'today';
+
+// ── INSPECTION DATA BY CALL TYPE ──
+const inspectionData = {
+  'Water Heater': {
+    required: ['Unit age and model','Tank condition — rust, corrosion','Expansion tank present','Shutoff valve condition','Supply lines — flex, copper, age','Venting — proper clearance','Drain pan present and clear','Pressure regulator'],
+    opportunities: ['Whole home water filtration absent','Maintenance membership not enrolled','Shutoff difficult to operate','No earthquake straps (seismic zone)']
+  },
+  'Drain': {
+    required: ['Location of blockage','Drain accessibility','Signs of root intrusion','Backup frequency noted','P-trap condition','Vent stack accessible','Camera needed'],
+    opportunities: ['Hydro-jet recommended','Drain maintenance plan','Bio-clean treatment','Multi-drain inspection']
+  },
+  'Leak': {
+    required: ['Leak source confirmed','Water damage scope','Supply line vs drain line','Shutoff valve working','Drywall or flooring affected','Mold or mildew present','Duration of leak'],
+    opportunities: ['Water detector installation','Whole home shutoff valve','Insurance documentation photos','Pipe condition overall']
+  },
+  'Toilet': {
+    required: ['Flush mechanism','Fill valve condition','Flapper seal','Wax ring seal','Supply line age','Tank crack check','Water usage efficiency'],
+    opportunities: ['Water efficient upgrade','Bidet attachment offer','Shutoff valve condition','Slow flush root cause']
+  },
+  'Faucet': {
+    required: ['Faucet brand and age','Cartridge or ball valve','Supply line condition','Shutoff valve working','Water pressure at fixture','Aerator condition'],
+    opportunities: ['Full faucet replacement vs repair','Under sink shutoff upgrade','Water filtration add-on','Matching fixtures']
+  },
+  'Sewer': {
+    required: ['Camera inspection needed','Cleanout access','Tree root intrusion','Pipe material — clay, cast, ABS','Belly or sag present','Distance to street','Permit required'],
+    opportunities: ['Full line replacement','Trenchless option','Hydro-jetting','Annual maintenance plan']
+  },
+  'Repipe': {
+    required: ['Current pipe material','Age of existing piping','Water quality/discoloration','Pressure throughout home','Number of fixtures affected','Access points','Permit required'],
+    opportunities: ['Whole home filtration','Pressure regulator upgrade','Fixture upgrades during work','Extended warranty']
+  },
+  'Filtration': {
+    required: ['Current water quality','TDS reading if available','Existing filtration system','Under sink vs whole home','Water softener present','Water heater condition affected'],
+    opportunities: ['Reverse osmosis system','Salt-free conditioner','Annual filter service plan','Water test report']
+  },
+  'Pressure': {
+    required: ['Measured PSI reading','PRV/pressure regulator present','PRV age and condition','Main shutoff condition','Expansion tank present','Symptoms noted by homeowner'],
+    opportunities: ['PRV replacement','Expansion tank add','Whole home inspection','Water hammer arrestors']
+  },
+  'Gas Line': {
+    required: ['Leak test performed','Gas shutoff accessible','Line material — black iron, CSST','Permits required','Appliance connections checked','Pressure test results'],
+    opportunities: ['Full line inspection','Gas shutoff upgrade','Carbon monoxide detectors','Appliance connection upgrades']
+  },
+  'Sump Pump': {
+    required: ['Pump brand and age','Float switch working','Discharge line clear','Backup pump present','Basin condition','Check valve present','Power source'],
+    opportunities: ['Battery backup system','Wi-Fi alert system','Annual maintenance plan','Basin cleaning']
+  },
+  'Emergency': {
+    required: ['Emergency type confirmed','Main shutoff located and working','Immediate damage assessment','Utilities affected','Temporary fix possible','Permit needed','Insurance claim likely'],
+    opportunities: ['Full repair vs patch decision','Water damage restoration referral','Prevent recurrence upgrade','Priority membership']
+  }
+};
+
+// ── OBJECTION DATA ──
+const objections = {
+  price: { meaning: "They're not yet convinced the value matches the investment.", script: "I understand — and most homeowners feel the same way at first. The real question is: what happens if we delay this? The cost of a failure down the road is almost always higher than what we're looking at today.", followup: '"Would it help if I showed you what typically happens when this goes unresolved?"' },
+  think: { meaning: "They haven't been sold on urgency yet. They don't see a reason to decide now.", script: "Absolutely, this is a big decision. What I'd hate is for you to be dealing with this through the weekend. What specifically do you need to think about?", followup: '"Is it the price, the scope of work, or something else?"' },
+  spouse: { meaning: "They want permission to say yes, or genuinely need alignment.", script: "That makes total sense — big decisions are best made together. Would it help if we called them right now so I can answer their questions directly?", followup: '"What time works for both of you? I can come back today."' },
+  patch: { meaning: "They want the lowest possible cost. They don't see the full risk yet.", script: "I can do that. I just want to make sure you have the full picture — a patch here usually lasts about a year, and you'll face the same situation again at a higher cost.", followup: '"Knowing that, would you still want the patch, or does the longer-term fix make more sense?"' },
+  quotes: { meaning: "They want to feel fair to themselves. Often a delay tactic.", script: "Smart move. Most quotes will be similar in labor. Where companies differ is what they stand behind. Let me show you exactly what our warranty covers so you can compare apples to apples.", followup: '"What would you need to see to feel confident choosing us today?"' },
+  afford: { meaning: "Money is a real constraint, or they haven't seen a payment path.", script: "I hear you — that's exactly why we offer financing with payments as low as [amount] a month. You get the full fix now and keep your budget comfortable.", followup: '"Want me to run the monthly payment numbers for you right now?"' },
+  trust: { meaning: "They've been burned before, or something felt off in the presentation.", script: "That's fair — and I respect it. Let me show you our license, our reviews, and our warranty in writing. My job isn't to sell you — it's to give you what you need to make the best decision for your home.", followup: '"What would make you feel most comfortable moving forward?"' },
+  wait: { meaning: "They don't see urgency. The pain isn't real to them yet.", script: "I understand. I just want you to know what we found so you can watch it. This type of issue tends to get worse without warning — and emergency calls cost two to three times more.", followup: '"Is there a timeframe you had in mind?"' }
+};
+
+// ── AUTH ──
+window.showAuthMode = function(mode) {
+  document.getElementById('auth-login-form').classList.toggle('hidden', mode !== 'login');
+  document.getElementById('auth-register-form').classList.toggle('hidden', mode !== 'register');
+  document.getElementById('auth-error').style.display = 'none';
+};
+
+window.doLogin = async function() {
+  const email = document.getElementById('login-email').value.trim();
+  const pw = document.getElementById('login-password').value;
+  const btn = document.getElementById('btn-login');
+  if (!email || !pw) return showAuthError('Please fill in all fields.');
+  btn.innerHTML = '<span class="spinner"></span>';
+  try {
+    await signInWithEmailAndPassword(auth, email, pw);
+  } catch(e) {
+    btn.textContent = 'Sign In';
+    showAuthError(e.code === 'auth/invalid-credential' ? 'Incorrect email or password.' : e.message);
+  }
+};
+
+window.doRegister = async function() {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pw = document.getElementById('reg-password').value;
+  const btn = document.getElementById('btn-register');
+  if (!name || !email || !pw) return showAuthError('Please fill in all fields.');
+  btn.innerHTML = '<span class="spinner"></span>';
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pw);
+    await updateProfile(cred.user, { displayName: name });
+    await setDoc(doc(db, 'users', cred.user.uid), {
+      name, email, role: 'technician', createdAt: serverTimestamp(),
+      totalCalls: 0, totalRevenue: 0, totalSold: 0
+    });
+  } catch(e) {
+    btn.textContent = 'Create Account';
+    showAuthError(e.message);
+  }
+};
+
+window.doLogout = async function() {
+  await signOut(auth);
+};
+
+function showAuthError(msg) {
+  const el = document.getElementById('auth-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+// ── AUTH STATE ──
+onAuthStateChanged(auth, async (user) => {
+  document.getElementById('loading').style.display = 'none';
+  if (user) {
+    currentUser = user;
+    await loadHomeData();
+    showScreen('screen-home');
+  } else {
+    currentUser = null;
+    showScreen('screen-auth');
+  }
+});
+
+async function loadHomeData() {
+  if (!currentUser) return;
+  document.getElementById('home-name').textContent = currentUser.displayName || 'Technician';
+  const today = new Date().toISOString().split('T')[0];
+  try {
+    const jobsQ = query(collection(db,'jobs'), where('userId','==',currentUser.uid), where('date','==',today));
+    const snap = await getDocs(jobsQ);
+    const jobs = snap.docs.map(d => d.data());
+    const total = jobs.length;
+    const sold = jobs.filter(j => j.outcome === 'sold').length;
+    const revenue = jobs.reduce((s,j) => s + (Number(j.ticketAmount)||0), 0);
+    const closeRate = total > 0 ? Math.round((sold/total)*100) : 0;
+    const avgTicket = sold > 0 ? Math.round(revenue/sold) : 0;
+    document.getElementById('stat-calls').textContent = total;
+    document.getElementById('stat-close').textContent = closeRate + '%';
+    document.getElementById('stat-ticket').textContent = avgTicket > 0 ? '$' + avgTicket.toLocaleString() : '–';
+  } catch(e) { console.log('loadHomeData error',e); }
+}
+
+// ── JOB FLOW ──
+window.startNewJob = function() {
+  currentJobId = null;
+  currentJobData = {};
+  currentStep = 0;
+  photosCaptured = 0;
+  selectedOutcome = null;
+  selectedCallType = null;
+  document.querySelectorAll('.call-type-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('job-customer').value = '';
+  document.getElementById('job-address').value = '';
+  showScreen('screen-calltype');
+};
+
+window.selectCallType = function(btn, type) {
+  document.querySelectorAll('#call-type-grid .call-type-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedCallType = type;
+};
+
+window.createJob = async function() {
+  if (!selectedCallType) return alert('Please select a call type.');
+  const customer = document.getElementById('job-customer').value.trim();
+  const address = document.getElementById('job-address').value.trim();
+  if (!customer) return alert('Please enter customer name.');
+  const today = new Date().toISOString().split('T')[0];
+  const jobData = {
+    userId: currentUser.uid,
+    userName: currentUser.displayName || '',
+    customer, address, callType: selectedCallType,
+    date: today, status: 'in_progress',
+    currentStep: 0, stepsCompleted: [],
+    createdAt: serverTimestamp()
+  };
+  try {
+    const ref = await addDoc(collection(db,'jobs'), jobData);
+    currentJobId = ref.id;
+    currentJobData = jobData;
+    currentStep = 0;
+    updateDashboard();
+    renderInspection(selectedCallType);
+    showScreen('screen-dashboard');
+  } catch(e) { alert('Error creating job: ' + e.message); }
+};
+
+function updateDashboard() {
+  document.getElementById('dash-customer').textContent = currentJobData.customer || '–';
+  document.getElementById('dash-address').textContent = currentJobData.address || '–';
+  document.getElementById('dash-calltype').textContent = currentJobData.callType || '–';
+  document.getElementById('inspect-calltype-label').textContent = `Step 6 of 11 · ${currentJobData.callType||''}`;
+  const pct = Math.round((currentStep / 10) * 95) + 5;
+  document.getElementById('job-progress-bar').style.width = pct + '%';
+  document.getElementById('continue-step-num').textContent = currentStep + 1;
+  renderStepList();
+}
+
+function renderStepList() {
+  const steps = ['Pre-Call Prep','Arrival & Setup','Introduction','Set the Agenda','Discovery Questions','Inspection','Photo Capture','Build Options','Present Findings','Handle Objections','Close & Complete'];
+  const container = document.getElementById('step-list-container');
+  container.innerHTML = steps.map((name, i) => {
+    const done = currentJobData.stepsCompleted && currentJobData.stepsCompleted.includes(i);
+    const active = i === currentStep && !done;
+    return `<div class="step-item ${done?'done':active?'active':'pending'}" onclick="goToStep(${i})">
+      <div class="step-num ${done?'check':''}">${done?'✓':i+1}</div>
+      <div class="step-name">${name}</div>
+      <div class="step-arrow">→</div>
+    </div>`;
+  }).join('');
+}
+
+window.goToStep = function(n) {
+  currentStep = n;
+  updateDashboard();
+  showScreen('screen-step-' + n);
+};
+
+window.completeStep = async function(stepNum) {
+  await markStepDone(stepNum);
+  if (stepNum < 10) goToStep(stepNum + 1);
+};
+
+async function markStepDone(stepNum) {
+  if (!currentJobId) return;
+  const completed = currentJobData.stepsCompleted || [];
+  if (!completed.includes(stepNum)) completed.push(stepNum);
+  currentJobData.stepsCompleted = completed;
+  const next = stepNum + 1;
+  currentStep = next <= 10 ? next : 10;
+  try {
+    await updateDoc(doc(db,'jobs',currentJobId), { stepsCompleted: completed, currentStep: currentStep });
+  } catch(e) { console.log('markStepDone error',e); }
+}
+
+window.logArrivalAndContinue = async function() {
+  const now = new Date();
+  const t = now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('arrival-timestamp').textContent = 'Arrived at ' + t;
+  if (currentJobId) {
+    await updateDoc(doc(db,'jobs',currentJobId), { arrivalTime: now.toISOString() });
+  }
+  completeStep(1);
+};
+
+window.saveDiscoveryAndContinue = async function() {
+  const discovery = {
+    q1: document.getElementById('disc-1').value,
+    q2: document.getElementById('disc-2').value,
+    q3: document.getElementById('disc-3').value,
+    q4: document.getElementById('disc-4').value,
+    q5: document.getElementById('disc-5').value
+  };
+  if (currentJobId) {
+    await updateDoc(doc(db,'jobs',currentJobId), { discovery });
+  }
+  currentJobData.discovery = discovery;
+  completeStep(4);
+};
+
+function renderInspection(callType) {
+  const data = inspectionData[callType] || inspectionData['Water Heater'];
+  let html = '<div class="section-divider">Required Items</div>';
+  data.required.forEach(item => {
+    html += `<div class="inspect-item" onclick="cycleInspect(this)">
+      <div class="inspect-dot"></div>
+      <div class="inspect-label">${item}</div>
+      <div class="inspect-status">Tap to note</div>
+    </div>`;
+  });
+  html += '<div class="section-divider">Protection Opportunities</div>';
+  data.opportunities.forEach(item => {
+    html += `<div class="opp-flag" onclick="toggleOpp(this)">
+      <div style="font-size:14px;">⚡</div>
+      <div class="opp-text">${item}</div>
+      <div class="opp-add">+ Add</div>
+    </div>`;
+  });
+  document.getElementById('inspect-content').innerHTML = html;
+}
+
+window.saveInspectionAndContinue = async function() {
+  const items = document.querySelectorAll('#inspect-content .inspect-item');
+  const opps = document.querySelectorAll('#inspect-content .opp-flag');
+  const inspectionResults = [];
+  const opportunities = [];
+  items.forEach(el => {
+    inspectionResults.push({ label: el.querySelector('.inspect-label').textContent, status: el.classList.contains('flagged') ? 'flagged' : el.classList.contains('ok') ? 'ok' : 'unchecked' });
+  });
+  opps.forEach(el => {
+    if (el.classList.contains('added')) opportunities.push(el.querySelector('.opp-text').textContent);
+  });
+  if (currentJobId) {
+    await updateDoc(doc(db,'jobs',currentJobId), { inspectionResults, opportunities });
+  }
+  completeStep(5);
+};
+
+window.capturePhoto = function(el, label) {
+  if (!el.classList.contains('captured')) {
+    el.classList.add('captured');
+    el.querySelector('.photo-slot-icon').textContent = '✅';
+    photosCaptured++;
+    document.getElementById('photo-count-display').textContent = photosCaptured + ' / 5';
+    if (currentJobId) updateDoc(doc(db,'jobs',currentJobId),{photoCount: photosCaptured});
+  }
+};
+
+window.saveOptionsAndContinue = async function() {
+  const options = {
+    good: { price: document.getElementById('opt-good-price').value, desc: document.getElementById('opt-good-desc').value, warranty: document.getElementById('opt-good-warranty').value },
+    better: { price: document.getElementById('opt-better-price').value, desc: document.getElementById('opt-better-desc').value, warranty: document.getElementById('opt-better-warranty').value },
+    best: { price: document.getElementById('opt-best-price').value, desc: document.getElementById('opt-best-desc').value, warranty: document.getElementById('opt-best-warranty').value, financing: document.getElementById('opt-financing').checked }
+  };
+  if (currentJobId) await updateDoc(doc(db,'jobs',currentJobId),{ options });
+  currentJobData.options = options;
+  completeStep(7);
+};
+
+window.setOutcome = function(outcome, btn) {
+  selectedOutcome = outcome;
+  ['outcome-sold','outcome-callback','outcome-nosale'].forEach(id => document.getElementById(id).classList.remove('selected'));
+  btn.classList.add('selected');
+};
+
+window.completeJob = async function() {
+  if (!selectedOutcome) return alert('Please select a job outcome.');
+  const ticket = Number(document.getElementById('final-ticket').value) || 0;
+  if (!currentJobId) return;
+  const updateData = { status: 'completed', outcome: selectedOutcome, ticketAmount: ticket, completedAt: serverTimestamp(), stepsCompleted: [0,1,2,3,4,5,6,7,8,9,10] };
+  try {
+    await updateDoc(doc(db,'jobs',currentJobId), updateData);
+    const userRef = doc(db,'users',currentUser.uid);
+    await updateDoc(userRef, {
+      totalCalls: increment(1),
+      totalRevenue: increment(ticket),
+      totalSold: increment(selectedOutcome === 'sold' ? 1 : 0)
+    });
+    currentJobId = null;
+    currentJobData = {};
+    await loadHomeData();
+    showScreen('screen-home');
+  } catch(e) { alert('Error completing job: ' + e.message); }
+};
+
+// ── OBJECTIONS ──
+window.showObjInStep = function(btn, key) {
+  const data = objections[key];
+  document.querySelectorAll('#screen-step-9 .obj-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('step-obj-meaning').textContent = data.meaning;
+  document.getElementById('step-obj-script').textContent = data.script;
+  document.getElementById('step-obj-followup').textContent = data.followup;
+  document.getElementById('step-obj-response').classList.add('visible');
+};
+
+window.showObjRef = function(btn, key) {
+  const data = objections[key];
+  document.querySelectorAll('#screen-objections-ref .obj-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('ref-obj-meaning').textContent = data.meaning;
+  document.getElementById('ref-obj-script').textContent = data.script;
+  document.getElementById('ref-obj-followup').textContent = data.followup;
+  document.getElementById('ref-obj-response').classList.add('visible');
+};
+
+// ── KPI ──
+window.setPeriod = async function(btn, period) {
+  kpiPeriod = period;
+  document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  await loadKPI();
+};
+
+async function loadKPI() {
+  if (!currentUser) return;
+  const today = new Date();
+  let startDate;
+  if (kpiPeriod === 'today') {
+    startDate = today.toISOString().split('T')[0];
+  } else if (kpiPeriod === 'week') {
+    const d = new Date(today); d.setDate(d.getDate() - 7);
+    startDate = d.toISOString().split('T')[0];
+  } else {
+    const d = new Date(today); d.setDate(1);
+    startDate = d.toISOString().split('T')[0];
+  }
+  try {
+    const q = query(collection(db,'jobs'), where('userId','==',currentUser.uid), where('date','>=',startDate), where('status','==','completed'));
+    const snap = await getDocs(q);
+    const jobs = snap.docs.map(d => d.data());
+    const total = jobs.length;
+    const sold = jobs.filter(j => j.outcome === 'sold').length;
+    const revenue = jobs.reduce((s,j) => s + (Number(j.ticketAmount)||0), 0);
+    const closeRate = total > 0 ? Math.round((sold/total)*100) : 0;
+    const avgTicket = sold > 0 ? Math.round(revenue/sold) : 0;
+    const photoCompliance = total > 0 ? Math.round((jobs.filter(j => (j.photoCount||0) >= 3).length / total)*100) : 0;
+    const inspectRate = total > 0 ? Math.round((jobs.filter(j => j.inspectionResults && j.inspectionResults.length > 0).length / total)*100) : 0;
+    const optionsRate = total > 0 ? Math.round((jobs.filter(j => j.options && j.options.good && j.options.better).length / total)*100) : 0;
+    document.getElementById('kpi-calls').textContent = total;
+    document.getElementById('kpi-close').textContent = closeRate + '%';
+    document.getElementById('kpi-ticket').textContent = avgTicket > 0 ? '$' + avgTicket.toLocaleString() : '–';
+    document.getElementById('kpi-revenue').textContent = revenue > 0 ? '$' + revenue.toLocaleString() : '–';
+    document.getElementById('bar-photo').textContent = photoCompliance + '%';
+    document.getElementById('bar-photo-fill').style.width = photoCompliance + '%';
+    document.getElementById('bar-inspect').textContent = inspectRate + '%';
+    document.getElementById('bar-inspect-fill').style.width = inspectRate + '%';
+    document.getElementById('bar-options').textContent = optionsRate + '%';
+    document.getElementById('bar-options-fill').style.width = optionsRate + '%';
+  } catch(e) { console.log('KPI error',e); }
+}
+
+// ── PAST JOBS ──
+async function loadPastJobs() {
+  if (!currentUser) return;
+  const container = document.getElementById('jobs-list');
+  container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted);">Loading...</div>';
+  try {
+    const q = query(collection(db,'jobs'), where('userId','==',currentUser.uid), orderBy('createdAt','desc'));
+    const snap = await getDocs(q);
+    if (snap.empty) { container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);font-size:14px;">No jobs yet. Start your first job above.</div>'; return; }
+    container.innerHTML = snap.docs.map(d => {
+      const j = d.data();
+      const outcomeColor = j.outcome === 'sold' ? 'var(--success)' : j.outcome === 'nosale' ? 'var(--danger)' : 'var(--gold)';
+      const outcomeLabel = j.outcome === 'sold' ? 'Sold' : j.outcome === 'nosale' ? 'No Sale' : j.outcome === 'callback' ? 'Callback' : 'In Progress';
+      return `<div style="background:var(--surface);border-radius:10px;padding:14px 16px;margin-bottom:10px;border:1px solid var(--border);">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+          <div style="font-size:15px;font-weight:700;color:var(--text-primary);">${j.customer||'–'}</div>
+          <div style="font-size:11px;font-weight:800;color:${outcomeColor};text-transform:uppercase;">${outcomeLabel}</div>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">${j.address||''}</div>
+        <div style="display:flex;gap:8px;">
+          <div style="font-size:11px;font-weight:700;color:var(--navy-light);">${j.callType||''}</div>
+          ${j.ticketAmount ? `<div style="font-size:11px;font-weight:700;color:var(--success);">$${Number(j.ticketAmount).toLocaleString()}</div>` : ''}
+          <div style="font-size:11px;color:var(--text-muted);">${j.date||''}</div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) { container.innerHTML = '<div style="padding:20px;color:var(--danger);">Error loading jobs.</div>'; }
+}
+
+// ── UI HELPERS ──
+window.showScreen = function(id) {
+  document.querySelectorAll('#app > div:not(#loading)').forEach(d => d.classList.add('hidden'));
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('hidden');
+  el.classList.add('fade-in');
+  setTimeout(() => el.classList.remove('fade-in'), 300);
+  if (id === 'screen-kpi') loadKPI();
+  if (id === 'screen-jobs') loadPastJobs();
+  if (id === 'screen-home') loadHomeData();
+};
+
+window.toggleCheck = function(el) { el.classList.toggle('checked'); };
+
+window.cycleInspect = function(el) {
+  if (!el.classList.contains('ok') && !el.classList.contains('flagged')) {
+    el.classList.add('ok'); el.querySelector('.inspect-status').textContent = 'OK';
+  } else if (el.classList.contains('ok')) {
+    el.classList.remove('ok'); el.classList.add('flagged'); el.querySelector('.inspect-status').textContent = 'Flagged';
+  } else {
+    el.classList.remove('flagged'); el.querySelector('.inspect-status').textContent = 'Tap to note';
+  }
+};
+
+window.toggleOpp = function(el) {
+  el.classList.toggle('added');
+  el.querySelector('.opp-add').textContent = el.classList.contains('added') ? '✓ Added' : '+ Add';
+};
+
+</script>
+</body>
+</html>
