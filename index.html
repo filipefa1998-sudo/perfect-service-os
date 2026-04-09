@@ -6,1190 +6,1192 @@
 <title>Perfect Service OS</title>
 <style>
   :root {
-    --navy: #0C2340;
-    --navy-mid: #163558;
-    --navy-light: #1e4a7a;
-    --gold: #C9973A;
-    --gold-light: #E8B96A;
-    --gold-pale: #FDF3E3;
-    --white: #FFFFFF;
-    --surface: #F4F7FB;
-    --surface2: #E8EEF6;
-    --text-primary: #0C2340;
-    --text-secondary: #4A6080;
-    --text-muted: #7A95B0;
-    --border: rgba(12,35,64,0.12);
-    --success: #1D9E75;
-    --danger: #E24B4A;
-    --font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --navy:#0C2340;--navy-mid:#163558;--navy-light:#1e4a7a;
+    --gold:#C9973A;--gold-light:#E8B96A;--gold-pale:#FDF3E3;
+    --white:#FFFFFF;--surface:#F4F7FB;--surface2:#E8EEF6;
+    --text-primary:#0C2340;--text-secondary:#4A6080;--text-muted:#7A95B0;
+    --border:rgba(12,35,64,0.12);--success:#1D9E75;--danger:#E24B4A;
+    --font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  html, body { height: 100%; overflow: hidden; }
-  body { font-family: var(--font-ui); background: #0C2340; display: flex; align-items: center; justify-content: center; }
-
-  .app { width: 100%; max-width: 430px; height: 100vh; max-height: 900px; background: var(--white); display: flex; flex-direction: column; overflow: hidden; position: relative; }
-
-  /* ── TOPBAR ── */
-  .topbar { background: var(--navy); color: var(--white); padding: 14px 20px 12px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
-  .topbar-brand { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: var(--gold-light); text-transform: uppercase; }
-  .topbar-title { font-size: 15px; font-weight: 600; color: var(--white); }
-  .topbar-back { font-size: 13px; color: var(--gold-light); cursor: pointer; padding: 4px 0; }
-  .topbar-action { font-size: 13px; color: var(--gold-light); cursor: pointer; }
-
-  /* ── PROGRESS ── */
-  .progress-bar { background: var(--navy-mid); height: 3px; flex-shrink: 0; }
-  .progress-fill { height: 3px; background: var(--gold); transition: width 0.4s ease; }
-
-  /* ── SCROLLABLE BODY ── */
-  .screen-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-
-  /* ── BOTTOM BAR ── */
-  .bottom-bar { padding: 14px 20px 18px; border-top: 1px solid var(--border); background: var(--white); flex-shrink: 0; }
-  .btn-primary { width: 100%; background: var(--gold); color: var(--navy); font-size: 16px; font-weight: 700; padding: 16px; border: none; border-radius: 10px; cursor: pointer; transition: all 0.15s; }
-  .btn-primary:active { transform: scale(0.98); }
-  .btn-navy { width: 100%; background: var(--navy); color: var(--white); font-size: 16px; font-weight: 700; padding: 16px; border: none; border-radius: 10px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-  .btn-navy:active { transform: scale(0.98); }
-
-  /* ── NAV TABS ── */
-  .nav-tabs { display: flex; background: var(--surface); border-top: 1px solid var(--border); flex-shrink: 0; }
-  .nav-tab { flex: 1; padding: 11px 8px 10px; text-align: center; cursor: pointer; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); border-top: 2px solid transparent; transition: all 0.15s; }
-  .nav-tab.active { color: var(--navy); border-top-color: var(--gold); }
-
-  /* ── AUTH SCREEN ── */
-  #screen-auth { flex: 1; display: flex; flex-direction: column; }
-  .auth-header { background: var(--navy); padding: 48px 28px 36px; text-align: center; }
-  .auth-logo { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold-light); margin-bottom: 8px; }
-  .auth-title { font-size: 28px; font-weight: 800; color: var(--white); line-height: 1.2; margin-bottom: 6px; }
-  .auth-sub { font-size: 14px; color: rgba(255,255,255,0.5); }
-  .auth-body { padding: 32px 24px; flex: 1; }
-  .auth-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); margin-bottom: 6px; }
-  .auth-input { width: 100%; border: 1.5px solid var(--border); border-radius: 10px; padding: 14px 16px; font-size: 16px; font-family: var(--font-ui); color: var(--text-primary); background: var(--surface); outline: none; margin-bottom: 16px; transition: border-color 0.15s; }
-  .auth-input:focus { border-color: var(--navy-light); background: var(--white); }
-  .auth-error { background: #FCEBEB; border-radius: 8px; padding: 12px 14px; font-size: 13px; color: #A32D2D; margin-bottom: 16px; display: none; }
-  .auth-switch { text-align: center; margin-top: 16px; font-size: 13px; color: var(--text-muted); }
-  .auth-switch span { color: var(--navy); font-weight: 700; cursor: pointer; }
-
-  /* ── HOME ── */
-  .home-header { background: var(--navy); padding: 24px 24px 20px; }
-  .home-greeting { font-size: 12px; color: var(--gold-light); font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 4px; }
-  .home-name { font-size: 24px; font-weight: 800; color: var(--white); margin-bottom: 2px; }
-  .home-sub { font-size: 13px; color: rgba(255,255,255,0.5); }
-  .home-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px; background: rgba(255,255,255,0.1); margin: 16px 0 0; border-radius: 10px; overflow: hidden; }
-  .home-stat { background: rgba(255,255,255,0.06); padding: 14px 8px; text-align: center; }
-  .home-stat-val { font-size: 20px; font-weight: 800; color: var(--gold-light); }
-  .home-stat-label { font-size: 9px; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.07em; margin-top: 2px; }
-  .home-body { padding: 20px; }
-  .quick-links { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
-  .quick-link { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; cursor: pointer; transition: all 0.15s; }
-  .quick-link:active { background: var(--surface2); }
-  .quick-link-icon { font-size: 20px; margin-bottom: 6px; }
-  .quick-link-label { font-size: 13px; font-weight: 700; color: var(--text-primary); }
-  .quick-link-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-
-  /* ── CALL TYPE ── */
-  .call-types-body { padding: 20px; }
-  .screen-title { font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px; }
-  .screen-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 18px; }
-  .call-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .call-type-btn { background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px; padding: 14px 12px; cursor: pointer; text-align: left; transition: all 0.15s; }
-  .call-type-btn.selected { border-color: var(--navy); background: var(--navy); }
-  .call-type-btn.selected .ct-label { color: var(--white); }
-  .call-type-btn.selected .ct-icon { background: var(--gold); color: var(--navy); }
-  .ct-icon { width: 30px; height: 30px; border-radius: 7px; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 13px; margin-bottom: 7px; transition: all 0.15s; }
-  .ct-label { font-size: 12px; font-weight: 700; color: var(--text-primary); transition: color 0.15s; }
-
-  /* ── JOB DASHBOARD ── */
-  .job-card { background: var(--navy); padding: 18px 24px; }
-  .job-customer { font-size: 20px; font-weight: 800; color: var(--white); }
-  .job-address { font-size: 13px; color: rgba(255,255,255,0.55); margin-top: 2px; }
-  .job-meta { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
-  .job-badge { background: rgba(255,255,255,0.1); border-radius: 5px; padding: 4px 10px; font-size: 11px; font-weight: 700; color: var(--gold-light); text-transform: uppercase; letter-spacing: 0.05em; }
-  .step-list { padding: 14px 18px; }
-  .step-item { display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-radius: 10px; margin-bottom: 7px; cursor: pointer; border: 1.5px solid var(--border); background: var(--surface); transition: all 0.15s; }
-  .step-item.active { background: var(--navy); border-color: var(--navy); }
-  .step-item.active .step-name { color: var(--white); font-weight: 700; }
-  .step-item.active .step-num { background: var(--gold); color: var(--navy); }
-  .step-item.done { opacity: 0.7; }
-  .step-num { width: 28px; height: 28px; border-radius: 50%; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--text-secondary); flex-shrink: 0; transition: all 0.15s; }
-  .step-num.check { background: var(--success); color: var(--white); }
-  .step-name { font-size: 14px; color: var(--text-primary); font-weight: 500; flex: 1; }
-  .step-arrow { font-size: 11px; color: var(--text-muted); }
-
-  /* ── STEP SCREENS ── */
-  .step-header { background: var(--navy); padding: 18px 24px; flex-shrink: 0; }
-  .step-label { font-size: 10px; color: var(--gold-light); font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; margin-bottom: 3px; }
-  .step-title { font-size: 22px; font-weight: 800; color: var(--white); }
-  .step-content { padding: 18px 20px; }
-
-  /* Script */
-  .script-box { background: var(--gold-pale); border-left: 4px solid var(--gold); border-radius: 8px; padding: 14px 16px; margin-bottom: 18px; }
-  .script-box-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.09em; color: var(--gold); margin-bottom: 6px; }
-  .script-box-text { font-size: 14px; color: var(--navy); line-height: 1.65; font-style: italic; }
-
-  /* Checklist */
-  .check-section-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 10px; }
-  .check-item { display: flex; align-items: center; gap: 12px; padding: 13px 14px; background: var(--surface); border-radius: 8px; margin-bottom: 8px; cursor: pointer; border: 1.5px solid var(--border); transition: all 0.15s; }
-  .check-item.checked { background: #EAF7F2; border-color: var(--success); }
-  .check-item.checked .check-label { color: var(--text-secondary); text-decoration: line-through; }
-  .check-box { width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: var(--white); transition: all 0.15s; }
-  .check-item.checked .check-box { background: var(--success); border-color: var(--success); }
-  .check-mark { color: white; font-size: 11px; font-weight: 700; display: none; }
-  .check-item.checked .check-mark { display: block; }
-  .check-label { font-size: 14px; color: var(--text-primary); font-weight: 500; }
-
-  /* Discovery */
-  .discovery-q { margin-bottom: 16px; }
-  .discovery-q-label { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
-  .discovery-q-sub { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; }
-  .discovery-input { width: 100%; border: 1.5px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 14px; font-family: var(--font-ui); color: var(--text-primary); background: var(--surface); outline: none; min-height: 64px; resize: none; transition: border-color 0.15s; }
-  .discovery-input:focus { border-color: var(--navy-light); background: var(--white); }
-
-  /* Inspect */
-  .section-divider { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin: 18px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
-  .inspect-item { display: flex; align-items: center; gap: 12px; padding: 13px 14px; background: var(--surface); border-radius: 8px; margin-bottom: 8px; cursor: pointer; border: 1.5px solid var(--border); transition: all 0.15s; }
-  .inspect-item.flagged { background: #FFF8EC; border-color: var(--gold); }
-  .inspect-item.ok { background: #EAF7F2; border-color: var(--success); }
-  .inspect-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border); flex-shrink: 0; transition: all 0.15s; }
-  .inspect-item.flagged .inspect-dot { background: var(--gold); }
-  .inspect-item.ok .inspect-dot { background: var(--success); }
-  .inspect-label { flex: 1; font-size: 14px; font-weight: 500; color: var(--text-primary); }
-  .inspect-status { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
-  .inspect-item.flagged .inspect-status { color: var(--gold); }
-  .inspect-item.ok .inspect-status { color: var(--success); }
-  .opp-flag { display: flex; align-items: center; gap: 10px; background: #FFF8EC; border: 1.5px solid var(--gold); border-radius: 8px; padding: 12px 14px; margin-bottom: 8px; cursor: pointer; transition: all 0.15s; }
-  .opp-flag.added { background: #EAF7F2; border-color: var(--success); }
-  .opp-text { flex: 1; font-size: 13px; font-weight: 600; color: var(--navy); }
-  .opp-add { font-size: 10px; font-weight: 800; color: var(--gold); text-transform: uppercase; }
-  .opp-flag.added .opp-add { color: var(--success); }
-
-  /* Photos */
-  .photo-counter { display: flex; align-items: center; gap: 10px; background: var(--navy); border-radius: 8px; padding: 14px 16px; margin-bottom: 18px; }
-  .photo-counter-text { flex: 1; font-size: 14px; color: var(--white); font-weight: 600; }
-  .photo-counter-num { font-size: 20px; font-weight: 800; color: var(--gold-light); }
-  .photo-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-  .photo-slot { aspect-ratio: 1; border-radius: 8px; border: 2px dashed var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: var(--surface); transition: all 0.15s; }
-  .photo-slot.captured { border: 2px solid var(--success); background: #EAF7F2; }
-  .photo-slot-icon { font-size: 22px; margin-bottom: 4px; }
-  .photo-slot-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); text-align: center; padding: 0 4px; }
-
-  /* Options */
-  .option-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
-  .option-card.best { border-color: var(--gold); background: var(--gold-pale); }
-  .option-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-  .option-tier { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; padding: 4px 10px; border-radius: 20px; }
-  .tier-good { background: var(--surface2); color: var(--text-secondary); }
-  .tier-better { background: #E6F1FB; color: #185FA5; }
-  .tier-best { background: var(--gold-pale); color: #854F0B; border: 1px solid var(--gold); }
-  .option-price-row { display: flex; align-items: center; gap: 4px; }
-  .option-dollar { font-size: 20px; font-weight: 800; color: var(--navy); }
-  .option-price-input { border: none; font-size: 20px; font-weight: 800; color: var(--navy); background: transparent; outline: none; font-family: var(--font-ui); width: 90px; }
-  .option-input { width: 100%; border: 1.5px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 13px; font-family: var(--font-ui); color: var(--text-primary); background: var(--white); margin-bottom: 8px; outline: none; }
-  .option-input:focus { border-color: var(--navy-light); }
-  textarea.option-input { resize: none; height: 58px; }
-
-  /* Objection */
-  .obj-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
-  .obj-btn { background: var(--surface); border: 1.5px solid var(--border); border-radius: 8px; padding: 12px 10px; cursor: pointer; text-align: center; font-size: 12px; font-weight: 700; color: var(--text-primary); transition: all 0.15s; }
-  .obj-btn.selected { background: var(--navy); color: var(--white); border-color: var(--navy); }
-  .obj-response { background: var(--surface); border-radius: 10px; padding: 16px; border: 1.5px solid var(--border); display: none; }
-  .obj-response.visible { display: block; }
-  .obj-section { margin-bottom: 14px; }
-  .obj-section:last-child { margin-bottom: 0; }
-  .obj-section-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 6px; }
-  .obj-section-text { font-size: 13px; color: var(--text-primary); line-height: 1.6; }
-  .obj-section-text.script { font-style: italic; color: var(--navy); background: var(--gold-pale); padding: 10px 12px; border-radius: 6px; border-left: 3px solid var(--gold); }
-
-  /* KPI */
-  .kpi-period { display: flex; gap: 8px; margin-bottom: 18px; }
-  .period-btn { flex: 1; padding: 8px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--surface); font-size: 12px; font-weight: 700; color: var(--text-secondary); cursor: pointer; text-align: center; transition: all 0.15s; }
-  .period-btn.active { background: var(--navy); color: var(--white); border-color: var(--navy); }
-  .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
-  .kpi-card { background: var(--surface); border-radius: 10px; padding: 14px; }
-  .kpi-val { font-size: 26px; font-weight: 800; color: var(--navy); }
-  .kpi-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
-  .kpi-bar-section { margin-bottom: 14px; }
-  .kpi-bar-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-bottom: 6px; }
-  .kpi-bar-track { background: var(--surface2); border-radius: 4px; height: 8px; }
-  .kpi-bar-fill { height: 8px; border-radius: 4px; background: var(--navy); transition: width 0.6s ease; }
-  .kpi-bar-fill.gold { background: var(--gold); }
-  .kpi-bar-fill.success { background: var(--success); }
-
-  /* Utility */
-  .hidden { display: none !important; }
-  .fade-in { animation: fi 0.22s ease; }
-  @keyframes fi { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
-  .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-overlay { position: absolute; inset: 0; background: var(--navy); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; z-index: 100; }
-  .loading-overlay span { color: var(--gold-light); font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;overflow:hidden;}
+  body{font-family:var(--font);background:#0C2340;display:flex;align-items:center;justify-content:center;}
+  .app{width:100%;max-width:430px;height:100vh;max-height:900px;background:var(--white);display:flex;flex-direction:column;overflow:hidden;position:relative;}
+  .topbar{background:var(--navy);padding:14px 20px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+  .tb-brand{font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--gold-light);text-transform:uppercase;}
+  .tb-title{font-size:15px;font-weight:700;color:#fff;}
+  .tb-back{font-size:13px;color:var(--gold-light);cursor:pointer;}
+  .tb-action{font-size:13px;color:var(--gold-light);cursor:pointer;font-weight:700;}
+  .pbar{background:var(--navy-mid);height:3px;flex-shrink:0;}
+  .pfill{height:3px;background:var(--gold);transition:width .4s;}
+  .sbody{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  .bbar{padding:14px 20px 18px;border-top:1px solid var(--border);background:#fff;flex-shrink:0;}
+  .btn-gold{width:100%;background:var(--gold);color:var(--navy);font-size:16px;font-weight:800;padding:16px;border:none;border-radius:10px;cursor:pointer;}
+  .btn-gold:active{transform:scale(.98);}
+  .btn-navy{width:100%;background:var(--navy);color:#fff;font-size:16px;font-weight:800;padding:16px;border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .btn-navy:active{transform:scale(.98);}
+  .btn-ghost{width:100%;background:transparent;color:var(--text-secondary);font-size:14px;font-weight:600;padding:12px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;margin-top:10px;}
+  .navtabs{display:flex;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;}
+  .ntab{flex:1;padding:11px 8px 10px;text-align:center;cursor:pointer;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);border-top:2px solid transparent;}
+  .ntab.active{color:var(--navy);border-top-color:var(--gold);}
+  /* setup */
+  .sh{background:var(--navy);padding:48px 28px 40px;text-align:center;}
+  .sl{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-light);margin-bottom:10px;}
+  .st{font-size:30px;font-weight:800;color:#fff;line-height:1.15;margin-bottom:8px;}
+  .ss{font-size:14px;color:rgba(255,255,255,.5);}
+  .sb{padding:28px 24px;}
+  .fl{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:7px;}
+  .fi{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;font-size:16px;font-family:var(--font);color:var(--text-primary);background:var(--surface);outline:none;margin-bottom:18px;}
+  .fi:focus{border-color:var(--navy-light);background:#fff;}
+  .avrow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
+  .avopt{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;border:2.5px solid transparent;background:var(--surface2);}
+  .avopt.sel{border-color:var(--gold);background:var(--gold-pale);}
+  /* home */
+  .hh{background:var(--navy);padding:22px 24px 20px;}
+  .hg{font-size:11px;color:var(--gold-light);font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px;}
+  .hn{font-size:24px;font-weight:800;color:#fff;margin-bottom:2px;}
+  .hc{font-size:13px;color:rgba(255,255,255,.5);}
+  .hstats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:rgba(255,255,255,.1);margin:16px 0 0;border-radius:10px;overflow:hidden;}
+  .hstat{background:rgba(255,255,255,.06);padding:14px 8px;text-align:center;}
+  .hsv{font-size:20px;font-weight:800;color:var(--gold-light);}
+  .hsl{font-size:9px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.07em;margin-top:2px;}
+  .hbody{padding:20px;}
+  .qlinks{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
+  .ql{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;}
+  .ql:active{background:var(--surface2);}
+  .qli{font-size:20px;margin-bottom:6px;}
+  .qll{font-size:13px;font-weight:700;color:var(--text-primary);}
+  .qls{font-size:11px;color:var(--text-muted);margin-top:2px;}
+  /* profile screen */
+  .pav{width:72px;height:72px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 16px;}
+  .pname{font-size:22px;font-weight:800;color:var(--text-primary);text-align:center;margin-bottom:4px;}
+  .pco{font-size:14px;color:var(--text-muted);text-align:center;margin-bottom:24px;}
+  .psgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+  .pscard{background:var(--surface);border-radius:10px;padding:16px;text-align:center;}
+  .pscv{font-size:24px;font-weight:800;color:var(--navy);}
+  .pscl{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin-top:3px;}
+  /* call types */
+  .ctbody{padding:20px;}
+  .scrt{font-size:18px;font-weight:800;color:var(--text-primary);margin-bottom:4px;}
+  .scrs{font-size:13px;color:var(--text-secondary);margin-bottom:18px;}
+  .cgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .ctb{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:14px 12px;cursor:pointer;text-align:left;}
+  .ctb.sel{border-color:var(--navy);background:var(--navy);}
+  .ctb.sel .ctl{color:#fff;}
+  .ctb.sel .cti{background:var(--gold);color:var(--navy);}
+  .cti{width:30px;height:30px;border-radius:7px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:13px;margin-bottom:7px;}
+  .ctl{font-size:12px;font-weight:700;color:var(--text-primary);}
+  /* dashboard */
+  .jcard{background:var(--navy);padding:18px 24px;}
+  .jcust{font-size:20px;font-weight:800;color:#fff;}
+  .jaddr{font-size:13px;color:rgba(255,255,255,.55);margin-top:2px;}
+  .jmeta{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+  .jbadge{background:rgba(255,255,255,.1);border-radius:5px;padding:4px 10px;font-size:11px;font-weight:700;color:var(--gold-light);text-transform:uppercase;letter-spacing:.05em;}
+  .slist{padding:14px 18px;}
+  .sitem{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:10px;margin-bottom:7px;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);}
+  .sitem.active{background:var(--navy);border-color:var(--navy);}
+  .sitem.active .sname{color:#fff;font-weight:700;}
+  .sitem.active .snum{background:var(--gold);color:var(--navy);}
+  .sitem.done{opacity:.65;}
+  .snum{width:28px;height:28px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--text-secondary);flex-shrink:0;}
+  .snum.chk{background:var(--success);color:#fff;}
+  .sname{font-size:14px;color:var(--text-primary);font-weight:500;flex:1;}
+  /* step */
+  .stephead{background:var(--navy);padding:18px 24px;flex-shrink:0;}
+  .steplbl{font-size:10px;color:var(--gold-light);font-weight:700;text-transform:uppercase;letter-spacing:.09em;margin-bottom:3px;}
+  .steptit{font-size:22px;font-weight:800;color:#fff;}
+  .stepcont{padding:18px 20px;}
+  .sbox{background:var(--gold-pale);border-left:4px solid var(--gold);border-radius:8px;padding:14px 16px;margin-bottom:18px;}
+  .sboxl{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:var(--gold);margin-bottom:6px;}
+  .sboxt{font-size:14px;color:var(--navy);line-height:1.65;font-style:italic;}
+  .chtit{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:10px;}
+  .chi{display:flex;align-items:center;gap:12px;padding:13px 14px;background:var(--surface);border-radius:8px;margin-bottom:8px;cursor:pointer;border:1.5px solid var(--border);}
+  .chi.chk{background:#EAF7F2;border-color:var(--success);}
+  .chi.chk .chl{color:var(--text-secondary);text-decoration:line-through;}
+  .chb{width:22px;height:22px;border-radius:6px;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#fff;}
+  .chi.chk .chb{background:var(--success);border-color:var(--success);}
+  .chm{color:#fff;font-size:11px;font-weight:700;display:none;}
+  .chi.chk .chm{display:block;}
+  .chl{font-size:14px;color:var(--text-primary);font-weight:500;}
+  .dq{margin-bottom:16px;}
+  .dql{font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:4px;}
+  .dqs{font-size:11px;color:var(--text-muted);margin-bottom:6px;}
+  .dqi{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;font-family:var(--font);color:var(--text-primary);background:var(--surface);outline:none;min-height:64px;resize:none;}
+  .dqi:focus{border-color:var(--navy-light);background:#fff;}
+  .sdiv{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+  .insp{display:flex;align-items:center;gap:12px;padding:13px 14px;background:var(--surface);border-radius:8px;margin-bottom:8px;cursor:pointer;border:1.5px solid var(--border);}
+  .insp.ok{background:#EAF7F2;border-color:var(--success);}
+  .insp.flag{background:#FFF8EC;border-color:var(--gold);}
+  .idot{width:10px;height:10px;border-radius:50%;background:var(--border);flex-shrink:0;}
+  .insp.ok .idot{background:var(--success);}
+  .insp.flag .idot{background:var(--gold);}
+  .ilbl{flex:1;font-size:14px;font-weight:500;color:var(--text-primary);}
+  .istat{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-muted);}
+  .insp.ok .istat{color:var(--success);}
+  .insp.flag .istat{color:var(--gold);}
+  .opp{display:flex;align-items:center;gap:10px;background:#FFF8EC;border:1.5px solid var(--gold);border-radius:8px;padding:12px 14px;margin-bottom:8px;cursor:pointer;}
+  .opp.added{background:#EAF7F2;border-color:var(--success);}
+  .oppt{flex:1;font-size:13px;font-weight:600;color:var(--navy);}
+  .oppa{font-size:10px;font-weight:800;color:var(--gold);text-transform:uppercase;}
+  .opp.added .oppa{color:var(--success);}
+  .photoctr{display:flex;align-items:center;gap:10px;background:var(--navy);border-radius:8px;padding:14px 16px;margin-bottom:18px;}
+  .photoctrt{flex:1;font-size:14px;color:#fff;font-weight:600;}
+  .photoctrn{font-size:20px;font-weight:800;color:var(--gold-light);}
+  .pgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;}
+  .pslot{aspect-ratio:1;border-radius:8px;border:2px dashed var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:var(--surface);}
+  .pslot.cap{border:2px solid var(--success);background:#EAF7F2;}
+  .psli{font-size:22px;margin-bottom:4px;}
+  .psll{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);text-align:center;padding:0 4px;}
+  .optcard{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;}
+  .optcard.best{border-color:var(--gold);background:var(--gold-pale);}
+  .opth{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .otier{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;padding:4px 10px;border-radius:20px;}
+  .t-good{background:var(--surface2);color:var(--text-secondary);}
+  .t-better{background:#E6F1FB;color:#185FA5;}
+  .t-best{background:var(--gold-pale);color:#854F0B;border:1px solid var(--gold);}
+  .optpr{display:flex;align-items:center;gap:4px;}
+  .optd{font-size:20px;font-weight:800;color:var(--navy);}
+  .optpi{border:none;font-size:20px;font-weight:800;color:var(--navy);background:transparent;outline:none;font-family:var(--font);width:90px;}
+  .opti{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:13px;font-family:var(--font);color:var(--text-primary);background:#fff;margin-bottom:8px;outline:none;}
+  textarea.opti{resize:none;height:58px;}
+  .objgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
+  .objbtn{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:12px 10px;cursor:pointer;text-align:center;font-size:12px;font-weight:700;color:var(--text-primary);}
+  .objbtn.sel{background:var(--navy);color:#fff;border-color:var(--navy);}
+  .objres{background:var(--surface);border-radius:10px;padding:16px;border:1.5px solid var(--border);display:none;}
+  .objres.vis{display:block;}
+  .objsec{margin-bottom:14px;}
+  .objsec:last-child{margin-bottom:0;}
+  .objsl{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:6px;}
+  .objst{font-size:13px;color:var(--text-primary);line-height:1.6;}
+  .objst.script{font-style:italic;color:var(--navy);background:var(--gold-pale);padding:10px 12px;border-radius:6px;border-left:3px solid var(--gold);}
+  .kpiper{display:flex;gap:8px;margin-bottom:18px;}
+  .kpibtn{flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);font-size:12px;font-weight:700;color:var(--text-secondary);cursor:pointer;text-align:center;}
+  .kpibtn.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+  .kpigrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;}
+  .kpicard{background:var(--surface);border-radius:10px;padding:14px;}
+  .kpiv{font-size:26px;font-weight:800;color:var(--navy);}
+  .kpil{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
+  .bars{margin-bottom:14px;}
+  .barl{display:flex;justify-content:space-between;font-size:12px;color:var(--text-secondary);font-weight:600;margin-bottom:6px;}
+  .bart{background:var(--surface2);border-radius:4px;height:8px;}
+  .barf{height:8px;border-radius:4px;background:var(--navy);transition:width .6s;}
+  .barf.gold{background:var(--gold);}
+  .barf.succ{background:var(--success);}
+  .hidden{display:none!important;}
+  .fade{animation:fi .2s ease;}
+  @keyframes fi{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+  .spin{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .6s linear infinite;}
+  @keyframes sp{to{transform:rotate(360deg);}}
+  .overlay{position:absolute;inset:0;background:var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:100;}
+  .overlay span{color:var(--gold-light);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
+  .dangerbtn{background:transparent;border:none;color:var(--danger);font-size:13px;font-weight:700;cursor:pointer;padding:10px 0;width:100%;text-align:center;margin-top:8px;}
 </style>
 </head>
 <body>
 <div class="app" id="app">
 
-  <!-- LOADING -->
-  <div class="loading-overlay" id="loading">
-    <div class="spinner"></div>
-    <span>Perfect Service OS</span>
-  </div>
+  <div class="overlay" id="loading"><div class="spin"></div><span>Perfect Service OS</span></div>
 
-  <!-- ═══════════════════════════════════ AUTH ═══════════════════════════════════ -->
-  <div id="screen-auth" class="hidden" style="display:flex;flex-direction:column;flex:1;">
-    <div class="auth-header">
-      <div class="auth-logo">Perfect Service OS</div>
-      <div class="auth-title">Close More.<br>Every Call.</div>
-      <div class="auth-sub">Built for plumbing professionals</div>
-    </div>
-    <div class="auth-body screen-body">
-      <div id="auth-error" class="auth-error"></div>
-      <div id="auth-login-form">
-        <div class="auth-label">Email</div>
-        <input class="auth-input" type="email" id="login-email" placeholder="you@company.com" autocomplete="email" />
-        <div class="auth-label">Password</div>
-        <input class="auth-input" type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" />
-        <button class="btn-navy" id="btn-login" onclick="doLogin()">Sign In</button>
-        <div class="auth-switch">Don't have an account? <span onclick="showAuthMode('register')">Create one</span></div>
+  <!-- SETUP -->
+  <div id="s-setup" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="sh"><div class="sl">Perfect Service OS</div><div class="st">Let's set up<br>your profile.</div><div class="ss">Takes 30 seconds. You'll only see this once.</div></div>
+    <div class="sbody"><div class="sb">
+      <div class="fl">Your Name</div>
+      <input class="fi" type="text" id="su-name" placeholder="e.g. Jake Tuilagi" autocomplete="name" />
+      <div class="fl">Company</div>
+      <input class="fi" type="text" id="su-company" placeholder="e.g. All Star Plumbing" />
+      <div class="fl">Role / Title</div>
+      <input class="fi" type="text" id="su-role" placeholder="e.g. Lead Technician" />
+      <div class="fl">Pick Your Avatar</div>
+      <div class="avrow" id="av-setup">
+        <div class="avopt sel" onclick="pickAv(this,'🔧','setup')">🔧</div>
+        <div class="avopt" onclick="pickAv(this,'⚡','setup')">⚡</div>
+        <div class="avopt" onclick="pickAv(this,'🛠️','setup')">🛠️</div>
+        <div class="avopt" onclick="pickAv(this,'💧','setup')">💧</div>
+        <div class="avopt" onclick="pickAv(this,'🔥','setup')">🔥</div>
+        <div class="avopt" onclick="pickAv(this,'⚙️','setup')">⚙️</div>
       </div>
-      <div id="auth-register-form" class="hidden">
-        <div class="auth-label">Full Name</div>
-        <input class="auth-input" type="text" id="reg-name" placeholder="Jake Tuilagi" autocomplete="name" />
-        <div class="auth-label">Email</div>
-        <input class="auth-input" type="email" id="reg-email" placeholder="you@company.com" autocomplete="email" />
-        <div class="auth-label">Password</div>
-        <input class="auth-input" type="password" id="reg-password" placeholder="Min 6 characters" autocomplete="new-password" />
-        <button class="btn-navy" id="btn-register" onclick="doRegister()">Create Account</button>
-        <div class="auth-switch">Already have an account? <span onclick="showAuthMode('login')">Sign in</span></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════ HOME ═══════════════════════════════════ -->
-  <div id="screen-home" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
-    <div class="topbar">
-      <span class="topbar-brand">Perfect Service OS</span>
-      <span class="topbar-action" onclick="doLogout()" style="font-size:12px;">Sign Out</span>
-    </div>
-    <div class="screen-body">
-      <div class="home-header">
-        <div class="home-greeting">Good to see you</div>
-        <div class="home-name" id="home-name">Loading...</div>
-        <div class="home-sub" id="home-company">Technician</div>
-        <div class="home-stats">
-          <div class="home-stat"><div class="home-stat-val" id="stat-calls">–</div><div class="home-stat-label">Calls Today</div></div>
-          <div class="home-stat"><div class="home-stat-val" id="stat-close">–</div><div class="home-stat-label">Close Rate</div></div>
-          <div class="home-stat"><div class="home-stat-val" id="stat-ticket">–</div><div class="home-stat-label">Avg Ticket</div></div>
-        </div>
-      </div>
-      <div class="home-body">
-        <button class="btn-primary" onclick="startNewJob()">Start New Job</button>
-        <div class="quick-links">
-          <div class="quick-link" onclick="showScreen('screen-jobs')">
-            <div class="quick-link-icon">📋</div>
-            <div class="quick-link-label">Past Jobs</div>
-            <div class="quick-link-sub">View history</div>
-          </div>
-          <div class="quick-link" onclick="showScreen('screen-kpi')">
-            <div class="quick-link-icon">📊</div>
-            <div class="quick-link-label">My Stats</div>
-            <div class="quick-link-sub">Performance</div>
-          </div>
-          <div class="quick-link" onclick="showScreen('screen-objections-ref')">
-            <div class="quick-link-icon">💬</div>
-            <div class="quick-link-label">Objections</div>
-            <div class="quick-link-sub">Quick reference</div>
-          </div>
-          <div class="quick-link" onclick="showScreen('screen-scripts')">
-            <div class="quick-link-icon">🎯</div>
-            <div class="quick-link-label">Scripts</div>
-            <div class="quick-link-sub">Full library</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="nav-tabs">
-      <div class="nav-tab active" onclick="showScreen('screen-home')">Home</div>
-      <div class="nav-tab" onclick="showScreen('screen-kpi')">Stats</div>
-      <div class="nav-tab" onclick="showScreen('screen-jobs')">Jobs</div>
-      <div class="nav-tab" onclick="showScreen('screen-objections-ref')">Scripts</div>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════ CALL TYPE ═══════════════════════════════════ -->
-  <div id="screen-calltype" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
-    <div class="topbar">
-      <span class="topbar-back" onclick="showScreen('screen-home')">← Back</span>
-      <span class="topbar-title">New Job</span>
-      <span></span>
-    </div>
-    <div class="screen-body">
-      <div class="call-types-body">
-        <div class="screen-title">What's the call type?</div>
-        <div class="screen-sub">Select to load the right inspection checklist.</div>
-        <div class="call-grid" id="call-type-grid">
-          <div class="call-type-btn" onclick="selectCallType(this,'Water Heater')"><div class="ct-icon">🔥</div><div class="ct-label">Water Heater</div></div>
-          <div class="call-type-btn" onclick="selectCallType(this,'Drain')"><div class="ct-icon">🌀</div><div class="ct-label">Drain</div></div>
-          <div class="call-type-btn" onclick="selectCallType(this,'Leak')"><div class="ct-icon">💧</div><div class="ct-label">Leak</div></div>
-          <div class="call-type-btn" onclick="selectCallType(this,'Toilet')"><div class="ct-icon">🚽</div><div class="ct-label">Toilet</div></div>
-          <div class="call-type-btn" onclick="selectCallType(this,'Faucet')"><div class="ct-icon">🚰</div><div class="ct-label">Faucet</div></div>
-          <div class="call-type-btn" onclick="selectCallType(this,'Sewer')"><div class="ct-icon">⚙️</div><div class="ct-label">Sewer</div></div>
-          <div class="call-type-btn" onclick="selectCallType(this,'Repipe')"><div class="ct-icon">🔧</div><div class="ct-label">Repipe</div></div>
-          <div class="call-type-btn" onclick="selectCallType(this,'Filtration')"><div class="ct-icon">💎</div><div class="ct-label">Filtration</div></div>
-          <div class="call-type-btn" onclick="selectCallType(this,'Pressure')"><div class="ct-icon">📊</div><div class="ct-label">Pressure</div></div>
-          <div class="call-type-btn" onclick="selectCallType(this,'Gas Line')"><div class="ct-icon">⚠️</div><div class="ct-label">Gas Line</div></div>
-          <div class="call-type-btn" onclick="selectCallType(this,'Sump Pump')"><div class="ct-icon">⛽</div><div class="ct-label">Sump Pump</div></div>
-          <div class="call-type-btn" onclick="selectCallType(this,'Emergency')"><div class="ct-icon">🚨</div><div class="ct-label">Emergency</div></div>
-        </div>
-        <div style="margin-top:20px;">
-          <div class="auth-label" style="margin-bottom:6px;">Customer Name</div>
-          <input class="auth-input" type="text" id="job-customer" placeholder="e.g. Sarah Mitchell" style="margin-bottom:12px;" />
-          <div class="auth-label" style="margin-bottom:6px;">Address</div>
-          <input class="auth-input" type="text" id="job-address" placeholder="e.g. 1847 Maple Creek Dr, Riverton" />
-        </div>
-      </div>
-    </div>
-    <div class="bottom-bar">
-      <button class="btn-navy" onclick="createJob()">Start Job Flow →</button>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════ JOB DASHBOARD ═══════════════════════════════════ -->
-  <div id="screen-dashboard" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
-    <div class="topbar">
-      <span class="topbar-back" onclick="showScreen('screen-home')">← Home</span>
-      <span class="topbar-title">Job Overview</span>
-      <span></span>
-    </div>
-    <div class="progress-bar"><div class="progress-fill" id="job-progress-bar" style="width:5%"></div></div>
-    <div class="job-card">
-      <div class="job-customer" id="dash-customer">–</div>
-      <div class="job-address" id="dash-address">–</div>
-      <div class="job-meta">
-        <div class="job-badge" id="dash-calltype">–</div>
-        <div class="job-badge" id="dash-status">In Progress</div>
-      </div>
-    </div>
-    <div class="screen-body">
-      <div class="step-list" id="step-list-container"></div>
-    </div>
-    <div class="bottom-bar">
-      <button class="btn-navy" onclick="goToStep(currentStep)">Continue Step <span id="continue-step-num">1</span> →</button>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════ STEP SCREENS ═══════════════════════════════ -->
-  <!-- Step 0: Pre-Call -->
-  <div id="screen-step-0" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
-    <div class="topbar"><span class="topbar-back" onclick="showScreen('screen-dashboard')">← Overview</span><span class="topbar-title">Step 1 · Pre-Call</span><span></span></div>
-    <div class="progress-bar"><div class="progress-fill" style="width:9%"></div></div>
-    <div class="step-header"><div class="step-label">Step 1 of 11</div><div class="step-title">Pre-Call Prep</div></div>
-    <div class="screen-body"><div class="step-content">
-      <div class="script-box"><div class="script-box-label">Mindset Reset</div><div class="script-box-text">"I'm not just a plumber today. I'm a trusted advisor. My job is to find out what this homeowner needs and give them options to protect their home."</div></div>
-      <div class="check-section-title">Before You Drive</div>
-      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Reviewed call notes and job history</div></div>
-      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Truck stocked and tools ready</div></div>
-      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Tablet charged and working</div></div>
-      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Uniform clean and professional</div></div>
+      <div class="fl">Google Review Link (optional)</div>
+      <input class="fi" type="url" id="su-review" placeholder="https://g.page/your-business/review" style="margin-bottom:8px;" />
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:18px;">Find this in your Google Business Profile. Used on the review ask screen after each job.</div>
     </div></div>
-    <div class="bottom-bar"><button class="btn-navy" onclick="completeStep(0)">Complete & Continue →</button></div>
+    <div class="bbar"><button class="btn-gold" onclick="saveSetup()">Save Profile & Get Started</button></div>
   </div>
 
-  <!-- Step 1: Arrival -->
-  <div id="screen-step-1" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
-    <div class="topbar"><span class="topbar-back" onclick="showScreen('screen-dashboard')">← Overview</span><span class="topbar-title">Step 2 · Arrival</span><span></span></div>
-    <div class="progress-bar"><div class="progress-fill" style="width:18%"></div></div>
-    <div class="step-header"><div class="step-label">Step 2 of 11</div><div class="step-title">Arrival & Setup</div></div>
-    <div class="screen-body"><div class="step-content">
-      <div class="check-section-title">On-Site Checklist</div>
-      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Truck parked professionally</div></div>
-      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Boot covers on before entry</div></div>
-      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Tools organized and clean</div></div>
-      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Tablet ready for photos</div></div>
+  <!-- HOME -->
+  <div id="s-home" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="tb-brand">Perfect Service OS</span><span class="tb-action" onclick="go('s-profile')">Profile</span></div>
+    <div class="sbody">
+      <div class="hh">
+        <div class="hg">Ready to close</div>
+        <div class="hn" id="h-name">–</div>
+        <div class="hc" id="h-co">–</div>
+        <div class="hstats">
+          <div class="hstat"><div class="hsv" id="st-calls">–</div><div class="hsl">Today</div></div>
+          <div class="hstat"><div class="hsv" id="st-close">–</div><div class="hsl">Close Rate</div></div>
+          <div class="hstat"><div class="hsv" id="st-ticket">–</div><div class="hsl">Avg Ticket</div></div>
+        </div>
+      </div>
+      <div class="hbody">
+        <button class="btn-gold" onclick="startJob()">Start New Job</button>
+        <div class="qlinks">
+          <div class="ql" onclick="go('s-jobs')"><div class="qli">📋</div><div class="qll">Past Jobs</div><div class="qls">View history</div></div>
+          <div class="ql" onclick="go('s-kpi')"><div class="qli">📊</div><div class="qll">My Stats</div><div class="qls">Performance</div></div>
+          <div class="ql" onclick="go('s-objref')"><div class="qli">💬</div><div class="qll">Objections</div><div class="qls">Quick reference</div></div>
+          <div class="ql" onclick="go('s-scripts')"><div class="qli">🎯</div><div class="qll">Scripts</div><div class="qls">Full library</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="navtabs">
+      <div class="ntab active" onclick="go('s-home')">Home</div>
+      <div class="ntab" onclick="go('s-kpi')">Stats</div>
+      <div class="ntab" onclick="go('s-jobs')">Jobs</div>
+      <div class="ntab" onclick="go('s-objref')">Scripts</div>
+    </div>
+  </div>
+
+  <!-- PROFILE -->
+  <div id="s-profile" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="tb-back" onclick="go('s-home')">← Home</span><span class="tb-title">My Profile</span><span class="tb-action" onclick="openEditProfile()">Edit</span></div>
+    <div class="sbody"><div style="padding:28px 24px;">
+      <div class="pav" id="p-av">🔧</div>
+      <div class="pname" id="p-name">–</div>
+      <div class="pco" id="p-co">–</div>
+      <div class="psgrid">
+        <div class="pscard"><div class="pscv" id="p-calls">–</div><div class="pscl">Total Calls</div></div>
+        <div class="pscard"><div class="pscv" id="p-rev">–</div><div class="pscl">Total Revenue</div></div>
+      </div>
+      <div id="p-editform" class="hidden">
+        <div class="sdiv">Edit Profile</div>
+        <div class="fl">Your Name</div><input class="fi" type="text" id="ed-name" style="margin-bottom:14px;" />
+        <div class="fl">Company</div><input class="fi" type="text" id="ed-company" style="margin-bottom:14px;" />
+        <div class="fl">Role / Title</div><input class="fi" type="text" id="ed-role" style="margin-bottom:14px;" />
+        <div class="fl">Google Review Link</div><input class="fi" type="url" id="ed-review" style="margin-bottom:14px;" placeholder="https://g.page/your-business/review" />
+        <div class="fl">Avatar</div>
+        <div class="avrow" id="av-edit">
+          <div class="avopt" onclick="pickAv(this,'🔧','edit')">🔧</div>
+          <div class="avopt" onclick="pickAv(this,'⚡','edit')">⚡</div>
+          <div class="avopt" onclick="pickAv(this,'🛠️','edit')">🛠️</div>
+          <div class="avopt" onclick="pickAv(this,'💧','edit')">💧</div>
+          <div class="avopt" onclick="pickAv(this,'🔥','edit')">🔥</div>
+          <div class="avopt" onclick="pickAv(this,'⚙️','edit')">⚙️</div>
+        </div>
+        <button class="btn-navy" onclick="saveEditProfile()" style="margin-top:16px;">Save Changes</button>
+        <button class="btn-ghost" onclick="closeEditProfile()">Cancel</button>
+      </div>
+      <div id="p-danger" style="margin-top:32px;padding-top:20px;border-top:1px solid var(--border);">
+        <div style="font-size:12px;color:var(--text-muted);text-align:center;margin-bottom:8px;">Danger Zone</div>
+        <button class="dangerbtn" onclick="resetAll()">Reset All Data</button>
+      </div>
+    </div></div>
+    <div class="navtabs">
+      <div class="ntab" onclick="go('s-home')">Home</div>
+      <div class="ntab" onclick="go('s-kpi')">Stats</div>
+      <div class="ntab" onclick="go('s-jobs')">Jobs</div>
+      <div class="ntab" onclick="go('s-objref')">Scripts</div>
+    </div>
+  </div>
+
+  <!-- CALL TYPE -->
+  <div id="s-calltype" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="tb-back" onclick="go('s-home')">← Back</span><span class="tb-title">New Job</span><span></span></div>
+    <div class="sbody"><div class="ctbody">
+      <div class="scrt">What's the call type?</div>
+      <div class="scrs">Loads the right inspection checklist.</div>
+      <div class="cgrid" id="ct-grid">
+        <div class="ctb" onclick="selCT(this,'Water Heater')"><div class="cti">🔥</div><div class="ctl">Water Heater</div></div>
+        <div class="ctb" onclick="selCT(this,'Drain')"><div class="cti">🌀</div><div class="ctl">Drain</div></div>
+        <div class="ctb" onclick="selCT(this,'Leak')"><div class="cti">💧</div><div class="ctl">Leak</div></div>
+        <div class="ctb" onclick="selCT(this,'Toilet')"><div class="cti">🚽</div><div class="ctl">Toilet</div></div>
+        <div class="ctb" onclick="selCT(this,'Faucet')"><div class="cti">🚰</div><div class="ctl">Faucet</div></div>
+        <div class="ctb" onclick="selCT(this,'Sewer')"><div class="cti">⚙️</div><div class="ctl">Sewer</div></div>
+        <div class="ctb" onclick="selCT(this,'Repipe')"><div class="cti">🔧</div><div class="ctl">Repipe</div></div>
+        <div class="ctb" onclick="selCT(this,'Filtration')"><div class="cti">💎</div><div class="ctl">Filtration</div></div>
+        <div class="ctb" onclick="selCT(this,'Pressure')"><div class="cti">📊</div><div class="ctl">Pressure</div></div>
+        <div class="ctb" onclick="selCT(this,'Gas Line')"><div class="cti">⚠️</div><div class="ctl">Gas Line</div></div>
+        <div class="ctb" onclick="selCT(this,'Sump Pump')"><div class="cti">⛽</div><div class="ctl">Sump Pump</div></div>
+        <div class="ctb" onclick="selCT(this,'Emergency')"><div class="cti">🚨</div><div class="ctl">Emergency</div></div>
+      </div>
+      <div style="margin-top:20px;">
+        <div class="fl" style="margin-bottom:7px;">Customer Name</div>
+        <input class="fi" type="text" id="j-cust" placeholder="e.g. Sarah Mitchell" style="margin-bottom:14px;" />
+        <div class="fl" style="margin-bottom:7px;">Address</div>
+        <input class="fi" type="text" id="j-addr" placeholder="e.g. 1847 Maple Creek Dr" />
+      </div>
+    </div></div>
+    <div class="bbar"><button class="btn-navy" onclick="createJob()">Start Job Flow →</button></div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="s-dash" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="tb-back" onclick="go('s-home')">← Home</span><span class="tb-title">Job Overview</span><span></span></div>
+    <div class="pbar"><div class="pfill" id="jpbar" style="width:5%"></div></div>
+    <div class="jcard"><div class="jcust" id="d-cust">–</div><div class="jaddr" id="d-addr">–</div><div class="jmeta"><div class="jbadge" id="d-ct">–</div><div class="jbadge">In Progress</div></div></div>
+    <div class="sbody"><div class="slist" id="steplist"></div></div>
+    <div class="bbar"><button class="btn-navy" onclick="goStep(curStep)">Continue →</button></div>
+  </div>
+
+  <!-- STEPS 0-10 -->
+  <!-- S0 Pre-Call -->
+  <div id="s-step-0" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="tb-back" onclick="go('s-dash')">← Overview</span><span class="tb-title">Step 1 of 11</span><span></span></div>
+    <div class="pbar"><div class="pfill" style="width:9%"></div></div>
+    <div class="stephead"><div class="steplbl">Step 1 of 11</div><div class="steptit">Pre-Call Prep</div></div>
+    <div class="sbody"><div class="stepcont">
+      <div class="sbox"><div class="sboxl">Mindset Reset</div><div class="sboxt">"I'm not just a plumber today. I'm a trusted advisor. My job is to find out what this homeowner needs and give them options to protect their home."</div></div>
+      <div class="chtit">Before You Drive</div>
+      <div class="chi" onclick="chk(this)"><div class="chb"><div class="chm">✓</div></div><div class="chl">Reviewed call notes and job history</div></div>
+      <div class="chi" onclick="chk(this)"><div class="chb"><div class="chm">✓</div></div><div class="chl">Truck stocked and tools ready</div></div>
+      <div class="chi" onclick="chk(this)"><div class="chb"><div class="chm">✓</div></div><div class="chl">Tablet charged and working</div></div>
+      <div class="chi" onclick="chk(this)"><div class="chb"><div class="chm">✓</div></div><div class="chl">Uniform clean and professional</div></div>
+    </div></div>
+    <div class="bbar"><button class="btn-navy" onclick="doneStep(0)">Complete & Continue →</button></div>
+  </div>
+  <!-- S1 Arrival -->
+  <div id="s-step-1" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="tb-back" onclick="go('s-dash')">← Overview</span><span class="tb-title">Step 2 of 11</span><span></span></div>
+    <div class="pbar"><div class="pfill" style="width:18%"></div></div>
+    <div class="stephead"><div class="steplbl">Step 2 of 11</div><div class="steptit">Arrival & Setup</div></div>
+    <div class="sbody"><div class="stepcont">
+      <div class="chtit">On-Site Checklist</div>
+      <div class="chi" onclick="chk(this)"><div class="chb"><div class="chm">✓</div></div><div class="chl">Truck parked professionally</div></div>
+      <div class="chi" onclick="chk(this)"><div class="chb"><div class="chm">✓</div></div><div class="chl">Boot covers on before entry</div></div>
+      <div class="chi" onclick="chk(this)"><div class="chb"><div class="chm">✓</div></div><div class="chl">Tools organized and clean</div></div>
+      <div class="chi" onclick="chk(this)"><div class="chb"><div class="chm">✓</div></div><div class="chl">Tablet ready for photos</div></div>
       <div style="background:var(--surface);border-radius:8px;padding:14px 16px;border:1px solid var(--border);margin-top:16px;">
-        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:4px;">Arrival Timestamp</div>
-        <div id="arrival-timestamp" style="font-size:16px;font-weight:800;color:var(--navy);">Not logged yet</div>
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:4px;">Arrival Timestamp</div>
+        <div id="arr-ts" style="font-size:16px;font-weight:800;color:var(--navy);">Not logged yet</div>
       </div>
     </div></div>
-    <div class="bottom-bar"><button class="btn-navy" onclick="logArrivalAndContinue()">Log Arrival & Continue →</button></div>
+    <div class="bbar"><button class="btn-navy" onclick="logArr()">Log Arrival & Continue →</button></div>
   </div>
-
-  <!-- Step 2: Introduction -->
-  <div id="screen-step-2" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
-    <div class="topbar"><span class="topbar-back" onclick="showScreen('screen-dashboard')">← Overview</span><span class="topbar-title">Step 3 · Introduction</span><span></span></div>
-    <div class="progress-bar"><div class="progress-fill" style="width:27%"></div></div>
-    <div class="step-header"><div class="step-label">Step 3 of 11</div><div class="step-title">Introduction</div></div>
-    <div class="screen-body"><div class="step-content">
-      <div class="script-box"><div class="script-box-label">Opening Script</div><div class="script-box-text">"Hi, I'm [Your Name] with [Company]. You reached out about [issue], correct? Great. I'm going to take a full look at everything related to this, then walk you through exactly what I find and what your options are. Sound good?"</div></div>
-      <div class="check-section-title">Introduction Checklist</div>
-      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Introduced by name and company</div></div>
-      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Confirmed reason for visit</div></div>
-      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Set expectations for the visit</div></div>
-      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Warm, professional first impression</div></div>
+  <!-- S2 Intro -->
+  <div id="s-step-2" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="tb-back" onclick="go('s-dash')">← Overview</span><span class="tb-title">Step 3 of 11</span><span></span></div>
+    <div class="pbar"><div class="pfill" style="width:27%"></div></div>
+    <div class="stephead"><div class="steplbl">Step 3 of 11</div><div class="steptit">Introduction</div></div>
+    <div class="sbody"><div class="stepcont">
+      <div class="sbox"><div class="sboxl">Opening Script</div><div class="sboxt">"Hi, I'm [Your Name] with [Company]. You reached out about [issue], correct? Great. I'm going to take a full look at everything related to this, then walk you through exactly what I find and your options. Sound good?"</div></div>
+      <div class="chtit">Introduction Checklist</div>
+      <div class="chi" onclick="chk(this)"><div class="chb"><div class="chm">✓</div></div><div class="chl">Introduced by name and company</div></div>
+      <div class="chi" onclick="chk(this)"><div class="chb"><div class="chm">✓</div></div><div class="chl">Confirmed reason for visit</div></div>
+      <div class="chi" onclick="chk(this)"><div class="chb"><div class="chm">✓</div></div><div class="chl">Set expectations for the visit</div></div>
+      <div class="chi" onclick="chk(this)"><div class="chb"><div class="chm">✓</div></div><div class="chl">Warm, confident first impression</div></div>
     </div></div>
-    <div class="bottom-bar"><button class="btn-navy" onclick="completeStep(2)">Introduction Done →</button></div>
+    <div class="bbar"><button class="btn-navy" onclick="doneStep(2)">Introduction Done →</button></div>
   </div>
-
-  <!-- Step 3: Agenda -->
-  <div id="screen-step-3" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
-    <div class="topbar"><span class="topbar-back" onclick="showScreen('screen-dashboard')">← Overview</span><span class="topbar-title">Step 4 · Agenda</span><span></span></div>
-    <div class="progress-bar"><div class="progress-fill" style="width:36%"></div></div>
-    <div class="step-header"><div class="step-label">Step 4 of 11</div><div class="step-title">Set the Agenda</div></div>
-    <div class="screen-body"><div class="step-content">
-      <div class="script-box"><div class="script-box-label">Agenda Script</div><div class="script-box-text">"Before I get started, I want to make sure I'm covering everything for you today. Do you have any other concerns beyond the main issue? And is there anyone else who needs to be part of the conversation?"</div></div>
-      <div class="check-section-title">Confirm Before You Inspect</div>
-      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Confirmed primary issue</div></div>
-      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Asked about additional concerns</div></div>
-      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Decision maker is present</div></div>
-      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Confirmed time availability</div></div>
+  <!-- S3 Agenda -->
+  <div id="s-step-3" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="tb-back" onclick="go('s-dash')">← Overview</span><span class="tb-title">Step 4 of 11</span><span></span></div>
+    <div class="pbar"><div class="pfill" style="width:36%"></div></div>
+    <div class="stephead"><div class="steplbl">Step 4 of 11</div><div class="steptit">Set the Agenda</div></div>
+    <div class="sbody"><div class="stepcont">
+      <div class="sbox"><div class="sboxl">Agenda Script</div><div class="sboxt">"Before I get started, I want to make sure I cover everything for you today. Do you have any other concerns beyond the main issue? And is there anyone else who needs to be part of this conversation?"</div></div>
+      <div class="chtit">Confirm Before You Inspect</div>
+      <div class="chi" onclick="chk(this)"><div class="chb"><div class="chm">✓</div></div><div class="chl">Confirmed primary issue</div></div>
+      <div class="chi" onclick="chk(this)"><div class="chb"><div class="chm">✓</div></div><div class="chl">Asked about additional concerns</div></div>
+      <div class="chi" onclick="chk(this)"><div class="chb"><div class="chm">✓</div></div><div class="chl">Decision maker is present</div></div>
+      <div class="chi" onclick="chk(this)"><div class="chb"><div class="chm">✓</div></div><div class="chl">Confirmed time availability</div></div>
     </div></div>
-    <div class="bottom-bar"><button class="btn-navy" onclick="completeStep(3)">Agenda Set →</button></div>
+    <div class="bbar"><button class="btn-navy" onclick="doneStep(3)">Agenda Set →</button></div>
   </div>
-
-  <!-- Step 4: Discovery -->
-  <div id="screen-step-4" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
-    <div class="topbar"><span class="topbar-back" onclick="showScreen('screen-dashboard')">← Overview</span><span class="topbar-title">Step 5 · Discovery</span><span></span></div>
-    <div class="progress-bar"><div class="progress-fill" style="width:45%"></div></div>
-    <div class="step-header"><div class="step-label">Step 5 of 11</div><div class="step-title">Discovery Questions</div></div>
-    <div class="screen-body"><div class="step-content">
-      <div class="script-box"><div class="script-box-label">The Rule</div><div class="script-box-text">"Ask, don't tell. Their answers tell you how to present your findings — and which option they'll choose."</div></div>
-      <div class="discovery-q"><div class="discovery-q-label">When did this issue start?</div><textarea class="discovery-input" id="disc-1" placeholder="Note their answer..."></textarea></div>
-      <div class="discovery-q"><div class="discovery-q-label">How often does it happen?</div><textarea class="discovery-input" id="disc-2" placeholder="Note their answer..."></textarea></div>
-      <div class="discovery-q"><div class="discovery-q-label">Has anything been done before?</div><textarea class="discovery-input" id="disc-3" placeholder="Note their answer..."></textarea></div>
-      <div class="discovery-q"><div class="discovery-q-label">What concerns you most?</div><div class="discovery-q-sub">This is the gold. Use it in your close.</div><textarea class="discovery-input" id="disc-4" placeholder="Note their answer — this drives your close..."></textarea></div>
-      <div class="discovery-q"><div class="discovery-q-label">How long do you plan to stay in this home?</div><textarea class="discovery-input" id="disc-5" placeholder="Long-term owners respond differently..."></textarea></div>
+  <!-- S4 Discovery -->
+  <div id="s-step-4" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="tb-back" onclick="go('s-dash')">← Overview</span><span class="tb-title">Step 5 of 11</span><span></span></div>
+    <div class="pbar"><div class="pfill" style="width:45%"></div></div>
+    <div class="stephead"><div class="steplbl">Step 5 of 11</div><div class="steptit">Discovery Questions</div></div>
+    <div class="sbody"><div class="stepcont">
+      <div class="sbox"><div class="sboxl">The Rule</div><div class="sboxt">"Ask, don't tell. Their answers tell you which option they'll choose — before you even present."</div></div>
+      <div class="dq"><div class="dql">When did this issue start?</div><textarea class="dqi" id="d1" placeholder="Note their answer..."></textarea></div>
+      <div class="dq"><div class="dql">How often does it happen?</div><textarea class="dqi" id="d2" placeholder="Note their answer..."></textarea></div>
+      <div class="dq"><div class="dql">Has anything been done before?</div><textarea class="dqi" id="d3" placeholder="Note their answer..."></textarea></div>
+      <div class="dq"><div class="dql">What concerns you most about this?</div><div class="dqs">This drives your close. Use their words back at them.</div><textarea class="dqi" id="d4" placeholder="Note their answer..."></textarea></div>
+      <div class="dq"><div class="dql">How long do you plan to stay in this home?</div><textarea class="dqi" id="d5" placeholder="Long-term owners respond differently..."></textarea></div>
     </div></div>
-    <div class="bottom-bar"><button class="btn-navy" onclick="saveDiscoveryAndContinue()">Save & Continue →</button></div>
+    <div class="bbar"><button class="btn-navy" onclick="saveDisc()">Save & Continue →</button></div>
   </div>
-
-  <!-- Step 5: Inspection -->
-  <div id="screen-step-5" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
-    <div class="topbar"><span class="topbar-back" onclick="showScreen('screen-dashboard')">← Overview</span><span class="topbar-title">Step 6 · Inspection</span><span></span></div>
-    <div class="progress-bar"><div class="progress-fill" style="width:54%"></div></div>
-    <div class="step-header"><div class="step-label" id="inspect-calltype-label">Step 6 of 11 · Water Heater</div><div class="step-title">Inspection</div></div>
-    <div class="screen-body"><div class="step-content" id="inspect-content">
-      <!-- Dynamically populated by call type -->
+  <!-- S5 Inspection -->
+  <div id="s-step-5" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="tb-back" onclick="go('s-dash')">← Overview</span><span class="tb-title">Step 6 of 11</span><span></span></div>
+    <div class="pbar"><div class="pfill" style="width:54%"></div></div>
+    <div class="stephead"><div class="steplbl" id="insp-lbl">Step 6 of 11</div><div class="steptit">Inspection</div></div>
+    <div class="sbody"><div class="stepcont" id="insp-cont"></div></div>
+    <div class="bbar"><button class="btn-navy" onclick="saveInsp()">Inspection Complete →</button></div>
+  </div>
+  <!-- S6 Photos -->
+  <div id="s-step-6" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="tb-back" onclick="go('s-dash')">← Overview</span><span class="tb-title">Step 7 of 11</span><span></span></div>
+    <div class="pbar"><div class="pfill" style="width:63%"></div></div>
+    <div class="stephead"><div class="steplbl">Step 7 of 11</div><div class="steptit">Photo Capture</div></div>
+    <div class="sbody"><div class="stepcont">
+      <div class="photoctr"><div class="photoctrt">Photos captured</div><div class="photoctrn" id="pctr">0 / 5</div></div>
+      <div class="pgrid">
+        <div class="pslot" onclick="capPhoto(this)"><div class="psli">📷</div><div class="psll">Model Tag</div></div>
+        <div class="pslot" onclick="capPhoto(this)"><div class="psli">📷</div><div class="psll">Full Unit</div></div>
+        <div class="pslot" onclick="capPhoto(this)"><div class="psli">📷</div><div class="psll">Connections</div></div>
+        <div class="pslot" onclick="capPhoto(this)"><div class="psli">📷</div><div class="psll">Risk Item</div></div>
+        <div class="pslot" onclick="capPhoto(this)"><div class="psli">📷</div><div class="psll">Before Work</div></div>
+      </div>
+      <div style="font-size:13px;color:var(--text-muted);line-height:1.7;padding:14px;background:var(--surface);border-radius:8px;">Photos protect you legally and build homeowner trust. Showing what you found beats telling them every time.</div>
     </div></div>
-    <div class="bottom-bar"><button class="btn-navy" onclick="saveInspectionAndContinue()">Inspection Complete →</button></div>
+    <div class="bbar"><button class="btn-navy" onclick="doneStep(6)">Photos Done →</button></div>
   </div>
-
-  <!-- Step 6: Photos -->
-  <div id="screen-step-6" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
-    <div class="topbar"><span class="topbar-back" onclick="showScreen('screen-dashboard')">← Overview</span><span class="topbar-title">Step 7 · Photos</span><span></span></div>
-    <div class="progress-bar"><div class="progress-fill" style="width:63%"></div></div>
-    <div class="step-header"><div class="step-label">Step 7 of 11</div><div class="step-title">Photo Capture</div></div>
-    <div class="screen-body"><div class="step-content">
-      <div class="photo-counter"><div class="photo-counter-text">Photos captured</div><div class="photo-counter-num" id="photo-count-display">0 / 5</div></div>
-      <div class="photo-grid" id="photo-grid">
-        <div class="photo-slot" onclick="capturePhoto(this,'Model Tag')"><div class="photo-slot-icon">📷</div><div class="photo-slot-label">Model Tag</div></div>
-        <div class="photo-slot" onclick="capturePhoto(this,'Full Unit')"><div class="photo-slot-icon">📷</div><div class="photo-slot-label">Full Unit</div></div>
-        <div class="photo-slot" onclick="capturePhoto(this,'Connections')"><div class="photo-slot-icon">📷</div><div class="photo-slot-label">Connections</div></div>
-        <div class="photo-slot" onclick="capturePhoto(this,'Risk Item')"><div class="photo-slot-icon">📷</div><div class="photo-slot-label">Risk Item</div></div>
-        <div class="photo-slot" onclick="capturePhoto(this,'Before Work')"><div class="photo-slot-icon">📷</div><div class="photo-slot-label">Before Work</div></div>
-      </div>
-      <div style="font-size:13px;color:var(--text-muted);line-height:1.7;padding:14px;background:var(--surface);border-radius:8px;">Photos protect you legally and build homeowner trust. Showing what you found is more powerful than telling them.</div>
+  <!-- S7 Options -->
+  <div id="s-step-7" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="tb-back" onclick="go('s-dash')">← Overview</span><span class="tb-title">Step 8 of 11</span><span></span></div>
+    <div class="pbar"><div class="pfill" style="width:72%"></div></div>
+    <div class="stephead"><div class="steplbl">Step 8 of 11</div><div class="steptit">Build Options</div></div>
+    <div class="sbody"><div class="stepcont">
+      <div class="sbox"><div class="sboxl">The Rule</div><div class="sboxt">"Always present three options. Homeowners who choose feel respected. Homeowners given one price feel sold to."</div></div>
+      <div class="optcard"><div class="opth"><span class="otier t-good">Good</span><div class="optpr"><span class="optd">$</span><input class="optpi" type="number" id="og-p" placeholder="0" /></div></div><textarea class="opti" id="og-d" placeholder="What this covers..."></textarea><input type="text" class="opti" id="og-w" placeholder="Warranty" /></div>
+      <div class="optcard"><div class="opth"><span class="otier t-better">Better</span><div class="optpr"><span class="optd">$</span><input class="optpi" type="number" id="ob-p" placeholder="0" /></div></div><textarea class="opti" id="ob-d" placeholder="What this covers..."></textarea><input type="text" class="opti" id="ob-w" placeholder="Warranty" /></div>
+      <div class="optcard best"><div class="opth"><span class="otier t-best">Best</span><div class="optpr"><span class="optd">$</span><input class="optpi" type="number" id="obe-p" placeholder="0" /></div></div><textarea class="opti" id="obe-d" placeholder="What this covers..."></textarea><input type="text" class="opti" id="obe-w" placeholder="Warranty" /><div style="display:flex;align-items:center;gap:8px;margin-top:4px;"><input type="checkbox" id="o-fin" /><label for="o-fin" style="font-size:13px;font-weight:700;color:var(--navy);">Financing available</label></div></div>
     </div></div>
-    <div class="bottom-bar"><button class="btn-navy" onclick="completeStep(6)">Photos Done →</button></div>
+    <div class="bbar"><button class="btn-navy" onclick="saveOpts()">Save Options →</button></div>
   </div>
-
-  <!-- Step 7: Build Options -->
-  <div id="screen-step-7" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
-    <div class="topbar"><span class="topbar-back" onclick="showScreen('screen-dashboard')">← Overview</span><span class="topbar-title">Step 8 · Options</span><span></span></div>
-    <div class="progress-bar"><div class="progress-fill" style="width:72%"></div></div>
-    <div class="step-header"><div class="step-label">Step 8 of 11</div><div class="step-title">Build Options</div></div>
-    <div class="screen-body"><div class="step-content">
-      <div class="script-box"><div class="script-box-label">The Rule</div><div class="script-box-text">"Always present three options. Homeowners who choose feel respected. Homeowners who are told a single price feel sold to."</div></div>
-      <div class="option-card">
-        <div class="option-header"><span class="option-tier tier-good">Good</span><div class="option-price-row"><span class="option-dollar">$</span><input class="option-price-input" type="number" id="opt-good-price" placeholder="0" /></div></div>
-        <textarea class="option-input" id="opt-good-desc" placeholder="What this option includes..."></textarea>
-        <input type="text" class="option-input" id="opt-good-warranty" placeholder="Warranty (e.g. 1 Year Parts & Labor)" />
-      </div>
-      <div class="option-card">
-        <div class="option-header"><span class="option-tier tier-better">Better</span><div class="option-price-row"><span class="option-dollar">$</span><input class="option-price-input" type="number" id="opt-better-price" placeholder="0" /></div></div>
-        <textarea class="option-input" id="opt-better-desc" placeholder="What this option includes..."></textarea>
-        <input type="text" class="option-input" id="opt-better-warranty" placeholder="Warranty" />
-      </div>
-      <div class="option-card best">
-        <div class="option-header"><span class="option-tier tier-best">Best</span><div class="option-price-row"><span class="option-dollar">$</span><input class="option-price-input" type="number" id="opt-best-price" placeholder="0" /></div></div>
-        <textarea class="option-input" id="opt-best-desc" placeholder="What this option includes..."></textarea>
-        <input type="text" class="option-input" id="opt-best-warranty" placeholder="Warranty" />
-        <div style="display:flex;align-items:center;gap:8px;margin-top:4px;"><input type="checkbox" id="opt-financing" /><label for="opt-financing" style="font-size:13px;font-weight:700;color:var(--navy);">Financing available</label></div>
-      </div>
+  <!-- S8 Present -->
+  <div id="s-step-8" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="tb-back" onclick="go('s-dash')">← Overview</span><span class="tb-title">Step 9 of 11</span><span></span></div>
+    <div class="pbar"><div class="pfill" style="width:81%"></div></div>
+    <div class="stephead"><div class="steplbl">Step 9 of 11</div><div class="steptit">Present Findings</div></div>
+    <div class="sbody"><div class="stepcont">
+      <div class="sbox"><div class="sboxl">Presentation Script</div><div class="sboxt">"Here's what I found today. [Walk through photos.] Based on what you told me about [their concern], here are three ways we can take care of this."</div></div>
+      <div class="sbox" style="border-left-color:var(--navy-light);"><div class="sboxl" style="color:var(--navy);">Price Script</div><div class="sboxt">"Most homeowners in your situation go with this option — it solves the problem permanently. But I want you to have all three in front of you."</div></div>
+      <div class="chtit">Presentation Checklist</div>
+      <div class="chi" onclick="chk(this)"><div class="chb"><div class="chm">✓</div></div><div class="chl">Walked through photos with homeowner</div></div>
+      <div class="chi" onclick="chk(this)"><div class="chb"><div class="chm">✓</div></div><div class="chl">Referenced their discovery answers</div></div>
+      <div class="chi" onclick="chk(this)"><div class="chb"><div class="chm">✓</div></div><div class="chl">Presented all three options clearly</div></div>
+      <div class="chi" onclick="chk(this)"><div class="chb"><div class="chm">✓</div></div><div class="chl">Stayed silent after presenting price</div></div>
     </div></div>
-    <div class="bottom-bar"><button class="btn-navy" onclick="saveOptionsAndContinue()">Save Options →</button></div>
+    <div class="bbar"><button class="btn-navy" onclick="doneStep(8)">Presentation Done →</button></div>
   </div>
-
-  <!-- Step 8: Present -->
-  <div id="screen-step-8" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
-    <div class="topbar"><span class="topbar-back" onclick="showScreen('screen-dashboard')">← Overview</span><span class="topbar-title">Step 9 · Present</span><span></span></div>
-    <div class="progress-bar"><div class="progress-fill" style="width:81%"></div></div>
-    <div class="step-header"><div class="step-label">Step 9 of 11</div><div class="step-title">Present Findings</div></div>
-    <div class="screen-body"><div class="step-content">
-      <div class="script-box"><div class="script-box-label">Presentation Script</div><div class="script-box-text">"Here's what I found today. [Walk through photos.] Based on what you told me earlier about [their concern from discovery], here are three ways we can take care of this for you."</div></div>
-      <div class="script-box" style="border-left-color:var(--navy-light);"><div class="script-box-label" style="color:var(--navy);">Price Script</div><div class="script-box-text">"Most homeowners in your situation choose this option because it solves the problem permanently. But I want you to have all three in front of you — whatever works best for you."</div></div>
-      <div class="check-section-title">Presentation Checklist</div>
-      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Walked through photos with homeowner</div></div>
-      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Referenced their discovery answers</div></div>
-      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Presented all three options clearly</div></div>
-      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Stayed silent after presenting price</div></div>
+  <!-- S9 Objections -->
+  <div id="s-step-9" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="tb-back" onclick="go('s-dash')">← Overview</span><span class="tb-title">Step 10 of 11</span><span></span></div>
+    <div class="pbar"><div class="pfill" style="width:90%"></div></div>
+    <div class="stephead"><div class="steplbl">Step 10 of 11</div><div class="steptit">Handle Objections</div></div>
+    <div class="sbody"><div class="stepcont">
+      <div class="scrs" style="margin-bottom:14px;">Tap the objection you're hearing:</div>
+      <div class="objgrid">
+        <div class="objbtn" onclick="showObj(this,'price','step')">Price Too High</div>
+        <div class="objbtn" onclick="showObj(this,'think','step')">Need to Think</div>
+        <div class="objbtn" onclick="showObj(this,'spouse','step')">Need Spouse</div>
+        <div class="objbtn" onclick="showObj(this,'patch','step')">Just Patch It</div>
+        <div class="objbtn" onclick="showObj(this,'quotes','step')">Other Quotes</div>
+        <div class="objbtn" onclick="showObj(this,'afford','step')">Can't Afford</div>
+        <div class="objbtn" onclick="showObj(this,'trust','step')">Trust Issue</div>
+        <div class="objbtn" onclick="showObj(this,'wait','step')">Not Urgent</div>
+      </div>
+      <div class="objres" id="obj-step"><div class="objsec"><div class="objsl">What they really mean</div><div class="objst" id="os-m"></div></div><div class="objsec"><div class="objsl">Your response</div><div class="objst script" id="os-s"></div></div><div class="objsec"><div class="objsl">Follow-up question</div><div class="objst" id="os-f" style="font-style:italic;color:var(--navy-light);"></div></div></div>
     </div></div>
-    <div class="bottom-bar"><button class="btn-navy" onclick="completeStep(8)">Presentation Done →</button></div>
+    <div class="bbar"><button class="btn-navy" onclick="doneStep(9)">Move to Close →</button></div>
   </div>
-
-  <!-- Step 9: Objections -->
-  <div id="screen-step-9" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
-    <div class="topbar"><span class="topbar-back" onclick="showScreen('screen-dashboard')">← Overview</span><span class="topbar-title">Step 10 · Objections</span><span></span></div>
-    <div class="progress-bar"><div class="progress-fill" style="width:90%"></div></div>
-    <div class="step-header"><div class="step-label">Step 10 of 11</div><div class="step-title">Handle Objections</div></div>
-    <div class="screen-body"><div class="step-content">
-      <div class="screen-sub" style="margin-bottom:14px;">Tap the objection you're hearing:</div>
-      <div class="obj-grid">
-        <div class="obj-btn" onclick="showObjInStep(this,'price')">Price Too High</div>
-        <div class="obj-btn" onclick="showObjInStep(this,'think')">Need to Think</div>
-        <div class="obj-btn" onclick="showObjInStep(this,'spouse')">Need Spouse</div>
-        <div class="obj-btn" onclick="showObjInStep(this,'patch')">Just Patch It</div>
-        <div class="obj-btn" onclick="showObjInStep(this,'quotes')">Other Quotes</div>
-        <div class="obj-btn" onclick="showObjInStep(this,'afford')">Can't Afford</div>
-        <div class="obj-btn" onclick="showObjInStep(this,'trust')">Trust Issue</div>
-        <div class="obj-btn" onclick="showObjInStep(this,'wait')">Not Urgent</div>
+  <!-- S10 Close -->
+  <div id="s-step-10" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="tb-back" onclick="go('s-dash')">← Overview</span><span class="tb-title">Step 11 of 11</span><span></span></div>
+    <div class="pbar"><div class="pfill" style="width:100%"></div></div>
+    <div class="stephead"><div class="steplbl">Step 11 of 11</div><div class="steptit">Close & Complete</div></div>
+    <div class="sbody"><div class="stepcont">
+      <div class="sbox"><div class="sboxl">The Close</div><div class="sboxt">"Which option works best for you today?" — Stay silent. The next person to speak, loses.</div></div>
+      <div class="chtit">Final Steps</div>
+      <div class="chi" onclick="chk(this)"><div class="chb"><div class="chm">✓</div></div><div class="chl">Option selected by homeowner</div></div>
+      <div class="chi" onclick="chk(this)"><div class="chb"><div class="chm">✓</div></div><div class="chl">Payment collected or financing processed</div></div>
+      <div class="chi" onclick="chk(this)"><div class="chb"><div class="chm">✓</div></div><div class="chl">Work area left spotless</div></div>
+      <div class="sdiv">Job Outcome</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:18px;">
+        <div class="ctb" id="oc-sold" onclick="setOC('sold',this)" style="text-align:center;"><div class="cti" style="margin:0 auto 6px;">✅</div><div class="ctl" style="font-size:11px;">Sold</div></div>
+        <div class="ctb" id="oc-cb" onclick="setOC('callback',this)" style="text-align:center;"><div class="cti" style="margin:0 auto 6px;">📞</div><div class="ctl" style="font-size:11px;">Callback</div></div>
+        <div class="ctb" id="oc-ns" onclick="setOC('nosale',this)" style="text-align:center;"><div class="cti" style="margin:0 auto 6px;">❌</div><div class="ctl" style="font-size:11px;">No Sale</div></div>
       </div>
-      <div class="obj-response" id="step-obj-response">
-        <div class="obj-section"><div class="obj-section-label">What they really mean</div><div class="obj-section-text" id="step-obj-meaning"></div></div>
-        <div class="obj-section"><div class="obj-section-label">Your response</div><div class="obj-section-text script" id="step-obj-script"></div></div>
-        <div class="obj-section"><div class="obj-section-label">Follow-up question</div><div class="obj-section-text" id="step-obj-followup" style="font-style:italic;color:var(--navy-light);"></div></div>
-      </div>
+      <div class="fl" style="margin-bottom:7px;">Final Ticket Amount ($)</div>
+      <input class="fi" type="number" id="ticket" placeholder="0" />
+      <div class="fl" style="margin-bottom:7px;margin-top:4px;">Job Notes (optional)</div>
+      <textarea class="fi" id="job-notes" style="min-height:64px;resize:none;margin-bottom:0;" placeholder="Any notes for this job..."></textarea>
     </div></div>
-    <div class="bottom-bar"><button class="btn-navy" onclick="completeStep(9)">Move to Close →</button></div>
+    <div class="bbar"><button class="btn-navy" onclick="finishJob()">Complete Job & Get Review →</button></div>
   </div>
 
-  <!-- Step 10: Close -->
-  <div id="screen-step-10" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
-    <div class="topbar"><span class="topbar-back" onclick="showScreen('screen-dashboard')">← Overview</span><span class="topbar-title">Step 11 · Close</span><span></span></div>
-    <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
-    <div class="step-header"><div class="step-label">Step 11 of 11</div><div class="step-title">Close & Complete</div></div>
-    <div class="screen-body"><div class="step-content">
-      <div class="script-box"><div class="script-box-label">The Close</div><div class="script-box-text">"Which option works best for you today?" — Then stay silent. The next person to speak loses.</div></div>
-      <div class="check-section-title">Final Steps</div>
-      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Option selected by homeowner</div></div>
-      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Payment collected or financing processed</div></div>
-      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Google review asked — by name</div></div>
-      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Membership plan offered</div></div>
-      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"><div class="check-mark">✓</div></div><div class="check-label">Work area left clean</div></div>
-      <div class="section-divider">Job Outcome</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;">
-        <div class="call-type-btn" id="outcome-sold" onclick="setOutcome('sold',this)" style="text-align:center;"><div class="ct-icon" style="margin:0 auto 6px;">✅</div><div class="ct-label" style="font-size:11px;">Sold</div></div>
-        <div class="call-type-btn" id="outcome-callback" onclick="setOutcome('callback',this)" style="text-align:center;"><div class="ct-icon" style="margin:0 auto 6px;">📞</div><div class="ct-label" style="font-size:11px;">Callback</div></div>
-        <div class="call-type-btn" id="outcome-nosale" onclick="setOutcome('nosale',this)" style="text-align:center;"><div class="ct-icon" style="margin:0 auto 6px;">❌</div><div class="ct-label" style="font-size:11px;">No Sale</div></div>
+  <!-- REVIEW ASK SCREEN -->
+  <div id="s-review" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="tb-brand">Perfect Service OS</span><span></span><span></span></div>
+    <div class="sbody"><div style="padding:32px 24px;">
+      <!-- Outcome banner -->
+      <div id="rev-outcome-banner" style="border-radius:12px;padding:20px;text-align:center;margin-bottom:28px;background:var(--surface);">
+        <div id="rev-outcome-icon" style="font-size:36px;margin-bottom:8px;">✅</div>
+        <div id="rev-outcome-title" style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:4px;">Job Complete!</div>
+        <div id="rev-outcome-sub" style="font-size:13px;color:var(--text-muted);"></div>
       </div>
-      <div class="auth-label" style="margin-bottom:6px;">Final Ticket Amount ($)</div>
-      <input class="auth-input" type="number" id="final-ticket" placeholder="0" style="margin-bottom:0;" />
-    </div></div>
-    <div class="bottom-bar"><button class="btn-primary" onclick="completeJob()">Complete Job ✓</button></div>
-  </div>
 
-  <!-- ═══════════════════════════════════ PAST JOBS ═══════════════════════════════════ -->
-  <div id="screen-jobs" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
-    <div class="topbar"><span class="topbar-back" onclick="showScreen('screen-home')">← Home</span><span class="topbar-title">Past Jobs</span><span></span></div>
-    <div class="screen-body">
-      <div style="padding:16px 20px;" id="jobs-list">
-        <div style="text-align:center;padding:40px 20px;color:var(--text-muted);font-size:14px;">Loading jobs...</div>
-      </div>
-    </div>
-    <div class="nav-tabs">
-      <div class="nav-tab" onclick="showScreen('screen-home')">Home</div>
-      <div class="nav-tab" onclick="showScreen('screen-kpi')">Stats</div>
-      <div class="nav-tab active">Jobs</div>
-      <div class="nav-tab" onclick="showScreen('screen-objections-ref')">Scripts</div>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════ KPI ═══════════════════════════════════ -->
-  <div id="screen-kpi" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
-    <div class="topbar"><span class="topbar-back" onclick="showScreen('screen-home')">← Home</span><span class="topbar-title">My Performance</span><span></span></div>
-    <div class="screen-body">
-      <div style="padding:20px;">
-        <div class="kpi-period">
-          <div class="period-btn active" onclick="setPeriod(this,'today')">Today</div>
-          <div class="period-btn" onclick="setPeriod(this,'week')">This Week</div>
-          <div class="period-btn" onclick="setPeriod(this,'month')">Month</div>
-        </div>
-        <div class="kpi-grid">
-          <div class="kpi-card"><div class="kpi-val" id="kpi-calls">–</div><div class="kpi-label">Calls</div></div>
-          <div class="kpi-card"><div class="kpi-val" id="kpi-close">–</div><div class="kpi-label">Close Rate</div></div>
-          <div class="kpi-card"><div class="kpi-val" id="kpi-ticket">–</div><div class="kpi-label">Avg Ticket</div></div>
-          <div class="kpi-card"><div class="kpi-val" id="kpi-revenue">–</div><div class="kpi-label">Revenue</div></div>
-        </div>
-        <div class="section-divider">Compliance</div>
-        <div class="kpi-bar-section"><div class="kpi-bar-label"><span>Photo Compliance</span><span id="bar-photo">–</span></div><div class="kpi-bar-track"><div class="kpi-bar-fill gold" id="bar-photo-fill" style="width:0%"></div></div></div>
-        <div class="kpi-bar-section"><div class="kpi-bar-label"><span>Inspection Rate</span><span id="bar-inspect">–</span></div><div class="kpi-bar-track"><div class="kpi-bar-fill" id="bar-inspect-fill" style="width:0%"></div></div></div>
-        <div class="kpi-bar-section"><div class="kpi-bar-label"><span>Options Built / Call</span><span id="bar-options">–</span></div><div class="kpi-bar-track"><div class="kpi-bar-fill success" id="bar-options-fill" style="width:0%"></div></div></div>
-      </div>
-    </div>
-    <div class="nav-tabs">
-      <div class="nav-tab" onclick="showScreen('screen-home')">Home</div>
-      <div class="nav-tab active">Stats</div>
-      <div class="nav-tab" onclick="showScreen('screen-jobs')">Jobs</div>
-      <div class="nav-tab" onclick="showScreen('screen-objections-ref')">Scripts</div>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════ OBJECTIONS REF ═══════════════════════════════════ -->
-  <div id="screen-objections-ref" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
-    <div class="topbar"><span class="topbar-back" onclick="showScreen('screen-home')">← Home</span><span class="topbar-title">Scripts & Objections</span><span></span></div>
-    <div class="screen-body">
-      <div style="padding:18px 20px;">
-        <div class="screen-title">Handle Any Objection</div>
-        <div class="screen-sub" style="margin-bottom:16px;">Tap to load your response strategy.</div>
-        <div class="obj-grid">
-          <div class="obj-btn" onclick="showObjRef(this,'price')">Price Too High</div>
-          <div class="obj-btn" onclick="showObjRef(this,'think')">Need to Think</div>
-          <div class="obj-btn" onclick="showObjRef(this,'spouse')">Need Spouse</div>
-          <div class="obj-btn" onclick="showObjRef(this,'patch')">Just Patch It</div>
-          <div class="obj-btn" onclick="showObjRef(this,'quotes')">Other Quotes</div>
-          <div class="obj-btn" onclick="showObjRef(this,'afford')">Can't Afford</div>
-          <div class="obj-btn" onclick="showObjRef(this,'trust')">Trust Issue</div>
-          <div class="obj-btn" onclick="showObjRef(this,'wait')">Not Urgent</div>
-        </div>
-        <div class="obj-response" id="ref-obj-response" style="margin-top:8px;">
-          <div class="obj-section"><div class="obj-section-label">What they really mean</div><div class="obj-section-text" id="ref-obj-meaning"></div></div>
-          <div class="obj-section"><div class="obj-section-label">Your response</div><div class="obj-section-text script" id="ref-obj-script"></div></div>
-          <div class="obj-section"><div class="obj-section-label">Follow-up question</div><div class="obj-section-text" id="ref-obj-followup" style="font-style:italic;color:var(--navy-light);"></div></div>
+      <!-- Membership offer — shown when sold -->
+      <div id="rev-membership" style="background:var(--gold-pale);border:1.5px solid var(--gold);border-radius:12px;padding:18px;margin-bottom:20px;">
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);margin-bottom:8px;">Before You Leave</div>
+        <div style="font-size:16px;font-weight:800;color:var(--navy);margin-bottom:8px;">Offer the Membership Plan</div>
+        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6;margin-bottom:14px;font-style:italic;">"One more thing — we have a maintenance plan that covers annual inspections, priority scheduling, and a discount on all future services. A lot of homeowners add it on for peace of mind. Want me to go over what's included?"</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div id="mem-yes" class="ctb" onclick="setMembership('yes',this)" style="text-align:center;"><div class="cti" style="margin:0 auto 6px;">⭐</div><div class="ctl" style="font-size:11px;">Added</div></div>
+          <div id="mem-no" class="ctb" onclick="setMembership('no',this)" style="text-align:center;"><div class="cti" style="margin:0 auto 6px;">–</div><div class="ctl" style="font-size:11px;">Not Now</div></div>
         </div>
       </div>
-    </div>
-    <div class="nav-tabs">
-      <div class="nav-tab" onclick="showScreen('screen-home')">Home</div>
-      <div class="nav-tab" onclick="showScreen('screen-kpi')">Stats</div>
-      <div class="nav-tab" onclick="showScreen('screen-jobs')">Jobs</div>
-      <div class="nav-tab active">Scripts</div>
-    </div>
+
+      <!-- Review ask — always shown -->
+      <div style="background:var(--navy);border-radius:12px;padding:20px;margin-bottom:16px;">
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--gold-light);margin-bottom:8px;">Ask For the Review</div>
+        <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:12px;">Say this word for word:</div>
+        <div style="font-size:14px;color:rgba(255,255,255,.85);line-height:1.7;font-style:italic;background:rgba(255,255,255,.06);border-radius:8px;padding:14px;border-left:3px solid var(--gold);margin-bottom:16px;">"Hey <span id="rev-cust-name" style="color:var(--gold-light);font-style:normal;font-weight:700;">[Customer]</span>, I have a quick favor to ask — if I took care of you today, would you mind leaving us a Google review? It takes about 60 seconds and it means everything to our team."</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+          <div id="rev-yes" class="ctb" onclick="setReview('yes',this)" style="text-align:center;background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.15);"><div class="cti" style="margin:0 auto 6px;background:rgba(255,255,255,.1);">⭐</div><div class="ctl" style="font-size:11px;color:#fff;">They Said Yes</div></div>
+          <div id="rev-no" class="ctb" onclick="setReview('no',this)" style="text-align:center;background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.15);"><div class="cti" style="margin:0 auto 6px;background:rgba(255,255,255,.1);">✗</div><div class="ctl" style="font-size:11px;color:#fff;">Not This Time</div></div>
+        </div>
+        <!-- QR / link shown when they say yes -->
+        <div id="rev-link-box" class="hidden" style="background:rgba(255,255,255,.08);border-radius:8px;padding:14px;text-align:center;">
+          <div style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:8px;">Hand them the phone — show them how to leave the review</div>
+          <div id="rev-google-link" style="font-size:13px;color:var(--gold-light);font-weight:700;word-break:break-all;cursor:pointer;text-decoration:underline;" onclick="openReviewLink()">Tap to open Google Review page</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:8px;">Set your Google review link in Profile settings</div>
+        </div>
+      </div>
+
+      <!-- Review tracking -->
+      <div style="background:var(--surface);border-radius:10px;padding:16px;border:1px solid var(--border);">
+        <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-bottom:10px;">This Job Summary</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+          <div style="text-align:center;"><div id="sum-ticket" style="font-size:18px;font-weight:800;color:var(--navy);">–</div><div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">Ticket</div></div>
+          <div style="text-align:center;"><div id="sum-ct" style="font-size:18px;font-weight:800;color:var(--navy);">–</div><div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">Call Type</div></div>
+          <div style="text-align:center;"><div id="sum-flags" style="font-size:18px;font-weight:800;color:var(--navy);">–</div><div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">Flagged</div></div>
+        </div>
+      </div>
+    </div></div>
+    <div class="bbar"><button class="btn-gold" onclick="finalClose()">Done — Back to Home</button></div>
   </div>
 
-  <!-- ═══════════════════════════════════ SCRIPTS ═══════════════════════════════════ -->
-  <div id="screen-scripts" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
-    <div class="topbar"><span class="topbar-back" onclick="showScreen('screen-home')">← Home</span><span class="topbar-title">Script Library</span><span></span></div>
-    <div class="screen-body"><div style="padding:18px 20px;">
-      <div class="script-box"><div class="script-box-label">Opening / Intro</div><div class="script-box-text">"Hi, I'm [Name] with [Company]. You reached out about [issue], correct? Great. I'm going to take a full look at everything related to this, then walk you through exactly what I find and your options. Sound good?"</div></div>
-      <div class="script-box"><div class="script-box-label">Transition to Inspect</div><div class="script-box-text">"I'm going to take a closer look and see exactly what's causing this. Give me a few minutes and I'll walk you through everything I find."</div></div>
-      <div class="script-box"><div class="script-box-label">Findings Presentation</div><div class="script-box-text">"Here's what I found today. [Walk through photos.] Based on what you told me about [their main concern], here are three ways we can take care of this for you."</div></div>
-      <div class="script-box"><div class="script-box-label">Price Presentation</div><div class="script-box-text">"Most homeowners in your situation choose this option because it solves the problem permanently and protects your home long-term. But I want you to have all three options — whatever works best for you."</div></div>
-      <div class="script-box"><div class="script-box-label">The Close</div><div class="script-box-text">"Which option works best for you today?" — Then stop talking. Stay silent. The next person to speak, loses.</div></div>
-      <div class="script-box"><div class="script-box-label">Review Ask</div><div class="script-box-text">"Hey [Name], I have a favor to ask — if you felt like I took care of you today, would you mind leaving us a quick Google review? It takes about 60 seconds and it means a lot to us."</div></div>
-      <div class="script-box"><div class="script-box-label">Membership Offer</div><div class="script-box-text">"One more thing — we have a maintenance plan that covers annual inspections and gives you priority scheduling and a discount on all services. A lot of homeowners add it on for peace of mind. Want me to go over what's included?"</div></div>
+  <!-- PAST JOBS -->
+  <div id="s-jobs" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="tb-back" onclick="go('s-home')">← Home</span><span class="tb-title">Past Jobs</span><span></span></div>
+    <div class="sbody"><div style="padding:16px 20px;" id="jobslist"><div style="text-align:center;padding:40px;color:var(--text-muted);">Loading...</div></div></div>
+    <div class="navtabs"><div class="ntab" onclick="go('s-home')">Home</div><div class="ntab" onclick="go('s-kpi')">Stats</div><div class="ntab active">Jobs</div><div class="ntab" onclick="go('s-objref')">Scripts</div></div>
+  </div>
+
+  <!-- KPI -->
+  <div id="s-kpi" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="tb-back" onclick="go('s-home')">← Home</span><span class="tb-title">My Performance</span><span></span></div>
+    <div class="sbody"><div style="padding:20px;">
+      <div class="kpiper">
+        <div class="kpibtn active" onclick="setPer(this,'today')">Today</div>
+        <div class="kpibtn" onclick="setPer(this,'week')">This Week</div>
+        <div class="kpibtn" onclick="setPer(this,'month')">Month</div>
+      </div>
+      <div class="kpigrid">
+        <div class="kpicard"><div class="kpiv" id="kv-calls">–</div><div class="kpil">Calls</div></div>
+        <div class="kpicard"><div class="kpiv" id="kv-close">–</div><div class="kpil">Close Rate</div></div>
+        <div class="kpicard"><div class="kpiv" id="kv-ticket">–</div><div class="kpil">Avg Ticket</div></div>
+        <div class="kpicard"><div class="kpiv" id="kv-rev">–</div><div class="kpil">Revenue</div></div>
+      </div>
+      <div class="sdiv">Compliance</div>
+      <div class="bars"><div class="barl"><span>Photo Compliance</span><span id="bp">–</span></div><div class="bart"><div class="barf gold" id="bpf" style="width:0%"></div></div></div>
+      <div class="bars"><div class="barl"><span>Inspection Rate</span><span id="bi">–</span></div><div class="bart"><div class="barf" id="bif" style="width:0%"></div></div></div>
+      <div class="bars"><div class="barl"><span>Options Built</span><span id="bo">–</span></div><div class="bart"><div class="barf succ" id="bof" style="width:0%"></div></div></div>
     </div></div>
-    <div class="nav-tabs">
-      <div class="nav-tab" onclick="showScreen('screen-home')">Home</div>
-      <div class="nav-tab" onclick="showScreen('screen-kpi')">Stats</div>
-      <div class="nav-tab" onclick="showScreen('screen-jobs')">Jobs</div>
-      <div class="nav-tab active">Scripts</div>
-    </div>
+    <div class="navtabs"><div class="ntab" onclick="go('s-home')">Home</div><div class="ntab active">Stats</div><div class="ntab" onclick="go('s-jobs')">Jobs</div><div class="ntab" onclick="go('s-objref')">Scripts</div></div>
+  </div>
+
+  <!-- OBJECTIONS REF -->
+  <div id="s-objref" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="tb-back" onclick="go('s-home')">← Home</span><span class="tb-title">Objection Library</span><span></span></div>
+    <div class="sbody"><div style="padding:18px 20px;">
+      <div class="scrt">Handle Any Objection</div>
+      <div class="scrs" style="margin-bottom:16px;">Tap to load your response.</div>
+      <div class="objgrid">
+        <div class="objbtn" onclick="showObj(this,'price','ref')">Price Too High</div>
+        <div class="objbtn" onclick="showObj(this,'think','ref')">Need to Think</div>
+        <div class="objbtn" onclick="showObj(this,'spouse','ref')">Need Spouse</div>
+        <div class="objbtn" onclick="showObj(this,'patch','ref')">Just Patch It</div>
+        <div class="objbtn" onclick="showObj(this,'quotes','ref')">Other Quotes</div>
+        <div class="objbtn" onclick="showObj(this,'afford','ref')">Can't Afford</div>
+        <div class="objbtn" onclick="showObj(this,'trust','ref')">Trust Issue</div>
+        <div class="objbtn" onclick="showObj(this,'wait','ref')">Not Urgent</div>
+      </div>
+      <div class="objres" id="obj-ref"><div class="objsec"><div class="objsl">What they really mean</div><div class="objst" id="or-m"></div></div><div class="objsec"><div class="objsl">Your response</div><div class="objst script" id="or-s"></div></div><div class="objsec"><div class="objsl">Follow-up question</div><div class="objst" id="or-f" style="font-style:italic;color:var(--navy-light);"></div></div></div>
+    </div></div>
+    <div class="navtabs"><div class="ntab" onclick="go('s-home')">Home</div><div class="ntab" onclick="go('s-kpi')">Stats</div><div class="ntab" onclick="go('s-jobs')">Jobs</div><div class="ntab active">Scripts</div></div>
+  </div>
+
+  <!-- SCRIPTS -->
+  <div id="s-scripts" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="tb-back" onclick="go('s-home')">← Home</span><span class="tb-title">Script Library</span><span></span></div>
+    <div class="sbody"><div style="padding:18px 20px;">
+      <div class="sbox"><div class="sboxl">Opening / Intro</div><div class="sboxt">"Hi, I'm [Name] with [Company]. You reached out about [issue], correct? Great. I'm going to take a full look at everything related to this, then walk you through what I find and your options. Sound good?"</div></div>
+      <div class="sbox"><div class="sboxl">Transition to Inspect</div><div class="sboxt">"I'm going to take a closer look and see exactly what's causing this. Give me a few minutes and I'll walk you through everything I find."</div></div>
+      <div class="sbox"><div class="sboxl">Findings Presentation</div><div class="sboxt">"Here's what I found today. [Walk through photos.] Based on what you told me about [their concern], here are three ways we can take care of this for you."</div></div>
+      <div class="sbox"><div class="sboxl">Price Presentation</div><div class="sboxt">"Most homeowners in your situation choose this option — it solves the problem permanently and protects your home long-term. But I want you to have all three options."</div></div>
+      <div class="sbox"><div class="sboxl">The Close</div><div class="sboxt">"Which option works best for you today?" — Stop talking. Stay silent. The next person to speak, loses.</div></div>
+      <div class="sbox"><div class="sboxl">Review Ask</div><div class="sboxt">"Hey [Name], quick favor — if I took care of you today, would you mind leaving us a Google review? Takes 60 seconds and means everything to us."</div></div>
+      <div class="sbox"><div class="sboxl">Membership Offer</div><div class="sboxt">"One more thing — we have a maintenance plan covering annual inspections, priority scheduling, and a discount on all services. Want me to go over what's included?"</div></div>
+    </div></div>
+    <div class="navtabs"><div class="ntab" onclick="go('s-home')">Home</div><div class="ntab" onclick="go('s-kpi')">Stats</div><div class="ntab" onclick="go('s-jobs')">Jobs</div><div class="ntab active">Scripts</div></div>
   </div>
 
 </div>
 
-<!-- ═══════════════════ FIREBASE ═══════════════════ -->
 <script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, doc, setDoc, getDoc, addDoc, updateDoc, collection, query, where, orderBy, getDocs, serverTimestamp, increment } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import{getFirestore,doc,setDoc,addDoc,updateDoc,collection,query,where,orderBy,getDocs,serverTimestamp}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBjFq_iD0wrLqgzbiAgd1zbPEkf-kvYawE",
-  authDomain: "perfect-service-os.firebaseapp.com",
-  projectId: "perfect-service-os",
-  storageBucket: "perfect-service-os.firebasestorage.app",
-  messagingSenderId: "7540754161",
-  appId: "1:7540754161:web:56bd56999da60d7f8d8b50"
-};
+const cfg={apiKey:"AIzaSyBjFq_iD0wrLqgzbiAgd1zbPEkf-kvYawE",authDomain:"perfect-service-os.firebaseapp.com",projectId:"perfect-service-os",storageBucket:"perfect-service-os.firebasestorage.app",messagingSenderId:"7540754161",appId:"1:7540754161:web:56bd56999da60d7f8d8b50"};
+const db=getFirestore(initializeApp(cfg));
 
-const fbApp = initializeApp(firebaseConfig);
-const auth = getAuth(fbApp);
-const db = getFirestore(fbApp);
+const PK='psos_profile',DK='psos_device';
+let profile=null,jobId=null,jobData={},curStep=0,photos=0,outcome=null,callType=null,kpiPer='today',setupAv='🔧',editAv='🔧';
 
-// ── STATE ──
-let currentUser = null;
-let currentJobId = null;
-let currentJobData = {};
-let currentStep = 0;
-let photosCaptured = 0;
-let selectedOutcome = null;
-let selectedCallType = null;
-let kpiPeriod = 'today';
+function devId(){let id=localStorage.getItem(DK);if(!id){id='dev_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);localStorage.setItem(DK,id);}return id;}
 
-// ── INSPECTION DATA BY CALL TYPE ──
-const inspectionData = {
-  'Water Heater': {
-    required: ['Unit age and model','Tank condition — rust, corrosion','Expansion tank present','Shutoff valve condition','Supply lines — flex, copper, age','Venting — proper clearance','Drain pan present and clear','Pressure regulator'],
-    opportunities: ['Whole home water filtration absent','Maintenance membership not enrolled','Shutoff difficult to operate','No earthquake straps (seismic zone)']
-  },
-  'Drain': {
-    required: ['Location of blockage','Drain accessibility','Signs of root intrusion','Backup frequency noted','P-trap condition','Vent stack accessible','Camera needed'],
-    opportunities: ['Hydro-jet recommended','Drain maintenance plan','Bio-clean treatment','Multi-drain inspection']
-  },
-  'Leak': {
-    required: ['Leak source confirmed','Water damage scope','Supply line vs drain line','Shutoff valve working','Drywall or flooring affected','Mold or mildew present','Duration of leak'],
-    opportunities: ['Water detector installation','Whole home shutoff valve','Insurance documentation photos','Pipe condition overall']
-  },
-  'Toilet': {
-    required: ['Flush mechanism','Fill valve condition','Flapper seal','Wax ring seal','Supply line age','Tank crack check','Water usage efficiency'],
-    opportunities: ['Water efficient upgrade','Bidet attachment offer','Shutoff valve condition','Slow flush root cause']
-  },
-  'Faucet': {
-    required: ['Faucet brand and age','Cartridge or ball valve','Supply line condition','Shutoff valve working','Water pressure at fixture','Aerator condition'],
-    opportunities: ['Full faucet replacement vs repair','Under sink shutoff upgrade','Water filtration add-on','Matching fixtures']
-  },
-  'Sewer': {
-    required: ['Camera inspection needed','Cleanout access','Tree root intrusion','Pipe material — clay, cast, ABS','Belly or sag present','Distance to street','Permit required'],
-    opportunities: ['Full line replacement','Trenchless option','Hydro-jetting','Annual maintenance plan']
-  },
-  'Repipe': {
-    required: ['Current pipe material','Age of existing piping','Water quality/discoloration','Pressure throughout home','Number of fixtures affected','Access points','Permit required'],
-    opportunities: ['Whole home filtration','Pressure regulator upgrade','Fixture upgrades during work','Extended warranty']
-  },
-  'Filtration': {
-    required: ['Current water quality','TDS reading if available','Existing filtration system','Under sink vs whole home','Water softener present','Water heater condition affected'],
-    opportunities: ['Reverse osmosis system','Salt-free conditioner','Annual filter service plan','Water test report']
-  },
-  'Pressure': {
-    required: ['Measured PSI reading','PRV/pressure regulator present','PRV age and condition','Main shutoff condition','Expansion tank present','Symptoms noted by homeowner'],
-    opportunities: ['PRV replacement','Expansion tank add','Whole home inspection','Water hammer arrestors']
-  },
-  'Gas Line': {
-    required: ['Leak test performed','Gas shutoff accessible','Line material — black iron, CSST','Permits required','Appliance connections checked','Pressure test results'],
-    opportunities: ['Full line inspection','Gas shutoff upgrade','Carbon monoxide detectors','Appliance connection upgrades']
-  },
-  'Sump Pump': {
-    required: ['Pump brand and age','Float switch working','Discharge line clear','Backup pump present','Basin condition','Check valve present','Power source'],
-    opportunities: ['Battery backup system','Wi-Fi alert system','Annual maintenance plan','Basin cleaning']
-  },
-  'Emergency': {
-    required: ['Emergency type confirmed','Main shutoff located and working','Immediate damage assessment','Utilities affected','Temporary fix possible','Permit needed','Insurance claim likely'],
-    opportunities: ['Full repair vs patch decision','Water damage restoration referral','Prevent recurrence upgrade','Priority membership']
-  }
-};
-
-// ── OBJECTION DATA ──
-const objections = {
-  price: { meaning: "They're not yet convinced the value matches the investment.", script: "I understand — and most homeowners feel the same way at first. The real question is: what happens if we delay this? The cost of a failure down the road is almost always higher than what we're looking at today.", followup: '"Would it help if I showed you what typically happens when this goes unresolved?"' },
-  think: { meaning: "They haven't been sold on urgency yet. They don't see a reason to decide now.", script: "Absolutely, this is a big decision. What I'd hate is for you to be dealing with this through the weekend. What specifically do you need to think about?", followup: '"Is it the price, the scope of work, or something else?"' },
-  spouse: { meaning: "They want permission to say yes, or genuinely need alignment.", script: "That makes total sense — big decisions are best made together. Would it help if we called them right now so I can answer their questions directly?", followup: '"What time works for both of you? I can come back today."' },
-  patch: { meaning: "They want the lowest possible cost. They don't see the full risk yet.", script: "I can do that. I just want to make sure you have the full picture — a patch here usually lasts about a year, and you'll face the same situation again at a higher cost.", followup: '"Knowing that, would you still want the patch, or does the longer-term fix make more sense?"' },
-  quotes: { meaning: "They want to feel fair to themselves. Often a delay tactic.", script: "Smart move. Most quotes will be similar in labor. Where companies differ is what they stand behind. Let me show you exactly what our warranty covers so you can compare apples to apples.", followup: '"What would you need to see to feel confident choosing us today?"' },
-  afford: { meaning: "Money is a real constraint, or they haven't seen a payment path.", script: "I hear you — that's exactly why we offer financing with payments as low as [amount] a month. You get the full fix now and keep your budget comfortable.", followup: '"Want me to run the monthly payment numbers for you right now?"' },
-  trust: { meaning: "They've been burned before, or something felt off in the presentation.", script: "That's fair — and I respect it. Let me show you our license, our reviews, and our warranty in writing. My job isn't to sell you — it's to give you what you need to make the best decision for your home.", followup: '"What would make you feel most comfortable moving forward?"' },
-  wait: { meaning: "They don't see urgency. The pain isn't real to them yet.", script: "I understand. I just want you to know what we found so you can watch it. This type of issue tends to get worse without warning — and emergency calls cost two to three times more.", followup: '"Is there a timeframe you had in mind?"' }
-};
-
-// ── AUTH ──
-window.showAuthMode = function(mode) {
-  document.getElementById('auth-login-form').classList.toggle('hidden', mode !== 'login');
-  document.getElementById('auth-register-form').classList.toggle('hidden', mode !== 'register');
-  document.getElementById('auth-error').style.display = 'none';
-};
-
-window.doLogin = async function() {
-  const email = document.getElementById('login-email').value.trim();
-  const pw = document.getElementById('login-password').value;
-  const btn = document.getElementById('btn-login');
-  if (!email || !pw) return showAuthError('Please fill in all fields.');
-  btn.innerHTML = '<span class="spinner"></span>';
-  try {
-    await signInWithEmailAndPassword(auth, email, pw);
-  } catch(e) {
-    btn.textContent = 'Sign In';
-    showAuthError(e.code === 'auth/invalid-credential' ? 'Incorrect email or password.' : e.message);
-  }
-};
-
-window.doRegister = async function() {
-  const name = document.getElementById('reg-name').value.trim();
-  const email = document.getElementById('reg-email').value.trim();
-  const pw = document.getElementById('reg-password').value;
-  const btn = document.getElementById('btn-register');
-  if (!name || !email || !pw) return showAuthError('Please fill in all fields.');
-  btn.innerHTML = '<span class="spinner"></span>';
-  try {
-    const cred = await createUserWithEmailAndPassword(auth, email, pw);
-    await updateProfile(cred.user, { displayName: name });
-    await setDoc(doc(db, 'users', cred.user.uid), {
-      name, email, role: 'technician', createdAt: serverTimestamp(),
-      totalCalls: 0, totalRevenue: 0, totalSold: 0
-    });
-  } catch(e) {
-    btn.textContent = 'Create Account';
-    showAuthError(e.message);
-  }
-};
-
-window.doLogout = async function() {
-  await signOut(auth);
-};
-
-function showAuthError(msg) {
-  const el = document.getElementById('auth-error');
-  el.textContent = msg;
-  el.style.display = 'block';
+function init(){
+  const s=localStorage.getItem(PK);
+  document.getElementById('loading').style.display='none';
+  if(s){profile=JSON.parse(s);applyProfile();go('s-home');}
+  else go('s-setup');
 }
 
-// ── AUTH STATE ──
-onAuthStateChanged(auth, async (user) => {
-  document.getElementById('loading').style.display = 'none';
-  if (user) {
-    currentUser = user;
-    await loadHomeData();
-    showScreen('screen-home');
-  } else {
-    currentUser = null;
-    showScreen('screen-auth');
-  }
-});
-
-async function loadHomeData() {
-  if (!currentUser) return;
-  document.getElementById('home-name').textContent = currentUser.displayName || 'Technician';
-  const today = new Date().toISOString().split('T')[0];
-  try {
-    const jobsQ = query(collection(db,'jobs'), where('userId','==',currentUser.uid), where('date','==',today));
-    const snap = await getDocs(jobsQ);
-    const jobs = snap.docs.map(d => d.data());
-    const total = jobs.length;
-    const sold = jobs.filter(j => j.outcome === 'sold').length;
-    const revenue = jobs.reduce((s,j) => s + (Number(j.ticketAmount)||0), 0);
-    const closeRate = total > 0 ? Math.round((sold/total)*100) : 0;
-    const avgTicket = sold > 0 ? Math.round(revenue/sold) : 0;
-    document.getElementById('stat-calls').textContent = total;
-    document.getElementById('stat-close').textContent = closeRate + '%';
-    document.getElementById('stat-ticket').textContent = avgTicket > 0 ? '$' + avgTicket.toLocaleString() : '–';
-  } catch(e) { console.log('loadHomeData error',e); }
+function applyProfile(){
+  if(!profile)return;
+  document.getElementById('h-name').textContent=profile.name||'Technician';
+  document.getElementById('h-co').textContent=(profile.role?profile.role+' · ':'')+( profile.company||'');
+  loadStats();
 }
 
-// ── JOB FLOW ──
-window.startNewJob = function() {
-  currentJobId = null;
-  currentJobData = {};
-  currentStep = 0;
-  photosCaptured = 0;
-  selectedOutcome = null;
-  selectedCallType = null;
-  document.querySelectorAll('.call-type-btn').forEach(b => b.classList.remove('selected'));
-  document.getElementById('job-customer').value = '';
-  document.getElementById('job-address').value = '';
-  showScreen('screen-calltype');
+window.pickAv=function(el,em,ctx){
+  const row=ctx==='edit'?'av-edit':'av-setup';
+  document.querySelectorAll('#'+row+' .avopt').forEach(a=>a.classList.remove('sel'));
+  el.classList.add('sel');
+  if(ctx==='edit')editAv=em; else setupAv=em;
 };
 
-window.selectCallType = function(btn, type) {
-  document.querySelectorAll('#call-type-grid .call-type-btn').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-  selectedCallType = type;
+window.saveSetup=async function(){
+  const n=document.getElementById('su-name').value.trim();
+  const c=document.getElementById('su-company').value.trim();
+  const r=document.getElementById('su-role').value.trim();
+  const rv=document.getElementById('su-review').value.trim();
+  if(!n)return alert('Please enter your name.');
+  profile={name:n,company:c,role:r,reviewUrl:rv,avatar:setupAv,createdAt:Date.now()};
+  localStorage.setItem(PK,JSON.stringify(profile));
+  try{await setDoc(doc(db,'profiles',devId()),{...profile,deviceId:devId(),updatedAt:serverTimestamp()});}catch(e){}
+  applyProfile();go('s-home');
 };
 
-window.createJob = async function() {
-  if (!selectedCallType) return alert('Please select a call type.');
-  const customer = document.getElementById('job-customer').value.trim();
-  const address = document.getElementById('job-address').value.trim();
-  if (!customer) return alert('Please enter customer name.');
-  const today = new Date().toISOString().split('T')[0];
-  const jobData = {
-    userId: currentUser.uid,
-    userName: currentUser.displayName || '',
-    customer, address, callType: selectedCallType,
-    date: today, status: 'in_progress',
-    currentStep: 0, stepsCompleted: [],
-    createdAt: serverTimestamp()
-  };
-  try {
-    const ref = await addDoc(collection(db,'jobs'), jobData);
-    currentJobId = ref.id;
-    currentJobData = jobData;
-    currentStep = 0;
-    updateDashboard();
-    renderInspection(selectedCallType);
-    showScreen('screen-dashboard');
-  } catch(e) { alert('Error creating job: ' + e.message); }
+window.openEditProfile=function(){
+  if(!profile)return;
+  document.getElementById('ed-name').value=profile.name||'';
+  document.getElementById('ed-company').value=profile.company||'';
+  document.getElementById('ed-role').value=profile.role||'';
+  document.getElementById('ed-review').value=profile.reviewUrl||'';
+  editAv=profile.avatar||'🔧';
+  document.querySelectorAll('#av-edit .avopt').forEach(a=>{a.classList.toggle('sel',a.textContent===editAv);});
+  document.getElementById('p-editform').classList.remove('hidden');
+  document.getElementById('p-danger').classList.add('hidden');
 };
+window.closeEditProfile=function(){document.getElementById('p-editform').classList.add('hidden');document.getElementById('p-danger').classList.remove('hidden');};
+window.saveEditProfile=async function(){
+  const n=document.getElementById('ed-name').value.trim();
+  if(!n)return alert('Name required.');
+  profile={...profile,name:n,company:document.getElementById('ed-company').value.trim(),role:document.getElementById('ed-role').value.trim(),reviewUrl:document.getElementById('ed-review').value.trim(),avatar:editAv};
+  localStorage.setItem(PK,JSON.stringify(profile));
+  try{await setDoc(doc(db,'profiles',devId()),{...profile,deviceId:devId(),updatedAt:serverTimestamp()},{merge:true});}catch(e){}
+  applyProfile();loadProfileScreen();closeEditProfile();
+};
+window.resetAll=function(){if(confirm('Reset ALL data? Cannot be undone.')){localStorage.clear();location.reload();}};
 
-function updateDashboard() {
-  document.getElementById('dash-customer').textContent = currentJobData.customer || '–';
-  document.getElementById('dash-address').textContent = currentJobData.address || '–';
-  document.getElementById('dash-calltype').textContent = currentJobData.callType || '–';
-  document.getElementById('inspect-calltype-label').textContent = `Step 6 of 11 · ${currentJobData.callType||''}`;
-  const pct = Math.round((currentStep / 10) * 95) + 5;
-  document.getElementById('job-progress-bar').style.width = pct + '%';
-  document.getElementById('continue-step-num').textContent = currentStep + 1;
-  renderStepList();
+async function loadProfileScreen(){
+  if(!profile)return;
+  document.getElementById('p-av').textContent=profile.avatar||'🔧';
+  document.getElementById('p-name').textContent=profile.name||'–';
+  document.getElementById('p-co').textContent=(profile.role?profile.role+' · ':'')+( profile.company||'');
+  try{
+    const q=query(collection(db,'jobs'),where('deviceId','==',devId()),where('status','==','completed'));
+    const snap=await getDocs(q);
+    const jobs=snap.docs.map(d=>d.data());
+    const rev=jobs.reduce((s,j)=>s+(Number(j.ticketAmount)||0),0);
+    document.getElementById('p-calls').textContent=jobs.length;
+    document.getElementById('p-rev').textContent=rev>0?'$'+rev.toLocaleString():'–';
+  }catch(e){}
 }
 
-function renderStepList() {
-  const steps = ['Pre-Call Prep','Arrival & Setup','Introduction','Set the Agenda','Discovery Questions','Inspection','Photo Capture','Build Options','Present Findings','Handle Objections','Close & Complete'];
-  const container = document.getElementById('step-list-container');
-  container.innerHTML = steps.map((name, i) => {
-    const done = currentJobData.stepsCompleted && currentJobData.stepsCompleted.includes(i);
-    const active = i === currentStep && !done;
-    return `<div class="step-item ${done?'done':active?'active':'pending'}" onclick="goToStep(${i})">
-      <div class="step-num ${done?'check':''}">${done?'✓':i+1}</div>
-      <div class="step-name">${name}</div>
-      <div class="step-arrow">→</div>
-    </div>`;
+async function loadStats(){
+  const today=new Date().toISOString().split('T')[0];
+  try{
+    const q=query(collection(db,'jobs'),where('deviceId','==',devId()),where('date','==',today));
+    const snap=await getDocs(q);
+    const jobs=snap.docs.map(d=>d.data());
+    const total=jobs.length,sold=jobs.filter(j=>j.outcome==='sold').length;
+    const rev=jobs.filter(j=>j.outcome==='sold').reduce((s,j)=>s+(Number(j.ticketAmount)||0),0);
+    document.getElementById('st-calls').textContent=total||'0';
+    document.getElementById('st-close').textContent=total>0?Math.round((sold/total)*100)+'%':'–';
+    document.getElementById('st-ticket').textContent=sold>0?'$'+Math.round(rev/sold).toLocaleString():'–';
+  }catch(e){}
+}
+
+window.startJob=function(){jobId=null;jobData={};curStep=0;photos=0;outcome=null;callType=null;document.querySelectorAll('.ctb').forEach(b=>b.classList.remove('sel'));document.getElementById('j-cust').value='';document.getElementById('j-addr').value='';document.getElementById('pctr').textContent='0 / 5';go('s-calltype');};
+window.selCT=function(btn,t){document.querySelectorAll('#ct-grid .ctb').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');callType=t;};
+window.createJob=async function(){
+  if(!callType)return alert('Select a call type.');
+  const c=document.getElementById('j-cust').value.trim();
+  if(!c)return alert('Enter customer name.');
+  const a=document.getElementById('j-addr').value.trim();
+  const today=new Date().toISOString().split('T')[0];
+  const jd={deviceId:devId(),techName:profile?.name||'',customer:c,address:a,callType,date:today,status:'in_progress',currentStep:0,stepsCompleted:[],createdAt:serverTimestamp()};
+  try{const ref=await addDoc(collection(db,'jobs'),jd);jobId=ref.id;jobData={...jd,id:ref.id};curStep=0;renderInsp(callType);updDash();go('s-dash');}
+  catch(e){alert('Firebase error: '+e.message);}
+};
+
+function updDash(){
+  document.getElementById('d-cust').textContent=jobData.customer||'–';
+  document.getElementById('d-addr').textContent=jobData.address||'–';
+  document.getElementById('d-ct').textContent=jobData.callType||'–';
+  document.getElementById('insp-lbl').textContent=`Step 6 of 11 · ${jobData.callType||''}`;
+  document.getElementById('jpbar').style.width=Math.max(5,Math.round((curStep/10)*95))+'%';
+  const names=['Pre-Call Prep','Arrival & Setup','Introduction','Set the Agenda','Discovery Questions','Inspection','Photo Capture','Build Options','Present Findings','Handle Objections','Close & Complete'];
+  const done=jobData.stepsCompleted||[];
+  document.getElementById('steplist').innerHTML=names.map((n,i)=>{
+    const d=done.includes(i),ac=i===curStep&&!d;
+    return`<div class="sitem ${d?'done':ac?'active':''}" onclick="goStep(${i})"><div class="snum ${d?'chk':''}">${d?'✓':i+1}</div><div class="sname">${n}</div><div style="font-size:11px;color:var(--text-muted);">→</div></div>`;
   }).join('');
 }
 
-window.goToStep = function(n) {
-  currentStep = n;
-  updateDashboard();
-  showScreen('screen-step-' + n);
+window.goStep=function(n){curStep=n;updDash();go('s-step-'+n);};
+window.goToCurrentStep=function(){goStep(curStep);};
+
+window.doneStep=async function(n){
+  const done=jobData.stepsCompleted||[];
+  if(!done.includes(n))done.push(n);
+  jobData.stepsCompleted=done;
+  curStep=n<10?n+1:10;
+  if(jobId){try{await updateDoc(doc(db,'jobs',jobId),{stepsCompleted:done,currentStep:curStep});}catch(e){}}
+  if(n<10)goStep(n+1);
 };
 
-window.completeStep = async function(stepNum) {
-  await markStepDone(stepNum);
-  if (stepNum < 10) goToStep(stepNum + 1);
+window.logArr=async function(){
+  const t=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('arr-ts').textContent='Arrived at '+t;
+  if(jobId){try{await updateDoc(doc(db,'jobs',jobId),{arrivalTime:new Date().toISOString()});}catch(e){}}
+  doneStep(1);
 };
 
-async function markStepDone(stepNum) {
-  if (!currentJobId) return;
-  const completed = currentJobData.stepsCompleted || [];
-  if (!completed.includes(stepNum)) completed.push(stepNum);
-  currentJobData.stepsCompleted = completed;
-  const next = stepNum + 1;
-  currentStep = next <= 10 ? next : 10;
-  try {
-    await updateDoc(doc(db,'jobs',currentJobId), { stepsCompleted: completed, currentStep: currentStep });
-  } catch(e) { console.log('markStepDone error',e); }
-}
+window.saveDisc=async function(){
+  const disc={q1:document.getElementById('d1').value,q2:document.getElementById('d2').value,q3:document.getElementById('d3').value,q4:document.getElementById('d4').value,q5:document.getElementById('d5').value};
+  jobData.discovery=disc;
+  if(jobId){try{await updateDoc(doc(db,'jobs',jobId),{discovery:disc});}catch(e){}}
+  doneStep(4);
+};
 
-window.logArrivalAndContinue = async function() {
-  const now = new Date();
-  const t = now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-  document.getElementById('arrival-timestamp').textContent = 'Arrived at ' + t;
-  if (currentJobId) {
-    await updateDoc(doc(db,'jobs',currentJobId), { arrivalTime: now.toISOString() });
+const inspData={
+  'Water Heater':{
+    req:[
+      {l:'Unit age — check model tag for manufacture date',note:'Flag if 10+ years old'},
+      {l:'Tank condition — rust, corrosion, mineral buildup',note:'Check base and connections'},
+      {l:'Expansion tank present and properly sized',note:'Required with closed systems'},
+      {l:'Shutoff valve — operation and condition',note:'Should turn fully without resistance'},
+      {l:'Supply lines — material, age, braided or copper',note:'Flag flex lines over 5 years'},
+      {l:'Venting — proper clearance, no blockage or corrosion',note:''},
+      {l:'Drain pan present and drain line clear',note:''},
+      {l:'Pressure relief valve — age and condition',note:'Replace if over 5 years or corroded'},
+      {l:'Pressure regulator — measured PSI reading',note:'Normal: 50–80 PSI'},
+      {l:'Sediment signs — discolored water or rumbling noise',note:''},
+      {l:'Temperature setting — check for scalding risk',note:'Recommend 120°F'},
+      {l:'Earthquake straps if seismic zone',note:''}
+    ],
+    opp:['Whole home water filtration absent','Maintenance membership not enrolled','Shutoff valve difficult to operate — replacement needed','No expansion tank on closed system','Pressure regulator aging or out of range','Water softener not present — hard water signs visible','PRV past service life'],
+    photos:['Model tag (full serial/model number visible)','Full unit front','Top connections and expansion tank','Base and drain pan','Completed repair or replacement']
+  },
+  'Drain':{
+    req:[
+      {l:'Primary blockage location confirmed',note:'Kitchen, bath, floor drain, main?'},
+      {l:'Drain accessibility — cleanout present',note:''},
+      {l:'Visual signs of root intrusion',note:''},
+      {l:'Backup frequency noted from homeowner',note:'Use discovery answers'},
+      {l:'P-trap condition — visible traps',note:'Look for leaks or improper slope'},
+      {l:'Vent stack accessible for camera if needed',note:''},
+      {l:'Multiple fixtures backing up or single',note:'Single = local, multiple = main'},
+      {l:'Grease buildup — kitchen drain history',note:''},
+      {l:'Age and material of drain lines if visible',note:'Cast iron, ABS, PVC'},
+      {l:'Camera inspection warranted',note:'Flag if recurring issue'}
+    ],
+    opp:['Hydro-jet cleaning recommended over snaking','Camera inspection not yet performed','Bio-clean monthly treatment plan','Maintenance drain plan to prevent recurrence','Whole home drain inspection while on-site','Cleanout installation if none present'],
+    photos:['Drain access point','Camera footage still if applicable','Before clearing','After clearing','Any root or debris pulled out']
+  },
+  'Leak':{
+    req:[
+      {l:'Leak source confirmed — supply or drain line',note:''},
+      {l:'Water damage scope assessed — walls, floors, cabinets',note:''},
+      {l:'Main shutoff valve location and operation',note:''},
+      {l:'Drywall, flooring or subfloor affected',note:'Note extent for homeowner'},
+      {l:'Mold or mildew visible',note:'Flag — requires remediation referral'},
+      {l:'Duration of leak estimated',note:''},
+      {l:'Other fixtures or lines in same area checked',note:''},
+      {l:'Pipe material at leak point',note:'Copper, PEX, galvanized, CPVC'},
+      {l:'Age of pipe at leak point',note:''},
+      {l:'Water meter checked for hidden leaks',note:'Turn off all fixtures, check meter movement'}
+    ],
+    opp:['Whole home shutoff valve upgrade','Water leak detector installation','Full pipe inspection while open','Insurance documentation photos provided','Mold remediation referral','Pressure regulator — check if high pressure caused failure'],
+    photos:['Active leak or source','Water damage extent','Pipe condition at leak','After repair','Water meter reading before and after']
+  },
+  'Toilet':{
+    req:[
+      {l:'Flush mechanism — full flush with single press',note:''},
+      {l:'Fill valve — fill time and noise',note:'Should fill in under 60 seconds'},
+      {l:'Flapper seal — dye test for silent leak',note:''},
+      {l:'Wax ring — floor seal and rocking',note:'Any movement means compromised seal'},
+      {l:'Supply line — age and material',note:'Replace braided if over 5 years'},
+      {l:'Shutoff valve — operation',note:''},
+      {l:'Tank lid and tank crack inspection',note:''},
+      {l:'Bowl condition — staining, cracks',note:''},
+      {l:'Water usage — 1.6GPF or older 3.5GPF',note:'Flag high-usage models'},
+      {l:'Ventilation adequate for bathroom',note:''}
+    ],
+    opp:['High-efficiency toilet upgrade — 1.28GPF','Bidet attachment offer','Shutoff valve replacement','Complete rebuild vs repair cost comparison','Slow flush root cause — venting issue','Maintenance membership'],
+    photos:['Full toilet front','Tank interior','Base and floor seal','Supply line and shutoff','Completed repair']
+  },
+  'Faucet':{
+    req:[
+      {l:'Faucet brand, model and approximate age',note:''},
+      {l:'Cartridge or ball valve type identified',note:''},
+      {l:'Supply lines — material and condition',note:''},
+      {l:'Shutoff valves under sink — operation',note:'Flag if stuck or corroded'},
+      {l:'Water pressure at fixture — hot and cold',note:''},
+      {l:'Aerator condition — flow restriction or buildup',note:''},
+      {l:'Drain assembly — stopper and p-trap',note:''},
+      {l:'Under-sink cabinet — signs of moisture or past leaks',note:''},
+      {l:'Hot water delivery time',note:'Note if slow — may indicate recirculation opportunity'},
+      {l:'Water quality — taste, odor or discoloration noted',note:''}
+    ],
+    opp:['Full faucet replacement vs repair — cost comparison','Under-sink shutoff upgrade','Water filtration system — point of use','Hot water recirculation pump','Matching fixture upgrade package','Whole home filtration'],
+    photos:['Faucet full view','Under-sink connections','Shutoff valves','Aerator or cartridge removed','Completed repair']
+  },
+  'Sewer':{
+    req:[
+      {l:'Camera inspection performed or needed',note:''},
+      {l:'Cleanout access location confirmed',note:''},
+      {l:'Tree root intrusion present',note:''},
+      {l:'Pipe material — clay, cast iron, ABS, Orangeburg',note:'Flag Orangeburg immediately'},
+      {l:'Belly, sag or offset visible on camera',note:''},
+      {l:'Distance from cleanout to street connection',note:''},
+      {l:'Permit required — check local requirements',note:''},
+      {l:'Grade and slope adequate',note:'Minimum 1/4" per foot'},
+      {l:'Multiple blockage locations or single',note:''},
+      {l:'History of backups from homeowner',note:'Use discovery answers'}
+    ],
+    opp:['Full sewer line replacement — trenchless or open cut','Hydro-jetting for root or grease removal','Annual camera inspection plan','Cleanout installation if none exists','Pipe lining as alternative to replacement','Whole home plumbing inspection'],
+    photos:['Camera footage still — problem area','Cleanout access','Root or debris pulled','Ground surface above line if relevant','After hydro-jet or repair']
+  },
+  'Repipe':{
+    req:[
+      {l:'Current pipe material throughout home',note:'Polybutylene, galvanized, copper, CPVC'},
+      {l:'Age of existing piping',note:'Galvanized 40–70yr, PB recalled, copper 50yr+'},
+      {l:'Water quality — discoloration, metallic taste',note:''},
+      {l:'Pressure at multiple fixtures',note:'Inconsistent pressure = scaling/corrosion'},
+      {l:'Number of fixtures and bathrooms',note:'Affects scope and bid'},
+      {l:'Access points — attic, crawlspace, slab',note:''},
+      {l:'Permit required — yes for full repipe',note:''},
+      {l:'Shut-off valves at fixtures — condition',note:''},
+      {l:'Water heater condition — replace during repipe?',note:'Flag if 8+ years'},
+      {l:'Homeowner timeline and displacement tolerance',note:''}
+    ],
+    opp:['Whole home filtration installed during repipe','Pressure regulator upgrade','Water heater replacement while walls open','Fixture upgrades — shutoffs and supply lines','Extended labor warranty offer','Maintenance membership at completion'],
+    photos:['Existing pipe material — close-up','Multiple locations showing pipe condition','Access points — attic or crawlspace','Pressure reading at fixture','Completed repipe sections']
+  },
+  'Filtration':{
+    req:[
+      {l:'Current water quality — taste, odor, color',note:''},
+      {l:'TDS reading if meter available',note:'Note reading — 0–50 excellent, 50–150 good, 150+ flag'},
+      {l:'Existing filtration system — brand, age, filter status',note:''},
+      {l:'Under-sink vs whole home vs point of entry',note:''},
+      {l:'Water softener present and functioning',note:'Check salt level and bypass valve'},
+      {l:'Water heater condition — scale buildup from hard water',note:''},
+      {l:'Iron, sulfur or chlorine smell present',note:''},
+      {l:'Well water or municipal',note:'Different treatment needs'},
+      {l:'Number of people in household',note:'Affects system sizing'},
+      {l:'Current filter maintenance history',note:''}
+    ],
+    opp:['Reverse osmosis system — under sink drinking water','Whole home softener + filtration combo','Annual filter replacement service plan','Water test report for homeowner','Scale prevention for water heater','Salt-free conditioner alternative'],
+    photos:['Existing system or lack of filtration','TDS meter reading on screen','Water heater scale evidence if present','Under-sink space for RO','Completed installation']
+  },
+  'Pressure':{
+    req:[
+      {l:'Measured PSI reading — static',note:'Normal: 50–80 PSI. Flag over 80'},
+      {l:'PRV location, brand and age',note:'Service life 7–12 years'},
+      {l:'PRV adjusted and re-tested after adjustment',note:''},
+      {l:'Main shutoff valve — location and operation',note:''},
+      {l:'Expansion tank present and pressure tested',note:''},
+      {l:'Symptoms noted — banging, whistling, high velocity',note:''},
+      {l:'Hot water pressure vs cold water pressure',note:'Should be equal'},
+      {l:'Pressure at multiple fixture locations',note:'Check if consistent throughout home'},
+      {l:'Supply line condition — any bulging or stress',note:''},
+      {l:'Water meter shutoff accessible',note:''}
+    ],
+    opp:['PRV replacement — out of range or past service life','Expansion tank installation or replacement','Water hammer arrestors at washing machine','Whole home plumbing inspection','Pressure gauge installation for monitoring','Maintenance membership'],
+    photos:['Pressure gauge reading','PRV location and condition','Expansion tank','Main shutoff valve','Completed adjustment or repair']
+  },
+  'Gas Line':{
+    req:[
+      {l:'Leak test performed — soap test or detector',note:'Never skip this step'},
+      {l:'Gas shutoff location confirmed — main and appliance',note:''},
+      {l:'Line material — black iron, CSST, copper',note:'CSST requires bonding'},
+      {l:'CSST bonding confirmed if present',note:'Code requirement'},
+      {l:'Permits required for work scope',note:'Almost always yes'},
+      {l:'Pressure test completed and documented',note:''},
+      {l:'All appliance connections inspected',note:''},
+      {l:'Flexible connectors — age and condition',note:'Replace if kinked or corroded'},
+      {l:'Drip leg present at appliances',note:''},
+      {l:'Carbon monoxide detectors present in home',note:''}
+    ],
+    opp:['Full gas line inspection while on-site','Gas shutoff upgrade to ball valve','Carbon monoxide detector installation','Flexible connector replacement — aging','CSST bonding installation if missing','Seismic gas shutoff valve'],
+    photos:['Gas meter and main shutoff','Leak test in progress','Line material close-up','Appliance connections','Completed repair or installation']
+  },
+  'Sump Pump':{
+    req:[
+      {l:'Pump brand, model and age',note:'Service life 7–10 years'},
+      {l:'Float switch operation — manual test',note:'Pour water into pit to test'},
+      {l:'Discharge line — clear, proper slope, check valve',note:''},
+      {l:'Discharge termination point — away from foundation',note:'Min 10 feet'},
+      {l:'Battery backup system present',note:'Critical in power outage scenarios'},
+      {l:'Basin condition — debris, sediment',note:''},
+      {l:'Check valve present and functioning',note:''},
+      {l:'Power source — dedicated outlet, GFCI',note:''},
+      {l:'Water intrusion history from homeowner',note:''},
+      {l:'Wi-Fi or alarm alert system present',note:''}
+    ],
+    opp:['Battery backup installation — no power protection currently','Wi-Fi alert system for remote monitoring','Basin cleaning and maintenance','Annual service plan','Second pump redundancy for high-risk homes','Discharge line extension or correction'],
+    photos:['Full pit and pump','Float switch','Discharge line and check valve','Backup system or lack of','After service or installation']
+  },
+  'Emergency':{
+    req:[
+      {l:'Emergency type confirmed and contained',note:'Stop active damage first'},
+      {l:'Main shutoff located and operated',note:'Confirm water or gas is off'},
+      {l:'Immediate damage assessment documented',note:''},
+      {l:'Utilities affected — water, gas, electric proximity',note:''},
+      {l:'Temporary fix possible vs full repair needed',note:''},
+      {l:'Permit needed for scope of repair',note:''},
+      {l:'Insurance claim likely — document thoroughly',note:'Photo everything now'},
+      {l:'Adjacent areas checked for hidden damage',note:''},
+      {l:'Cause of failure identified',note:'Age, freeze, pressure, corrosion'},
+      {l:'Homeowner aware of full scope and timeline',note:'Set expectations clearly'}
+    ],
+    opp:['Full repair vs patch — present both options clearly','Water damage restoration referral','Prevention upgrade — what failed and why','Main shutoff valve upgrade','Whole home inspection to find other risks','Priority membership for future response'],
+    photos:['Active emergency — before containment','Damage extent — walls, floors, ceiling','Source of failure close-up','Main shutoff and meter','After temporary or permanent repair']
   }
-  completeStep(1);
 };
 
-window.saveDiscoveryAndContinue = async function() {
-  const discovery = {
-    q1: document.getElementById('disc-1').value,
-    q2: document.getElementById('disc-2').value,
-    q3: document.getElementById('disc-3').value,
-    q4: document.getElementById('disc-4').value,
-    q5: document.getElementById('disc-5').value
-  };
-  if (currentJobId) {
-    await updateDoc(doc(db,'jobs',currentJobId), { discovery });
-  }
-  currentJobData.discovery = discovery;
-  completeStep(4);
-};
-
-function renderInspection(callType) {
-  const data = inspectionData[callType] || inspectionData['Water Heater'];
-  let html = '<div class="section-divider">Required Items</div>';
-  data.required.forEach(item => {
-    html += `<div class="inspect-item" onclick="cycleInspect(this)">
-      <div class="inspect-dot"></div>
-      <div class="inspect-label">${item}</div>
-      <div class="inspect-status">Tap to note</div>
+function renderInsp(ct){
+  const d=inspData[ct]||inspData['Water Heater'];
+  let h='<div class="sdiv">Required Inspection Items</div>';
+  h+='<div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;line-height:1.5;">Tap once = OK &nbsp;·&nbsp; Tap twice = Flagged &nbsp;·&nbsp; Tap three times = reset</div>';
+  d.req.forEach((item,i)=>{
+    const l=typeof item==='string'?item:item.l;
+    const note=typeof item==='object'&&item.note?item.note:'';
+    h+=`<div class="insp" onclick="cycInsp(this)" data-idx="${i}">
+      <div class="idot"></div>
+      <div style="flex:1;">
+        <div class="ilbl">${l}</div>
+        ${note?`<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${note}</div>`:''}
+      </div>
+      <div class="istat">Tap</div>
     </div>`;
   });
-  html += '<div class="section-divider">Protection Opportunities</div>';
-  data.opportunities.forEach(item => {
-    html += `<div class="opp-flag" onclick="toggleOpp(this)">
-      <div style="font-size:14px;">⚡</div>
-      <div class="opp-text">${item}</div>
-      <div class="opp-add">+ Add</div>
-    </div>`;
-  });
-  document.getElementById('inspect-content').innerHTML = html;
+  h+='<div class="sdiv" style="margin-top:20px;">Inspection Notes</div>';
+  h+=`<textarea style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;font-family:var(--font);color:var(--text-primary);background:var(--surface);outline:none;min-height:80px;resize:none;margin-bottom:4px;" id="insp-notes" placeholder="Additional observations, measurements, or notes..."></textarea>`;
+  h+='<div class="sdiv" style="margin-top:16px;">Protection Opportunities</div>';
+  d.opp.forEach(i=>{h+=`<div class="opp" onclick="togOpp(this)"><div style="font-size:14px;">⚡</div><div class="oppt">${i}</div><div class="oppa">+ Add</div></div>`;});
+  if(d.photos&&d.photos.length){
+    h+='<div class="sdiv" style="margin-top:16px;">Required Photos — This Call Type</div>';
+    d.photos.forEach((p,i)=>{h+=`<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface);border-radius:8px;margin-bottom:6px;border:1px solid var(--border);cursor:pointer;" onclick="togPhotoReq(this)"><div style="width:22px;height:22px;border-radius:6px;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#fff;font-size:11px;font-weight:700;" class="preq-box"></div><div style="flex:1;font-size:13px;font-weight:600;color:var(--text-primary);">${i+1}. ${p}</div></div>`;});
+  }
+  document.getElementById('insp-cont').innerHTML=h;
 }
 
-window.saveInspectionAndContinue = async function() {
-  const items = document.querySelectorAll('#inspect-content .inspect-item');
-  const opps = document.querySelectorAll('#inspect-content .opp-flag');
-  const inspectionResults = [];
-  const opportunities = [];
-  items.forEach(el => {
-    inspectionResults.push({ label: el.querySelector('.inspect-label').textContent, status: el.classList.contains('flagged') ? 'flagged' : el.classList.contains('ok') ? 'ok' : 'unchecked' });
-  });
-  opps.forEach(el => {
-    if (el.classList.contains('added')) opportunities.push(el.querySelector('.opp-text').textContent);
-  });
-  if (currentJobId) {
-    await updateDoc(doc(db,'jobs',currentJobId), { inspectionResults, opportunities });
+window.togPhotoReq=function(el){
+  const box=el.querySelector('.preq-box');
+  const done=!el.classList.contains('preq-done');
+  el.classList.toggle('preq-done',done);
+  box.textContent=done?'✓':'';
+  box.style.background=done?'var(--success)':'#fff';
+  box.style.borderColor=done?'var(--success)':'var(--border)';
+  box.style.color='#fff';
+};
+
+window.saveInsp=async function(){
+  const items=Array.from(document.querySelectorAll('#insp-cont .insp')).map(el=>({label:el.querySelector('.ilbl').textContent,status:el.classList.contains('flag')?'flagged':el.classList.contains('ok')?'ok':'unchecked'}));
+  const opps=Array.from(document.querySelectorAll('#insp-cont .opp')).filter(el=>el.classList.contains('added')).map(el=>el.querySelector('.oppt').textContent);
+  const notes=document.getElementById('insp-notes')?.value||'';
+  const flagged=items.filter(i=>i.status==='flagged').length;
+  if(jobId){try{await updateDoc(doc(db,'jobs',jobId),{inspectionResults:items,opportunities:opps,inspectionNotes:notes,flaggedItems:flagged});}catch(e){}}
+  doneStep(5);
+};
+
+window.capPhoto=function(el){
+  if(!el.classList.contains('cap')){
+    el.classList.add('cap');el.querySelector('.psli').textContent='✅';photos++;
+    document.getElementById('pctr').textContent=photos+' / 5';
+    if(jobId){try{updateDoc(doc(db,'jobs',jobId),{photoCount:photos});}catch(e){}}
   }
-  completeStep(5);
 };
 
-window.capturePhoto = function(el, label) {
-  if (!el.classList.contains('captured')) {
-    el.classList.add('captured');
-    el.querySelector('.photo-slot-icon').textContent = '✅';
-    photosCaptured++;
-    document.getElementById('photo-count-display').textContent = photosCaptured + ' / 5';
-    if (currentJobId) updateDoc(doc(db,'jobs',currentJobId),{photoCount: photosCaptured});
-  }
+window.saveOpts=async function(){
+  const opts={good:{price:document.getElementById('og-p').value,desc:document.getElementById('og-d').value,warranty:document.getElementById('og-w').value},better:{price:document.getElementById('ob-p').value,desc:document.getElementById('ob-d').value,warranty:document.getElementById('ob-w').value},best:{price:document.getElementById('obe-p').value,desc:document.getElementById('obe-d').value,warranty:document.getElementById('obe-w').value,financing:document.getElementById('o-fin').checked}};
+  if(jobId){try{await updateDoc(doc(db,'jobs',jobId),{options:opts});}catch(e){}}
+  doneStep(7);
 };
 
-window.saveOptionsAndContinue = async function() {
-  const options = {
-    good: { price: document.getElementById('opt-good-price').value, desc: document.getElementById('opt-good-desc').value, warranty: document.getElementById('opt-good-warranty').value },
-    better: { price: document.getElementById('opt-better-price').value, desc: document.getElementById('opt-better-desc').value, warranty: document.getElementById('opt-better-warranty').value },
-    best: { price: document.getElementById('opt-best-price').value, desc: document.getElementById('opt-best-desc').value, warranty: document.getElementById('opt-best-warranty').value, financing: document.getElementById('opt-financing').checked }
-  };
-  if (currentJobId) await updateDoc(doc(db,'jobs',currentJobId),{ options });
-  currentJobData.options = options;
-  completeStep(7);
+let membershipResult=null,reviewResult=null;
+
+window.setOC=function(oc,btn){outcome=oc;['oc-sold','oc-cb','oc-ns'].forEach(id=>document.getElementById(id).classList.remove('sel'));btn.classList.add('sel');};
+window.setMembership=function(v,btn){membershipResult=v;['mem-yes','mem-no'].forEach(id=>document.getElementById(id).classList.remove('sel'));btn.classList.add('sel');};
+window.setReview=function(v,btn){
+  reviewResult=v;
+  ['rev-yes','rev-no'].forEach(id=>document.getElementById(id).classList.remove('sel'));
+  btn.classList.add('sel');
+  document.getElementById('rev-link-box').classList.toggle('hidden',v!=='yes');
+};
+window.openReviewLink=function(){
+  const url=profile?.reviewUrl||'https://search.google.com/local/writereview';
+  window.open(url,'_blank');
 };
 
-window.setOutcome = function(outcome, btn) {
-  selectedOutcome = outcome;
-  ['outcome-sold','outcome-callback','outcome-nosale'].forEach(id => document.getElementById(id).classList.remove('selected'));
-  btn.classList.add('selected');
-};
-
-window.completeJob = async function() {
-  if (!selectedOutcome) return alert('Please select a job outcome.');
-  const ticket = Number(document.getElementById('final-ticket').value) || 0;
-  if (!currentJobId) return;
-  const updateData = { status: 'completed', outcome: selectedOutcome, ticketAmount: ticket, completedAt: serverTimestamp(), stepsCompleted: [0,1,2,3,4,5,6,7,8,9,10] };
-  try {
-    await updateDoc(doc(db,'jobs',currentJobId), updateData);
-    const userRef = doc(db,'users',currentUser.uid);
-    await updateDoc(userRef, {
-      totalCalls: increment(1),
-      totalRevenue: increment(ticket),
-      totalSold: increment(selectedOutcome === 'sold' ? 1 : 0)
+window.finishJob=async function(){
+  if(!outcome)return alert('Please select a job outcome.');
+  const t=Number(document.getElementById('ticket').value)||0;
+  const notes=document.getElementById('job-notes')?.value||'';
+  if(!jobId)return;
+  const flagged=jobData.flaggedItems||0;
+  try{
+    await updateDoc(doc(db,'jobs',jobId),{
+      status:'completed',outcome,ticketAmount:t,jobNotes:notes,
+      completedAt:serverTimestamp(),stepsCompleted:[0,1,2,3,4,5,6,7,8,9,10]
     });
-    currentJobId = null;
-    currentJobData = {};
-    await loadHomeData();
-    showScreen('screen-home');
-  } catch(e) { alert('Error completing job: ' + e.message); }
+    // Set up review screen
+    const custName=jobData.customer?.split(' ')[0]||'there';
+    document.getElementById('rev-cust-name').textContent=custName;
+    document.getElementById('sum-ticket').textContent=t>0?'$'+t.toLocaleString():'–';
+    document.getElementById('sum-ct').textContent=jobData.callType||'–';
+    document.getElementById('sum-flags').textContent=flagged||'0';
+    // Outcome banner
+    const isSold=outcome==='sold';
+    const isCB=outcome==='callback';
+    document.getElementById('rev-outcome-icon').textContent=isSold?'✅':isCB?'📞':'❌';
+    document.getElementById('rev-outcome-title').textContent=isSold?'Job Sold!':isCB?'Callback Scheduled':'Call Complete';
+    document.getElementById('rev-outcome-sub').textContent=isSold?`$${t.toLocaleString()} — great work today.`:isCB?'Follow up promptly to close this one.':'Not every call closes. Review and improve.';
+    document.getElementById('rev-outcome-banner').style.background=isSold?'#EAF7F2':isCB?'#FFF8EC':'var(--surface)';
+    // Hide membership offer if no sale
+    document.getElementById('rev-membership').style.display=isSold?'block':'none';
+    membershipResult=null;reviewResult=null;
+    go('s-review');
+  }catch(e){alert('Error: '+e.message);}
 };
 
-// ── OBJECTIONS ──
-window.showObjInStep = function(btn, key) {
-  const data = objections[key];
-  document.querySelectorAll('#screen-step-9 .obj-btn').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-  document.getElementById('step-obj-meaning').textContent = data.meaning;
-  document.getElementById('step-obj-script').textContent = data.script;
-  document.getElementById('step-obj-followup').textContent = data.followup;
-  document.getElementById('step-obj-response').classList.add('visible');
-};
-
-window.showObjRef = function(btn, key) {
-  const data = objections[key];
-  document.querySelectorAll('#screen-objections-ref .obj-btn').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-  document.getElementById('ref-obj-meaning').textContent = data.meaning;
-  document.getElementById('ref-obj-script').textContent = data.script;
-  document.getElementById('ref-obj-followup').textContent = data.followup;
-  document.getElementById('ref-obj-response').classList.add('visible');
-};
-
-// ── KPI ──
-window.setPeriod = async function(btn, period) {
-  kpiPeriod = period;
-  document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  await loadKPI();
-};
-
-async function loadKPI() {
-  if (!currentUser) return;
-  const today = new Date();
-  let startDate;
-  if (kpiPeriod === 'today') {
-    startDate = today.toISOString().split('T')[0];
-  } else if (kpiPeriod === 'week') {
-    const d = new Date(today); d.setDate(d.getDate() - 7);
-    startDate = d.toISOString().split('T')[0];
-  } else {
-    const d = new Date(today); d.setDate(1);
-    startDate = d.toISOString().split('T')[0];
+window.finalClose=async function(){
+  // Save review and membership data back to job
+  if(jobId&&(reviewResult||membershipResult)){
+    try{await updateDoc(doc(db,'jobs',jobId),{reviewAsked:reviewResult==='yes'?true:false,reviewResult:reviewResult||'not_asked',membershipOffered:true,membershipAdded:membershipResult==='yes'});}catch(e){}
   }
-  try {
-    const q = query(collection(db,'jobs'), where('userId','==',currentUser.uid), where('date','>=',startDate), where('status','==','completed'));
-    const snap = await getDocs(q);
-    const jobs = snap.docs.map(d => d.data());
-    const total = jobs.length;
-    const sold = jobs.filter(j => j.outcome === 'sold').length;
-    const revenue = jobs.reduce((s,j) => s + (Number(j.ticketAmount)||0), 0);
-    const closeRate = total > 0 ? Math.round((sold/total)*100) : 0;
-    const avgTicket = sold > 0 ? Math.round(revenue/sold) : 0;
-    const photoCompliance = total > 0 ? Math.round((jobs.filter(j => (j.photoCount||0) >= 3).length / total)*100) : 0;
-    const inspectRate = total > 0 ? Math.round((jobs.filter(j => j.inspectionResults && j.inspectionResults.length > 0).length / total)*100) : 0;
-    const optionsRate = total > 0 ? Math.round((jobs.filter(j => j.options && j.options.good && j.options.better).length / total)*100) : 0;
-    document.getElementById('kpi-calls').textContent = total;
-    document.getElementById('kpi-close').textContent = closeRate + '%';
-    document.getElementById('kpi-ticket').textContent = avgTicket > 0 ? '$' + avgTicket.toLocaleString() : '–';
-    document.getElementById('kpi-revenue').textContent = revenue > 0 ? '$' + revenue.toLocaleString() : '–';
-    document.getElementById('bar-photo').textContent = photoCompliance + '%';
-    document.getElementById('bar-photo-fill').style.width = photoCompliance + '%';
-    document.getElementById('bar-inspect').textContent = inspectRate + '%';
-    document.getElementById('bar-inspect-fill').style.width = inspectRate + '%';
-    document.getElementById('bar-options').textContent = optionsRate + '%';
-    document.getElementById('bar-options-fill').style.width = optionsRate + '%';
-  } catch(e) { console.log('KPI error',e); }
+  jobId=null;jobData={};membershipResult=null;reviewResult=null;
+  await loadStats();go('s-home');
+};
+
+const objs={
+  price:{m:"They're not convinced the value matches the cost yet.",s:"I understand — most homeowners feel the same way at first. The real question is: what happens if we delay this? Failures down the road almost always cost more.",f:'"Would it help if I showed you what typically happens when this goes unresolved?"'},
+  think:{m:"They haven't bought into urgency. No reason to decide now.",s:"Absolutely, this is a big decision. What I'd hate is for you to be dealing with this through the weekend. What specifically do you need to think about?",f:'"Is it the price, the scope, or something else?"'},
+  spouse:{m:"They want permission to say yes, or need genuine alignment.",s:"Makes total sense — big decisions are best made together. Would it help if we called them right now so I can answer their questions directly?",f:'"What time works for both of you? I can come back today."'},
+  patch:{m:"They want the lowest cost. They haven't seen the full risk.",s:"I can do that. I just want you to have the full picture — a patch here usually holds about a year, then you're back in this same situation at higher cost.",f:'"Knowing that, does the longer-term fix make more sense?"'},
+  quotes:{m:"They want to feel fair to themselves. Often a delay tactic.",s:"Smart move. Most quotes will be similar in labor. Where companies differ is what they stand behind. Let me show you our warranty so you can compare apples to apples.",f:'"What would you need to see to feel confident choosing us today?"'},
+  afford:{m:"Money is a real constraint, or they haven't seen a payment path.",s:"I hear you — that's why we offer financing with payments as low as [amount] per month. You get the full fix now and keep your budget comfortable.",f:'"Want me to run the monthly payment on that right now?"'},
+  trust:{m:"They've been burned before, or something felt off.",s:"Fair — and I respect that. Let me show you our license, reviews, and warranty in writing. My job isn't to sell you. It's to give you what you need to make the best call for your home.",f:'"What would make you most comfortable moving forward?"'},
+  wait:{m:"They don't see urgency. The pain isn't real yet.",s:"I understand. I just want you to know what we found so you can watch it. This type of issue tends to get worse without warning — and emergency calls are two to three times the cost.",f:'"Is there a timeframe you had in mind?"'}
+};
+
+window.showObj=function(btn,key,ctx){
+  const d=objs[key];if(!d)return;
+  const scope=ctx==='step'?'#s-step-9':'#s-objref';
+  document.querySelectorAll(scope+' .objbtn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  const pid=ctx==='step'?'obj-step':'obj-ref';
+  const pre=ctx==='step'?'os':'or';
+  document.getElementById(pre+'-m').textContent=d.m;
+  document.getElementById(pre+'-s').textContent=d.s;
+  document.getElementById(pre+'-f').textContent=d.f;
+  document.getElementById(pid).classList.add('vis');
+};
+
+window.setPer=async function(btn,p){
+  kpiPer=p;document.querySelectorAll('.kpibtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');loadKPI();
+};
+
+async function loadKPI(){
+  const today=new Date();let start;
+  if(kpiPer==='today')start=today.toISOString().split('T')[0];
+  else if(kpiPer==='week'){const d=new Date(today);d.setDate(d.getDate()-7);start=d.toISOString().split('T')[0];}
+  else{const d=new Date(today);d.setDate(1);start=d.toISOString().split('T')[0];}
+  try{
+    const q=query(collection(db,'jobs'),where('deviceId','==',devId()),where('date','>=',start),where('status','==','completed'));
+    const snap=await getDocs(q);
+    const jobs=snap.docs.map(d=>d.data());
+    const total=jobs.length,sold=jobs.filter(j=>j.outcome==='sold').length;
+    const rev=jobs.filter(j=>j.outcome==='sold').reduce((s,j)=>s+(Number(j.ticketAmount)||0),0);
+    const cr=total>0?Math.round((sold/total)*100):0;
+    const at=sold>0?Math.round(rev/sold):0;
+    const pc=total>0?Math.round((jobs.filter(j=>(j.photoCount||0)>=3).length/total)*100):0;
+    const ir=total>0?Math.round((jobs.filter(j=>j.inspectionResults?.length>0).length/total)*100):0;
+    const or2=total>0?Math.round((jobs.filter(j=>j.options?.good&&j.options?.better).length/total)*100):0;
+    document.getElementById('kv-calls').textContent=total;
+    document.getElementById('kv-close').textContent=total>0?cr+'%':'–';
+    document.getElementById('kv-ticket').textContent=at>0?'$'+at.toLocaleString():'–';
+    document.getElementById('kv-rev').textContent=rev>0?'$'+rev.toLocaleString():'–';
+    document.getElementById('bp').textContent=pc+'%';document.getElementById('bpf').style.width=pc+'%';
+    document.getElementById('bi').textContent=ir+'%';document.getElementById('bif').style.width=ir+'%';
+    document.getElementById('bo').textContent=or2+'%';document.getElementById('bof').style.width=or2+'%';
+  }catch(e){}
 }
 
-// ── PAST JOBS ──
-async function loadPastJobs() {
-  if (!currentUser) return;
-  const container = document.getElementById('jobs-list');
-  container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted);">Loading...</div>';
-  try {
-    const q = query(collection(db,'jobs'), where('userId','==',currentUser.uid), orderBy('createdAt','desc'));
-    const snap = await getDocs(q);
-    if (snap.empty) { container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);font-size:14px;">No jobs yet. Start your first job above.</div>'; return; }
-    container.innerHTML = snap.docs.map(d => {
-      const j = d.data();
-      const outcomeColor = j.outcome === 'sold' ? 'var(--success)' : j.outcome === 'nosale' ? 'var(--danger)' : 'var(--gold)';
-      const outcomeLabel = j.outcome === 'sold' ? 'Sold' : j.outcome === 'nosale' ? 'No Sale' : j.outcome === 'callback' ? 'Callback' : 'In Progress';
-      return `<div style="background:var(--surface);border-radius:10px;padding:14px 16px;margin-bottom:10px;border:1px solid var(--border);">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+async function loadJobs(){
+  const c=document.getElementById('jobslist');
+  c.innerHTML='<div style="text-align:center;padding:30px;color:var(--text-muted);">Loading...</div>';
+  try{
+    const q=query(collection(db,'jobs'),where('deviceId','==',devId()),orderBy('createdAt','desc'));
+    const snap=await getDocs(q);
+    if(snap.empty){c.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-muted);font-size:14px;">No jobs yet. Hit Start New Job to begin.</div>';return;}
+    c.innerHTML=snap.docs.map(d=>{
+      const j=d.data();
+      const oc=j.outcome==='sold'?'var(--success)':j.outcome==='nosale'?'var(--danger)':'var(--gold)';
+      const ol=j.outcome==='sold'?'Sold':j.outcome==='nosale'?'No Sale':j.outcome==='callback'?'Callback':'In Progress';
+      return`<div style="background:var(--surface);border-radius:10px;padding:14px 16px;margin-bottom:10px;border:1px solid var(--border);">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
           <div style="font-size:15px;font-weight:700;color:var(--text-primary);">${j.customer||'–'}</div>
-          <div style="font-size:11px;font-weight:800;color:${outcomeColor};text-transform:uppercase;">${outcomeLabel}</div>
+          <div style="font-size:11px;font-weight:800;color:${oc};text-transform:uppercase;">${ol}</div>
         </div>
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">${j.address||''}</div>
-        <div style="display:flex;gap:8px;">
-          <div style="font-size:11px;font-weight:700;color:var(--navy-light);">${j.callType||''}</div>
-          ${j.ticketAmount ? `<div style="font-size:11px;font-weight:700;color:var(--success);">$${Number(j.ticketAmount).toLocaleString()}</div>` : ''}
-          <div style="font-size:11px;color:var(--text-muted);">${j.date||''}</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px;">${j.address||''}</div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <span style="font-size:11px;font-weight:700;color:var(--navy-light);">${j.callType||''}</span>
+          ${j.ticketAmount?`<span style="font-size:12px;font-weight:800;color:var(--success);">$${Number(j.ticketAmount).toLocaleString()}</span>`:''}
+          <span style="font-size:11px;color:var(--text-muted);">${j.date||''}</span>
         </div>
       </div>`;
     }).join('');
-  } catch(e) { container.innerHTML = '<div style="padding:20px;color:var(--danger);">Error loading jobs.</div>'; }
+  }catch(e){c.innerHTML='<div style="padding:20px;color:var(--danger);">Could not load jobs.</div>';}
 }
 
-// ── UI HELPERS ──
-window.showScreen = function(id) {
-  document.querySelectorAll('#app > div:not(#loading)').forEach(d => d.classList.add('hidden'));
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.classList.remove('hidden');
-  el.classList.add('fade-in');
-  setTimeout(() => el.classList.remove('fade-in'), 300);
-  if (id === 'screen-kpi') loadKPI();
-  if (id === 'screen-jobs') loadPastJobs();
-  if (id === 'screen-home') loadHomeData();
+window.go=function(id){
+  document.querySelectorAll('#app > div:not(#loading)').forEach(d=>d.classList.add('hidden'));
+  const el=document.getElementById(id);if(!el)return;
+  el.classList.remove('hidden');el.classList.add('fade');setTimeout(()=>el.classList.remove('fade'),250);
+  if(id==='s-kpi')loadKPI();
+  if(id==='s-jobs')loadJobs();
+  if(id==='s-home'){loadStats();}
+  if(id==='s-profile')loadProfileScreen();
 };
 
-window.toggleCheck = function(el) { el.classList.toggle('checked'); };
-
-window.cycleInspect = function(el) {
-  if (!el.classList.contains('ok') && !el.classList.contains('flagged')) {
-    el.classList.add('ok'); el.querySelector('.inspect-status').textContent = 'OK';
-  } else if (el.classList.contains('ok')) {
-    el.classList.remove('ok'); el.classList.add('flagged'); el.querySelector('.inspect-status').textContent = 'Flagged';
-  } else {
-    el.classList.remove('flagged'); el.querySelector('.inspect-status').textContent = 'Tap to note';
-  }
+window.chk=el=>el.classList.toggle('chk');
+window.cycInsp=function(el){
+  if(!el.classList.contains('ok')&&!el.classList.contains('flag')){el.classList.add('ok');el.querySelector('.istat').textContent='OK';}
+  else if(el.classList.contains('ok')){el.classList.remove('ok');el.classList.add('flag');el.querySelector('.istat').textContent='Flagged';}
+  else{el.classList.remove('flag');el.querySelector('.istat').textContent='Tap to note';}
 };
+window.togOpp=function(el){el.classList.toggle('added');el.querySelector('.oppa').textContent=el.classList.contains('added')?'✓ Added':'+ Add';};
 
-window.toggleOpp = function(el) {
-  el.classList.toggle('added');
-  el.querySelector('.opp-add').textContent = el.classList.contains('added') ? '✓ Added' : '+ Add';
-};
-
+init();
 </script>
 </body>
 </html>
