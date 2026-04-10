@@ -482,7 +482,7 @@
         <div class="objbtn" onclick="showObj(this,'trust','step')">Trust Issue</div>
         <div class="objbtn" onclick="showObj(this,'wait','step')">Not Urgent</div>
       </div>
-      <div class="objres" id="obj-step"><div class="objsec"><div class="objsl">What they really mean</div><div class="objst" id="os-m"></div></div><div class="objsec"><div class="objsl">Your response</div><div class="objst script" id="os-s"></div></div><div class="objsec"><div class="objsl">Follow-up question</div><div class="objst" id="os-f" style="font-style:italic;color:var(--navy-light);"></div></div></div>
+      <div class="objres" id="obj-step"><div class="objsec"><div class="objsl">What they really mean</div><div class="objst" id="os-m"></div></div><div id="os-styles"></div></div>
     </div></div>
     <div class="bbar"><button class="btn-navy" onclick="doneStep(9)">Move to Close →</button></div>
   </div>
@@ -609,7 +609,7 @@
         <div class="objbtn" onclick="showObj(this,'trust','ref')">Trust Issue</div>
         <div class="objbtn" onclick="showObj(this,'wait','ref')">Not Urgent</div>
       </div>
-      <div class="objres" id="obj-ref"><div class="objsec"><div class="objsl">What they really mean</div><div class="objst" id="or-m"></div></div><div class="objsec"><div class="objsl">Your response</div><div class="objst script" id="or-s"></div></div><div class="objsec"><div class="objsl">Follow-up question</div><div class="objst" id="or-f" style="font-style:italic;color:var(--navy-light);"></div></div></div>
+      <div class="objres" id="obj-ref"><div class="objsec"><div class="objsl">What they really mean</div><div class="objst" id="or-m"></div></div><div id="or-styles"></div></div>
     </div></div>
     <div class="navtabs"><div class="ntab" onclick="go('s-home')">Home</div><div class="ntab" onclick="go('s-kpi')">Stats</div><div class="ntab" onclick="go('s-jobs')">Jobs</div><div class="ntab active">Scripts</div></div>
   </div>
@@ -1095,16 +1095,186 @@ window.finalClose=async function(){
   await loadStats();go('s-home');
 };
 
+// ── MULTI-STYLE OBJECTION ENGINE ──
+// Each objection has: meaning + 3-5 styles from different sales philosophies
 const objs={
-  price:{m:"They're not convinced the value matches the cost yet.",s:"I understand — most homeowners feel the same way at first. The real question is: what happens if we delay this? Failures down the road almost always cost more.",f:'"Would it help if I showed you what typically happens when this goes unresolved?"'},
-  think:{m:"They haven't bought into urgency. No reason to decide now.",s:"Absolutely, this is a big decision. What I'd hate is for you to be dealing with this through the weekend. What specifically do you need to think about?",f:'"Is it the price, the scope, or something else?"'},
-  spouse:{m:"They want permission to say yes, or need genuine alignment.",s:"Makes total sense — big decisions are best made together. Would it help if we called them right now so I can answer their questions directly?",f:'"What time works for both of you? I can come back today."'},
-  patch:{m:"They want the lowest cost. They haven't seen the full risk.",s:"I can do that. I just want you to have the full picture — a patch here usually holds about a year, then you're back in this same situation at higher cost.",f:'"Knowing that, does the longer-term fix make more sense?"'},
-  quotes:{m:"They want to feel fair to themselves. Often a delay tactic.",s:"Smart move. Most quotes will be similar in labor. Where companies differ is what they stand behind. Let me show you our warranty so you can compare apples to apples.",f:'"What would you need to see to feel confident choosing us today?"'},
-  afford:{m:"Money is a real constraint, or they haven't seen a payment path.",s:"I hear you — that's why we offer financing with payments as low as [amount] per month. You get the full fix now and keep your budget comfortable.",f:'"Want me to run the monthly payment on that right now?"'},
-  trust:{m:"They've been burned before, or something felt off.",s:"Fair — and I respect that. Let me show you our license, reviews, and warranty in writing. My job isn't to sell you. It's to give you what you need to make the best call for your home.",f:'"What would make you most comfortable moving forward?"'},
-  wait:{m:"They don't see urgency. The pain isn't real yet.",s:"I understand. I just want you to know what we found so you can watch it. This type of issue tends to get worse without warning — and emergency calls are two to three times the cost.",f:'"Is there a timeframe you had in mind?"'}
+  price:{
+    m:"They're not convinced the value matches the investment yet — or they haven't connected the cost of NOT fixing it.",
+    styles:[
+      {name:"Jeremy Miner — NEPQ",color:"#185FA5",tag:"Question-Based",
+       script:"Can I ask — what specifically felt high about it? Was it the total number, or is it more about what you're getting for that number?",
+       followup:"And if this ends up costing you two or three times more down the road because we waited — how would that sit with you?"},
+      {name:"Alex Hormozi — Value Framing",color:"#3B6D11",tag:"ROI Logic",
+       script:"Here's the math — this fix is [price]. If this fails in six months, you're looking at emergency rates, water damage, and the same repair anyway. The question isn't whether you can afford this. It's whether you can afford not to.",
+       followup:"Does that math make sense to you?"},
+      {name:"Daniel G — Emotional Close",color:"#854F0B",tag:"Pain Amplify",
+       script:"I totally get it. Can I be honest with you? The reason I'm bringing this up is because I've seen this exact situation get ignored, and six months later that homeowner is dealing with [worst case outcome]. I don't want that for you.",
+       followup:"What would make you feel comfortable making this decision today?"},
+      {name:"Jordan Belfort — Straight Line",color:"#533489",tag:"Certainty Build",
+       script:"I hear you on the price. But let me ask — on a scale of 1 to 10, how confident are you that this is the right fix for the problem? Because if you're a 9 or 10 on the solution, the price is just a detail we can work around.",
+       followup:"What would get you to a 10 on the solution side?"},
+      {name:"Tongan Close — Respect & Relationship",color:"#0F6E56",tag:"Trust & Honor",
+       script:"I respect that — and I wouldn't bring it up if I didn't genuinely believe this was the right call for your home. I'm not here to push you into anything. But I'd feel wrong leaving without making sure you had the full picture.",
+       followup:"What would make this feel like a fair deal for you?"}
+    ]
+  },
+  think:{
+    m:"They haven't bought into urgency. They want to feel in control of the decision — but 'think about it' almost always means the sale is dead unless you find what's really holding them back.",
+    styles:[
+      {name:"Jeremy Miner — NEPQ",color:"#185FA5",tag:"Question-Based",
+       script:"Of course — this is a big decision. Can I ask, what part of it are you still unsure about? Is it the price, is it whether this is actually necessary, or is there something else on your mind?",
+       followup:"Because I want to make sure you have everything you need to feel good about whatever you decide."},
+      {name:"Alex Hormozi — Urgency Logic",color:"#3B6D11",tag:"ROI Logic",
+       script:"Totally fair. Here's the only thing I'd say — the problem doesn't pause while you think. Every day this sits, [specific risk] gets worse. If you decide to move forward next week, the price is the same but the damage isn't.",
+       followup:"Is there anything I can clarify right now that would help you decide today?"},
+      {name:"Daniel G — Dig for the Real Objection",color:"#854F0B",tag:"Pain Amplify",
+       script:"Absolutely. And I don't want to pressure you at all. But in my experience, when someone says 'let me think about it,' there's usually one specific thing that's holding them back. What is it for you — honestly?",
+       followup:"Because if I can answer that, we can get this taken care of for you today."},
+      {name:"Jordan Belfort — Take Control",color:"#533489",tag:"Certainty Build",
+       script:"I respect that. But let me ask you something — are you thinking about whether this is the right fix, or are you thinking about the money? Because those are two very different conversations and I want to make sure I'm helping you with the right one.",
+       followup:"Which one is it?"},
+      {name:"Grant Cardone — Be Direct",color:"#0F6E56",tag:"Direct Close",
+       script:"What's there to think about? You've got a problem. We've got the solution. The longer you wait the worse it gets. What specifically is holding you back right now?",
+       followup:"Let's solve that right now."}
+    ]
+  },
+  spouse:{
+    m:"They want permission or alignment. This is legitimate — respect it. But the goal is to get both decision makers in the conversation NOW, not later.",
+    styles:[
+      {name:"Jeremy Miner — NEPQ",color:"#185FA5",tag:"Question-Based",
+       script:"That makes total sense — I'd want my partner involved in a decision like this too. Can I ask, is your spouse typically pretty aligned with you on home decisions, or do they usually have different concerns?",
+       followup:"Would it make sense to call them right now? I can walk them through exactly what I found — takes five minutes."},
+      {name:"Alex Hormozi — Preempt the Stall",color:"#3B6D11",tag:"ROI Logic",
+       script:"Completely understood. Here's what I'd suggest — let's call them right now. I can show them the photos, walk them through the findings, answer their questions. That way you're both making this together with the same information.",
+       followup:"Do you want to give them a call? I'll wait."},
+      {name:"Daniel G — Emotional Framing",color:"#854F0B",tag:"Pain Amplify",
+       script:"Of course — I love that you want to make this together. Here's what I'll say — your spouse is going to want to know exactly what I found and what the risk is. Let me give you everything you need to explain it to them clearly. Or better yet, let's get them on the phone.",
+       followup:"What time works for both of you today?"},
+      {name:"Jordan Belfort — Assume the Close",color:"#533489",tag:"Certainty Build",
+       script:"Absolutely. Let's do this — call them right now. I've got five minutes, they can look at the photos on your phone, and we can get this scheduled while I'm here. That way you're not making two trips.",
+       followup:"What's the best number to reach them?"},
+      {name:"Traditional Close",color:"#0F6E56",tag:"Simple & Respectful",
+       script:"No problem at all. Before I go, can I leave you with the written estimate and photos so you both have the same information? And what's a good time for me to follow up — tomorrow morning work?",
+       followup:"I'll call you at [time] to answer any questions you both have."}
+    ]
+  },
+  patch:{
+    m:"They're prioritizing short-term cost over long-term value. They haven't fully visualized what 'just patching it' actually costs them over time.",
+    styles:[
+      {name:"Jeremy Miner — NEPQ",color:"#185FA5",tag:"Question-Based",
+       script:"I can absolutely do that — it's your home and your call. Can I ask you something first though? If this patch holds for six months and then fails again, what does that look like for you — cost-wise, stress-wise, timing-wise?",
+       followup:"Is that a scenario you're okay with?"},
+      {name:"Alex Hormozi — Cost of Cheap",color:"#3B6D11",tag:"ROI Logic",
+       script:"Here's the math on patching: it costs [patch price] now, lasts maybe a year, and you're back here having this same conversation — except the damage is worse and the repair is bigger. The permanent fix costs [repair price]. Over two years the patch actually costs more.",
+       followup:"Knowing that, which one actually saves you money?"},
+      {name:"Daniel G — Paint the Picture",color:"#854F0B",tag:"Pain Amplify",
+       script:"I hear you — and I can patch it. I just want you to see what I see. In six months, this patch fails. It's probably a Sunday. You've got water everywhere. You're calling for an emergency visit at double the rate. I've watched this happen. I'd rather fix it right today.",
+       followup:"What would it take for the permanent fix to make sense right now?"},
+      {name:"Jordan Belfort — Challenge the Logic",color:"#533489",tag:"Certainty Build",
+       script:"I'll patch it if that's what you want. But real talk — you called us because it's already a problem. A patch doesn't fix the problem, it delays it. And you'll be right back here. Is saving [price difference] today worth dealing with this again in six months?",
+       followup:"What do you want to do?"},
+      {name:"Zig Ziglar — Future Pace",color:"#0F6E56",tag:"Visioning",
+       script:"Absolutely your call. I just want to ask — imagine it's a year from now and this has held. Great. Now imagine it's a year from now and it didn't. Which of those scenarios are you willing to bet on?",
+       followup:"Let's make sure we put you in the right position either way."}
+    ]
+  },
+  quotes:{
+    m:"They want to feel like a smart buyer. Often it's a delay tactic — but treat it as legitimate. Your job is to make comparison impossible.",
+    styles:[
+      {name:"Jeremy Miner — NEPQ",color:"#185FA5",tag:"Question-Based",
+       script:"That's a smart move. Can I ask — when you're comparing quotes, what are you mainly looking at? Is it just the price, or are you also looking at what's covered, the warranty, the company's track record?",
+       followup:"Because I want to make sure when you're comparing, you're comparing the full picture — not just the number."},
+      {name:"Alex Hormozi — Reframe the Comparison",color:"#3B6D11",tag:"ROI Logic",
+       script:"Get as many quotes as you want — that's smart. Here's what to watch for: any quote lower than ours either uses cheaper parts, skips steps, or doesn't carry the warranty we do. Ask every company what their warranty covers. Then compare.",
+       followup:"I'll leave our warranty in writing. Use it as your benchmark."},
+      {name:"Daniel G — Differentiate Now",color:"#854F0B",tag:"Pain Amplify",
+       script:"Completely fair. And I'll be honest — you'll probably find cheaper. What you won't find is a company that does what we do for what we charge. Let me show you exactly what makes us different before you go.",
+       followup:"If the other quotes can match our warranty and our process, go with them. If they can't — you already know who to call."},
+      {name:"Jordan Belfort — Create Urgency",color:"#533489",tag:"Certainty Build",
+       script:"You can absolutely get other quotes. But while you're doing that, this problem is getting worse. If someone else is cheaper and equally qualified — go with them. But if it's just about price, let's talk about what we can do right now to make this work for you.",
+       followup:"What number would make this a no-brainer for you today?"},
+      {name:"Grant Cardone — Own the Room",color:"#0F6E56",tag:"Direct Close",
+       script:"Get your quotes. And when you do, ask them this: what happens if something goes wrong? What's your warranty? How long have you been doing this? We've answered all of those. Can they?",
+       followup:"Call me after you have the other quotes. I'll still be here."}
+    ]
+  },
+  afford:{
+    m:"Real financial constraint — or they haven't seen the payment option. Never make someone feel bad about money. Open a door, don't close one.",
+    styles:[
+      {name:"Jeremy Miner — NEPQ",color:"#185FA5",tag:"Question-Based",
+       script:"I completely understand — and I appreciate you being straight with me. Can I ask — is it that the total number is too much, or is it more that the timing is bad right now?",
+       followup:"Because if it's timing, I have some options that might make this work without putting any stress on your budget."},
+      {name:"Alex Hormozi — Financing Frame",color:"#3B6D11",tag:"ROI Logic",
+       script:"That's exactly why we offer financing. For most homeowners this comes out to [monthly amount] a month — less than a car payment. You get the full repair done today, protect your home, and keep your cash flow comfortable.",
+       followup:"Want me to run the numbers on the monthly payment right now?"},
+      {name:"Daniel G — Remove the Shame",color:"#854F0B",tag:"Pain Amplify",
+       script:"Hey — I respect you for telling me that. Here's what I don't want to happen: you leave today without a solution because of money, and this gets worse. Let me find a way to make this work for you. What monthly payment would feel manageable?",
+       followup:"Let's start there and work backwards."},
+      {name:"Jordan Belfort — Reframe the Cost",color:"#533489",tag:"Certainty Build",
+       script:"Here's what I want you to think about — you're not spending money, you're protecting an asset. Your home is worth [X]. This repair costs [Y]. That's less than half a percent of your home's value to protect all of it.",
+       followup:"Does that framing change how you're looking at this?"},
+      {name:"Simple Financing Close",color:"#0F6E56",tag:"Direct & Warm",
+       script:"No problem at all. We work with a financing partner — zero interest for 12 months if you qualify. You'd be looking at roughly [payment] a month. Let me get you a quick approval — takes 60 seconds on my tablet.",
+       followup:"Want to see if you qualify? No commitment."}
+    ]
+  },
+  trust:{
+    m:"They've been burned before by a contractor — or something in your presentation felt off. Don't get defensive. Earn it.",
+    styles:[
+      {name:"Jeremy Miner — NEPQ",color:"#185FA5",tag:"Question-Based",
+       script:"I completely understand that feeling — and honestly, I'd feel the same way. Can I ask what's happened in the past that makes you feel that way? Because I want to make sure I'm addressing the right concern.",
+       followup:"What would make you feel like you could trust us with this?"},
+      {name:"Alex Hormozi — Proof Stack",color:"#3B6D11",tag:"ROI Logic",
+       script:"Fair. Here's what I'd say — don't trust me, trust the evidence. I've got [X] Google reviews you can read right now. Our license number is [#]. Our warranty is in writing. Every claim I made today I can back up on paper.",
+       followup:"What specific concern do you want me to address right now?"},
+      {name:"Daniel G — Acknowledge & Validate",color:"#854F0B",tag:"Pain Amplify",
+       script:"You know what — I'm not going to try to talk you out of that feeling, because that feeling has probably protected you before. All I can do is be transparent. Here's my license. Here's our reviews. Here's the warranty in writing. Judge me on the evidence.",
+       followup:"What else do you need to see?"},
+      {name:"Jordan Belfort — Disarm & Redirect",color:"#533489",tag:"Certainty Build",
+       script:"That's a fair position. Let me ask you this — what would a company have to do for you to trust them? Because I want to know if I can actually meet that bar. If I can, great. If I can't, I'll tell you.",
+       followup:"What does trust look like to you?"},
+      {name:"Relationship Close",color:"#0F6E56",tag:"Direct & Warm",
+       script:"I hear you — and I respect that. I'm not asking you to trust me blind. I'm asking you to look at the photos, read the reviews on your phone right now, and make a decision based on facts. That's all I've got.",
+       followup:"Want to pull up our Google reviews together right now?"}
+    ]
+  },
+  wait:{
+    m:"They don't feel urgency. The pain isn't real enough yet. Your job is to make the future consequence vivid — not scary, vivid.",
+    styles:[
+      {name:"Jeremy Miner — NEPQ",color:"#185FA5",tag:"Question-Based",
+       script:"Totally your call. Can I ask — what's your thinking on timing? Are you waiting for a specific reason, or is it more that it doesn't feel urgent right now?",
+       followup:"Because I want to understand what would make the timing feel right — so I can give you the right information."},
+      {name:"Alex Hormozi — Math of Waiting",color:"#3B6D11",tag:"ROI Logic",
+       script:"Here's what waiting costs: this repair is [price] today. If it fails — and this type of issue has about a [X]% chance of getting worse within [timeframe] — you're looking at emergency rates plus the original repair. Waiting is the most expensive option on the table.",
+       followup:"Does the math change your thinking at all?"},
+      {name:"Daniel G — Vivid Consequence",color:"#854F0B",tag:"Pain Amplify",
+       script:"I'll leave that completely up to you. I just want you to have a clear picture — what I found today, if it gets worse, doesn't give you a warning. It fails. Usually at the worst time. Usually on a weekend or a holiday. I've had customers call me in tears because they waited.",
+       followup:"Is that a risk you're comfortable with right now?"},
+      {name:"Jordan Belfort — Create the Movie",color:"#533489",tag:"Certainty Build",
+       script:"I understand. Let me paint a picture — it's 11pm on a Saturday. This fails. You've got water on the floor. You're calling emergency plumbing at double the rate. Your floors are damaged. Your weekend is ruined. And you're paying three times what you would have paid today.",
+       followup:"Is that scenario worth the risk of waiting?"},
+      {name:"Zig Ziglar — Gentle Future Pace",color:"#0F6E56",tag:"Visioning",
+       script:"I respect that completely. Here's the one thing I'd ask — if this does get worse in the next 90 days, what's your plan? I'm not trying to scare you. I just want to make sure you have a plan either way.",
+       followup:"If you had a plan, what would it look like?"}
+    ]
+  }
 };
+
+function buildStylesHTML(styles){
+  return styles.map((s,i)=>`
+    <div style="margin-bottom:14px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <div style="width:3px;height:100%;border-radius:2px;background:${s.color};align-self:stretch;min-height:14px;flex-shrink:0;"></div>
+        <div>
+          <span style="font-size:11px;font-weight:800;color:${s.color};">${s.name}</span>
+          <span style="font-size:10px;font-weight:700;background:${s.color}18;color:${s.color};padding:2px 7px;border-radius:10px;margin-left:6px;text-transform:uppercase;letter-spacing:.05em;">${s.tag}</span>
+        </div>
+      </div>
+      <div style="background:var(--gold-pale);border-left:3px solid ${s.color};border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;color:var(--navy);line-height:1.65;font-style:italic;margin-bottom:6px;">"${s.script}"</div>
+      <div style="font-size:12px;color:var(--text-secondary);line-height:1.6;padding:0 2px;">↳ ${s.followup}</div>
+    </div>
+  `).join('<div style="height:1px;background:var(--border);margin:14px 0;"></div>');
+}
 
 window.showObj=function(btn,key,ctx){
   const d=objs[key];if(!d)return;
@@ -1112,10 +1282,10 @@ window.showObj=function(btn,key,ctx){
   document.querySelectorAll(scope+' .objbtn').forEach(b=>b.classList.remove('sel'));
   btn.classList.add('sel');
   const pid=ctx==='step'?'obj-step':'obj-ref';
-  const pre=ctx==='step'?'os':'or';
-  document.getElementById(pre+'-m').textContent=d.m;
-  document.getElementById(pre+'-s').textContent=d.s;
-  document.getElementById(pre+'-f').textContent=d.f;
+  const mId=ctx==='step'?'os-m':'or-m';
+  const stylesId=ctx==='step'?'os-styles':'or-styles';
+  document.getElementById(mId).textContent=d.m;
+  document.getElementById(stylesId).innerHTML=buildStylesHTML(d.styles);
   document.getElementById(pid).classList.add('vis');
 };
 
