@@ -895,7 +895,10 @@ function updDash(){
   }).join('');
 }
 
-window.goStep=function(n){curStep=n;updDash();go('s-step-'+n);};
+window.goStep=function(n){
+  curStep=n;updDash();go('s-step-'+n);
+  if(n===8) populatePresentScreen();
+};
 window.goToCurrentStep=function(){goStep(curStep);};
 
 window.doneStep=async function(n){
@@ -905,6 +908,7 @@ window.doneStep=async function(n){
   curStep=n<10?n+1:10;
   if(jobId){try{await updateDoc(doc(db,'jobs',jobId),{stepsCompleted:done,currentStep:curStep});}catch(e){}}
   if(n<10)goStep(n+1);
+  if(n===7) populatePresentScreen();
 };
 
 window.logArr=async function(){
@@ -1183,7 +1187,7 @@ window.saveOpts=async function(){
 
 let membershipResult=null,reviewResult=null;
 
-window.setOC=function(oc,btn){outcome=oc;['oc-sold','oc-cb','oc-ns'].forEach(id=>document.getElementById(id).classList.remove('sel'));btn.classList.add('sel');};
+
 window.setMembership=function(v,btn){membershipResult=v;['mem-yes','mem-no'].forEach(id=>document.getElementById(id).classList.remove('sel'));btn.classList.add('sel');};
 window.setReview=function(v,btn){
   reviewResult=v;
@@ -1198,31 +1202,32 @@ window.openReviewLink=function(){
 
 window.finishJob=async function(){
   if(!outcome)return alert('Please select a job outcome.');
+  if(outcome==='nosale'&&!nosaleReason)return alert("Please select why they didn't buy — this helps improve your close rate.");
   const t=Number(document.getElementById('ticket').value)||0;
   const notes=document.getElementById('job-notes')?.value||'';
-  if(!jobId)return;
+  const nsNotes=document.getElementById('nosale-notes')?.value||'';
+  const cbDate=document.getElementById('callback-date')?.value||'';
   const flagged=jobData.flaggedItems||0;
+  if(!jobId)return;
+  const updatePayload={status:'completed',outcome,ticketAmount:t,jobNotes:notes,completedAt:serverTimestamp(),stepsCompleted:[0,1,2,3,4,5,6,7,8,9,10]};
+  if(outcome==='nosale'){updatePayload.nosaleReason=nosaleReason;updatePayload.nosaleNotes=nsNotes;}
+  if(outcome==='callback'){updatePayload.callbackReason=callbackReason||'';updatePayload.callbackDate=cbDate;}
   try{
-    await updateDoc(doc(db,'jobs',jobId),{
-      status:'completed',outcome,ticketAmount:t,jobNotes:notes,
-      completedAt:serverTimestamp(),stepsCompleted:[0,1,2,3,4,5,6,7,8,9,10]
-    });
-    // Set up review screen
+    await updateDoc(doc(db,'jobs',jobId),updatePayload);
     const custName=jobData.customer?.split(' ')[0]||'there';
     document.getElementById('rev-cust-name').textContent=custName;
     document.getElementById('sum-ticket').textContent=t>0?'$'+t.toLocaleString():'–';
     document.getElementById('sum-ct').textContent=jobData.callType||'–';
     document.getElementById('sum-flags').textContent=flagged||'0';
-    // Outcome banner
     const isSold=outcome==='sold';
     const isCB=outcome==='callback';
     document.getElementById('rev-outcome-icon').textContent=isSold?'✅':isCB?'📞':'❌';
     document.getElementById('rev-outcome-title').textContent=isSold?'Job Sold!':isCB?'Callback Scheduled':'Call Complete';
-    document.getElementById('rev-outcome-sub').textContent=isSold?`$${t.toLocaleString()} — great work today.`:isCB?'Follow up promptly to close this one.':'Not every call closes. Review and improve.';
+    const nsLabel={price:'price',trust:'trust issue',notowner:'not decision maker',competitor:'going competitor',timing:'bad timing',nourgency:'no urgency',callback:'callback needed',other:'other'};
+    document.getElementById('rev-outcome-sub').textContent=isSold?`$${t.toLocaleString()} — great work today.`:isCB?'Follow up promptly — callbacks go cold fast.':nosaleReason?`Lost to: ${nsLabel[nosaleReason]||nosaleReason}. Review and improve.`:'Not every call closes. Review and improve.';
     document.getElementById('rev-outcome-banner').style.background=isSold?'#EAF7F2':isCB?'#FFF8EC':'var(--surface)';
-    // Hide membership offer if no sale
     document.getElementById('rev-membership').style.display=isSold?'block':'none';
-    membershipResult=null;reviewResult=null;
+    membershipResult=null;reviewResult=null;nosaleReason=null;callbackReason=null;
     go('s-review');
   }catch(e){alert('Error: '+e.message);}
 };
@@ -1503,8 +1508,9 @@ window.go=function(id){
   el.classList.remove('hidden');el.classList.add('fade');setTimeout(()=>el.classList.remove('fade'),250);
   if(id==='s-kpi')loadKPI();
   if(id==='s-jobs')loadJobs();
-  if(id==='s-home'){loadStats();}
+  if(id==='s-home'){loadStats();updateStreakBadge();}
   if(id==='s-profile')loadProfileScreen();
+  if(id==='s-scorecard')renderScorecard();
 };
 
 window.chk=el=>el.classList.toggle('chk');
@@ -1579,61 +1585,11 @@ window.setOC=function(oc,btn){
   if(oc==='callback'){callbackReason=null;document.querySelectorAll('#callback-grid .nosale-btn').forEach(b=>b.classList.remove('sel'));}
 };
 
-// Override goStep to populate present screen when navigating to step 8
-const _origGoStep=window.goStep;
-window.goStep=function(n){
-  _origGoStep(n);
-  if(n===8) populatePresentScreen();
-};
 
-// Override doneStep to populate present screen when arriving from step 7
-const _origDoneStep=window.doneStep;
-window.doneStep=async function(n){
-  await _origDoneStep(n);
-  if(n===7) populatePresentScreen();
-};
 
-// Override finishJob to capture no-sale reason
-const _origFinishJob=window.finishJob;
-window.finishJob=async function(){
-  if(!outcome)return alert('Please select a job outcome.');
-  if(outcome==='nosale'&&!nosaleReason)return alert("Please select why they didn't buy — this data helps improve your close rate over time.");
-  const t=Number(document.getElementById('ticket').value)||0;
-  const notes=document.getElementById('job-notes')?.value||'';
-  const nsNotes=document.getElementById('nosale-notes')?.value||'';
-  const cbDate=document.getElementById('callback-date')?.value||'';
-  const flagged=jobData.flaggedItems||0;
-  if(!jobId)return;
-  const updatePayload={
-    status:'completed',outcome,ticketAmount:t,jobNotes:notes,
-    completedAt:serverTimestamp(),stepsCompleted:[0,1,2,3,4,5,6,7,8,9,10]
-  };
-  if(outcome==='nosale'){
-    updatePayload.nosaleReason=nosaleReason;
-    updatePayload.nosaleNotes=nsNotes;
-  }
-  if(outcome==='callback'){
-    updatePayload.callbackReason=callbackReason||'';
-    updatePayload.callbackDate=cbDate;
-  }
-  try{
-    await updateDoc(doc(db,'jobs',jobId),updatePayload);
-    const custName=jobData.customer?.split(' ')[0]||'there';
-    document.getElementById('rev-cust-name').textContent=custName;
-    document.getElementById('sum-ticket').textContent=t>0?'$'+t.toLocaleString():'–';
-    document.getElementById('sum-ct').textContent=jobData.callType||'–';
-    document.getElementById('sum-flags').textContent=flagged||'0';
-    const isSold=outcome==='sold';
-    const isCB=outcome==='callback';
-    document.getElementById('rev-outcome-icon').textContent=isSold?'✅':isCB?'📞':'❌';
-    document.getElementById('rev-outcome-title').textContent=isSold?'Job Sold!':isCB?'Callback Scheduled':'Call Complete';
-    document.getElementById('rev-outcome-sub').textContent=isSold?`$${t.toLocaleString()} — great work today.`:isCB?'Follow up promptly — callbacks go cold fast.':nosaleReason?`Logged as: ${nosaleReason.replace('notowner','not decision maker')}. Review and improve.`:'Not every call closes. Review and improve.';
-    document.getElementById('rev-outcome-banner').style.background=isSold?'#EAF7F2':isCB?'#FFF8EC':'var(--surface)';
-    document.getElementById('rev-membership').style.display=isSold?'block':'none';
-    membershipResult=null;reviewResult=null;nosaleReason=null;callbackReason=null;
-    go('s-review');
-  }catch(e){alert('Error: '+e.message);}
-};
+
+
+
 
 // ══════════════════════════════════════════════════
 // FEATURE: SCRIPT CUSTOMIZATION
@@ -1856,13 +1812,7 @@ async function renderScorecard(){
   }catch(e){ console.error('Scorecard error:', e); }
 }
 
-// Hook go() to load scorecard when navigating there
-const _origGo = window.go;
-window.go = function(id){
-  _origGo(id);
-  if(id === 's-scorecard') renderScorecard();
-  if(id === 's-home') updateStreakBadge();
-};
+
 
 init();
 </script>
