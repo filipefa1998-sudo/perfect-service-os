@@ -177,6 +177,16 @@
   .barf{height:8px;border-radius:4px;background:var(--navy);transition:width .6s;}
   .barf.gold{background:var(--gold);}
   .barf.succ{background:var(--success);}
+  .nosale-btn{background:#fff;border:1.5px solid rgba(226,75,74,.25);border-radius:8px;padding:10px 8px;cursor:pointer;text-align:center;font-size:11px;font-weight:700;color:var(--text-primary);transition:all .15s;line-height:1.3;}
+  .nosale-btn.sel{background:var(--danger);color:#fff;border-color:var(--danger);}
+  .nosale-btn.cb-btn{border-color:rgba(201,151,58,.3);}
+  .nosale-btn.cb-btn.sel{background:var(--gold);color:var(--navy);border-color:var(--gold);}
+  .disc-card{background:rgba(255,255,255,.1);border-radius:8px;padding:10px 12px;}
+  .disc-q{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--gold-light);margin-bottom:3px;}
+  .disc-a{font-size:13px;color:#fff;line-height:1.5;font-style:italic;}
+  .flag-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#fff;border-radius:7px;border-left:3px solid var(--gold);}
+  .flag-dot{width:8px;height:8px;border-radius:50%;background:var(--gold);flex-shrink:0;}
+  .flag-lbl{font-size:13px;font-weight:600;color:var(--navy);}
   .hidden{display:none!important;}
   .fade{animation:fi .2s ease;}
   @keyframes fi{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
@@ -455,11 +465,24 @@
     <div class="pbar"><div class="pfill" style="width:81%"></div></div>
     <div class="stephead"><div class="steplbl">Step 9 of 11</div><div class="steptit">Present Findings</div></div>
     <div class="sbody"><div class="stepcont">
-      <div class="sbox"><div class="sboxl">Presentation Script</div><div class="sboxt">"Here's what I found today. [Walk through photos.] Based on what you told me about [their concern], here are three ways we can take care of this."</div></div>
+
+      <!-- DISCOVERY CARRY-THROUGH — auto-populated from Step 5 -->
+      <div id="present-discovery" style="display:none;background:var(--navy);border-radius:12px;padding:16px 18px;margin-bottom:18px;">
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:var(--gold-light);margin-bottom:10px;">🎯 Their Words — Use These to Close</div>
+        <div id="disc-carrythrough" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+
+      <!-- FLAGGED ITEMS — auto-populated from Step 6 inspection -->
+      <div id="present-flags" style="display:none;background:#FFF8EC;border:1.5px solid var(--gold);border-radius:12px;padding:16px 18px;margin-bottom:18px;">
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:var(--gold);margin-bottom:10px;">⚠️ Flagged Items — Walk Through These With Photos</div>
+        <div id="flag-carrythrough" style="display:flex;flex-direction:column;gap:6px;"></div>
+      </div>
+
+      <div class="sbox"><div class="sboxl">Presentation Script</div><div class="sboxt">"Here's what I found today. [Walk through photos above.] Based on what you told me about [use their words from the gold box], here are three ways we can take care of this."</div></div>
       <div class="sbox" style="border-left-color:var(--navy-light);"><div class="sboxl" style="color:var(--navy);">Price Script</div><div class="sboxt">"Most homeowners in your situation go with this option — it solves the problem permanently. But I want you to have all three in front of you."</div></div>
       <div class="chtit">Presentation Checklist</div>
-      <div class="chi" onclick="chk(this)"><div class="chb"><div class="chm">✓</div></div><div class="chl">Walked through photos with homeowner</div></div>
-      <div class="chi" onclick="chk(this)"><div class="chb"><div class="chm">✓</div></div><div class="chl">Referenced their discovery answers</div></div>
+      <div class="chi" onclick="chk(this)"><div class="chb"><div class="chm">✓</div></div><div class="chl">Walked through flagged items with homeowner</div></div>
+      <div class="chi" onclick="chk(this)"><div class="chb"><div class="chm">✓</div></div><div class="chl">Used their discovery answers in my opening</div></div>
       <div class="chi" onclick="chk(this)"><div class="chb"><div class="chm">✓</div></div><div class="chl">Presented all three options clearly</div></div>
       <div class="chi" onclick="chk(this)"><div class="chb"><div class="chm">✓</div></div><div class="chl">Stayed silent after presenting price</div></div>
     </div></div>
@@ -498,11 +521,40 @@
       <div class="chi" onclick="chk(this)"><div class="chb"><div class="chm">✓</div></div><div class="chl">Payment collected or financing processed</div></div>
       <div class="chi" onclick="chk(this)"><div class="chb"><div class="chm">✓</div></div><div class="chl">Work area left spotless</div></div>
       <div class="sdiv">Job Outcome</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:18px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;">
         <div class="ctb" id="oc-sold" onclick="setOC('sold',this)" style="text-align:center;"><div class="cti" style="margin:0 auto 6px;">✅</div><div class="ctl" style="font-size:11px;">Sold</div></div>
         <div class="ctb" id="oc-cb" onclick="setOC('callback',this)" style="text-align:center;"><div class="cti" style="margin:0 auto 6px;">📞</div><div class="ctl" style="font-size:11px;">Callback</div></div>
         <div class="ctb" id="oc-ns" onclick="setOC('nosale',this)" style="text-align:center;"><div class="cti" style="margin:0 auto 6px;">❌</div><div class="ctl" style="font-size:11px;">No Sale</div></div>
       </div>
+
+      <!-- NO-SALE REASON — shown when No Sale selected -->
+      <div id="nosale-reason-panel" style="display:none;background:#FCEBEB;border:1.5px solid var(--danger);border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--danger);margin-bottom:10px;">Why didn't they buy? (required)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;" id="nosale-grid">
+          <div class="nosale-btn" onclick="setNSR('price',this)">💰 Price Too High</div>
+          <div class="nosale-btn" onclick="setNSR('trust',this)">🤝 Trust Issue</div>
+          <div class="nosale-btn" onclick="setNSR('notowner',this)">🏠 Not Decision Maker</div>
+          <div class="nosale-btn" onclick="setNSR('competitor',this)">⚔️ Going Competitor</div>
+          <div class="nosale-btn" onclick="setNSR('timing',this)">📅 Bad Timing</div>
+          <div class="nosale-btn" onclick="setNSR('nourgency',this)">😐 No Urgency Felt</div>
+          <div class="nosale-btn" onclick="setNSR('callback',this)">📞 Needs Callback</div>
+          <div class="nosale-btn" onclick="setNSR('other',this)">❓ Other</div>
+        </div>
+        <textarea class="fi" id="nosale-notes" style="margin-top:10px;margin-bottom:0;min-height:52px;resize:none;font-size:13px;" placeholder="Any extra context on why they didn't buy..."></textarea>
+      </div>
+
+      <!-- CALLBACK REASON — shown when Callback selected -->
+      <div id="callback-reason-panel" style="display:none;background:var(--gold-pale);border:1.5px solid var(--gold);border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);margin-bottom:8px;">Why callback?</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;" id="callback-grid">
+          <div class="nosale-btn cb-btn" onclick="setCBR('spouse',this)">👫 Needs Spouse</div>
+          <div class="nosale-btn cb-btn" onclick="setCBR('quote',this)">📋 Wants Quote</div>
+          <div class="nosale-btn cb-btn" onclick="setCBR('finance',this)">💳 Finance Approval</div>
+          <div class="nosale-btn cb-btn" onclick="setCBR('schedule',this)">📅 Schedule Later</div>
+        </div>
+        <input class="fi" type="text" id="callback-date" style="margin-top:10px;margin-bottom:0;font-size:13px;" placeholder="Best callback date/time..." />
+      </div>
+
       <div class="fl" style="margin-bottom:7px;">Final Ticket Amount ($)</div>
       <input class="fi" type="number" id="ticket" placeholder="0" />
       <div class="fl" style="margin-bottom:7px;margin-top:4px;">Job Notes (optional)</div>
@@ -1373,6 +1425,126 @@ window.cycInsp=function(el){
   else{el.classList.remove('flag');el.querySelector('.istat').textContent='Tap to note';}
 };
 window.togOpp=function(el){el.classList.toggle('added');el.querySelector('.oppa').textContent=el.classList.contains('added')?'✓ Added':'+ Add';};
+
+// ── FEATURE 1: DISCOVERY CARRY-THROUGH ──
+// Called when entering step 8 (present findings)
+function populatePresentScreen(){
+  const disc=jobData.discovery||{};
+  const questions=['When did this start?','How often does it happen?','Has anything been done before?','What concerns you most?','How long in this home?'];
+  const keys=['q1','q2','q3','q4','q5'];
+  const filled=keys.map((k,i)=>({q:questions[i],a:(disc[k]||'').trim()})).filter(x=>x.a.length>0);
+  const discPanel=document.getElementById('present-discovery');
+  const discContainer=document.getElementById('disc-carrythrough');
+  if(filled.length>0){
+    discContainer.innerHTML=filled.map(x=>`
+      <div class="disc-card">
+        <div class="disc-q">${x.q}</div>
+        <div class="disc-a">"${x.a}"</div>
+      </div>`).join('');
+    discPanel.style.display='block';
+  } else {
+    discPanel.style.display='none';
+  }
+
+  // ── FEATURE 2: FLAGGED ITEMS CARRY-THROUGH ──
+  const flagged=(jobData.inspectionResults||[]).filter(i=>i.status==='flagged');
+  const flagPanel=document.getElementById('present-flags');
+  const flagContainer=document.getElementById('flag-carrythrough');
+  if(flagged.length>0){
+    flagContainer.innerHTML=flagged.map(f=>`
+      <div class="flag-item">
+        <div class="flag-dot"></div>
+        <div class="flag-lbl">${f.label}</div>
+      </div>`).join('');
+    flagPanel.style.display='block';
+  } else {
+    flagPanel.style.display='none';
+  }
+}
+
+// ── FEATURE 3: NO-SALE & CALLBACK REASON CAPTURE ──
+let nosaleReason=null,callbackReason=null;
+
+window.setNSR=function(reason,btn){
+  nosaleReason=reason;
+  document.querySelectorAll('#nosale-grid .nosale-btn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+};
+
+window.setCBR=function(reason,btn){
+  callbackReason=reason;
+  document.querySelectorAll('#callback-grid .nosale-btn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+};
+
+// Override setOC to also show/hide the reason panels
+window.setOC=function(oc,btn){
+  outcome=oc;
+  ['oc-sold','oc-cb','oc-ns'].forEach(id=>document.getElementById(id).classList.remove('sel'));
+  btn.classList.add('sel');
+  // Show/hide reason panels
+  document.getElementById('nosale-reason-panel').style.display=oc==='nosale'?'block':'none';
+  document.getElementById('callback-reason-panel').style.display=oc==='callback'?'block':'none';
+  // Reset reason selections when switching
+  if(oc==='nosale'){nosaleReason=null;document.querySelectorAll('#nosale-grid .nosale-btn').forEach(b=>b.classList.remove('sel'));}
+  if(oc==='callback'){callbackReason=null;document.querySelectorAll('#callback-grid .nosale-btn').forEach(b=>b.classList.remove('sel'));}
+};
+
+// Override goStep to populate present screen when navigating to step 8
+const _origGoStep=window.goStep;
+window.goStep=function(n){
+  _origGoStep(n);
+  if(n===8) populatePresentScreen();
+};
+
+// Override doneStep to populate present screen when arriving from step 7
+const _origDoneStep=window.doneStep;
+window.doneStep=async function(n){
+  await _origDoneStep(n);
+  if(n===7) populatePresentScreen();
+};
+
+// Override finishJob to capture no-sale reason
+const _origFinishJob=window.finishJob;
+window.finishJob=async function(){
+  if(!outcome)return alert('Please select a job outcome.');
+  if(outcome==='nosale'&&!nosaleReason)return alert('Please select why they didn't buy — this data improves your close rate over time.');
+  const t=Number(document.getElementById('ticket').value)||0;
+  const notes=document.getElementById('job-notes')?.value||'';
+  const nsNotes=document.getElementById('nosale-notes')?.value||'';
+  const cbDate=document.getElementById('callback-date')?.value||'';
+  const flagged=jobData.flaggedItems||0;
+  if(!jobId)return;
+  const updatePayload={
+    status:'completed',outcome,ticketAmount:t,jobNotes:notes,
+    completedAt:serverTimestamp(),stepsCompleted:[0,1,2,3,4,5,6,7,8,9,10]
+  };
+  if(outcome==='nosale'){
+    updatePayload.nosaleReason=nosaleReason;
+    updatePayload.nosaleNotes=nsNotes;
+  }
+  if(outcome==='callback'){
+    updatePayload.callbackReason=callbackReason||'';
+    updatePayload.callbackDate=cbDate;
+  }
+  try{
+    await updateDoc(doc(db,'jobs',jobId),updatePayload);
+    const custName=jobData.customer?.split(' ')[0]||'there';
+    document.getElementById('rev-cust-name').textContent=custName;
+    document.getElementById('sum-ticket').textContent=t>0?'$'+t.toLocaleString():'–';
+    document.getElementById('sum-ct').textContent=jobData.callType||'–';
+    document.getElementById('sum-flags').textContent=flagged||'0';
+    const isSold=outcome==='sold';
+    const isCB=outcome==='callback';
+    document.getElementById('rev-outcome-icon').textContent=isSold?'✅':isCB?'📞':'❌';
+    document.getElementById('rev-outcome-title').textContent=isSold?'Job Sold!':isCB?'Callback Scheduled':'Call Complete';
+    document.getElementById('rev-outcome-sub').textContent=isSold?`$${t.toLocaleString()} — great work today.`:isCB?'Follow up promptly — callbacks go cold fast.':nosaleReason?`Logged as: ${nosaleReason.replace('notowner','not decision maker')}. Review and improve.`:'Not every call closes. Review and improve.';
+    document.getElementById('rev-outcome-banner').style.background=isSold?'#EAF7F2':isCB?'#FFF8EC':'var(--surface)';
+    document.getElementById('rev-membership').style.display=isSold?'block':'none';
+    membershipResult=null;reviewResult=null;nosaleReason=null;callbackReason=null;
+    go('s-review');
+  }catch(e){alert('Error: '+e.message);}
+};
 
 init();
 </script>
