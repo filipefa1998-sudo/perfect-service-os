@@ -1596,7 +1596,7 @@ window.doneStep=async function(n){
 const _origFinishJob=window.finishJob;
 window.finishJob=async function(){
   if(!outcome)return alert('Please select a job outcome.');
-  if(outcome==='nosale'&&!nosaleReason)return alert('Please select why they didn't buy — this data improves your close rate over time.');
+  if(outcome==='nosale'&&!nosaleReason)return alert("Please select why they didn't buy — this data helps improve your close rate over time.");
   const t=Number(document.getElementById('ticket').value)||0;
   const notes=document.getElementById('job-notes')?.value||'';
   const nsNotes=document.getElementById('nosale-notes')?.value||'';
@@ -1792,14 +1792,14 @@ async function renderScorecard(){
     document.getElementById('sc-streak-num').textContent = streak;
     document.getElementById('sc-streak-icon').textContent = streak >= 7 ? '🔥🔥' : streak >= 3 ? '🔥' : streak > 0 ? '⚡' : '💤';
     const streakMsgs = {
-      0: 'No active streak. Close a deal today to start one.',
-      1: 'One day in. Keep it going tomorrow.',
-      2: 'Two days strong. Don't break the chain.',
-      3: 'Three days. You're building momentum.',
-      5: 'Five straight days with a sale. That's discipline.',
-      7: 'A full week. Elite level consistency.',
-      10: 'Ten days. You're in rare company.',
-      14: 'Two weeks straight. Legendary.'
+      0: "No active streak. Close a deal today to start one.",
+      1: "One day in. Keep it going tomorrow.",
+      2: "Two days strong. Don't break the chain.",
+      3: "Three days. You're building momentum.",
+      5: "Five straight days with a sale. That's discipline.",
+      7: "A full week. Elite level consistency.",
+      10: "Ten days. You're in rare company.",
+      14: "Two weeks straight. Legendary."
     };
     const streakKey = Object.keys(streakMsgs).reverse().find(k=>streak >= Number(k)) || '0';
     document.getElementById('sc-streak-msg').textContent = streakMsgs[streakKey];
