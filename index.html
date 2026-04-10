@@ -795,6 +795,7 @@ function applyProfile(){
   document.getElementById('h-name').textContent=profile.name||'Technician';
   document.getElementById('h-co').textContent=(profile.role?profile.role+' · ':'')+( profile.company||'');
   loadStats();
+  updateStreakBadge();
 }
 
 window.pickAv=function(el,em,ctx){
@@ -1862,13 +1863,6 @@ window.go = function(id){
   if(id === 's-scorecard') renderScorecard();
   if(id === 's-home') updateStreakBadge();
 };
-
-// Update streak on home load
-const _origApplyProfile = applyProfile;
-function applyProfile(){
-  _origApplyProfile && _origApplyProfile();
-  updateStreakBadge();
-}
 
 init();
 </script>
