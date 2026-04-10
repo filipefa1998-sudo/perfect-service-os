@@ -187,6 +187,12 @@
   .flag-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#fff;border-radius:7px;border-left:3px solid var(--gold);}
   .flag-dot{width:8px;height:8px;border-radius:50%;background:var(--gold);flex-shrink:0;}
   .flag-lbl{font-size:13px;font-weight:600;color:var(--navy);}
+  .script-tab{flex:1;padding:10px 8px;text-align:center;cursor:pointer;font-size:12px;font-weight:700;color:rgba(255,255,255,.45);border-bottom:2px solid transparent;transition:all .15s;}
+  .script-tab.active{color:var(--gold-light);border-bottom-color:var(--gold);}
+  .custom-script-card{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px;position:relative;}
+  .custom-script-title{font-size:13px;font-weight:800;color:var(--navy);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;}
+  .custom-script-body{font-size:13px;color:var(--text-primary);line-height:1.65;font-style:italic;}
+  .custom-script-del{position:absolute;top:10px;right:12px;font-size:11px;color:var(--danger);font-weight:700;cursor:pointer;padding:2px 6px;}
   .hidden{display:none!important;}
   .fade{animation:fi .2s ease;}
   @keyframes fi{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
@@ -233,9 +239,18 @@
     <div class="topbar"><span class="tb-brand">Perfect Service OS</span><span class="tb-action" onclick="go('s-profile')">Profile</span></div>
     <div class="sbody">
       <div class="hh">
-        <div class="hg">Ready to close</div>
-        <div class="hn" id="h-name">–</div>
-        <div class="hc" id="h-co">–</div>
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+          <div>
+            <div class="hg">Ready to close</div>
+            <div class="hn" id="h-name">–</div>
+            <div class="hc" id="h-co">–</div>
+          </div>
+          <div id="streak-badge" style="display:none;flex-direction:column;align-items:center;background:rgba(255,255,255,.1);border-radius:10px;padding:8px 12px;min-width:52px;cursor:pointer;" onclick="go('s-scorecard')">
+            <div id="streak-fire" style="font-size:22px;line-height:1;">🔥</div>
+            <div id="streak-count" style="font-size:16px;font-weight:800;color:var(--gold-light);line-height:1.2;">0</div>
+            <div style="font-size:9px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.06em;margin-top:1px;">streak</div>
+          </div>
+        </div>
         <div class="hstats">
           <div class="hstat"><div class="hsv" id="st-calls">–</div><div class="hsl">Today</div></div>
           <div class="hstat"><div class="hsv" id="st-close">–</div><div class="hsl">Close Rate</div></div>
@@ -246,7 +261,7 @@
         <button class="btn-gold" onclick="startJob()">Start New Job</button>
         <div class="qlinks">
           <div class="ql" onclick="go('s-jobs')"><div class="qli">📋</div><div class="qll">Past Jobs</div><div class="qls">View history</div></div>
-          <div class="ql" onclick="go('s-kpi')"><div class="qli">📊</div><div class="qll">My Stats</div><div class="qls">Performance</div></div>
+          <div class="ql" onclick="go('s-scorecard')"><div class="qli">📈</div><div class="qll">Scorecard</div><div class="qls">Weekly report</div></div>
           <div class="ql" onclick="go('s-objref')"><div class="qli">💬</div><div class="qll">Objections</div><div class="qls">Quick reference</div></div>
           <div class="ql" onclick="go('s-scripts')"><div class="qli">🎯</div><div class="qll">Scripts</div><div class="qls">Full library</div></div>
         </div>
@@ -669,16 +684,89 @@
   <!-- SCRIPTS -->
   <div id="s-scripts" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
     <div class="topbar"><span class="tb-back" onclick="go('s-home')">← Home</span><span class="tb-title">Script Library</span><span></span></div>
-    <div class="sbody"><div style="padding:18px 20px;">
-      <div class="sbox"><div class="sboxl">Opening / Intro</div><div class="sboxt">"Hi, I'm [Name] with [Company]. You reached out about [issue], correct? Great. I'm going to take a full look at everything related to this, then walk you through what I find and your options. Sound good?"</div></div>
-      <div class="sbox"><div class="sboxl">Transition to Inspect</div><div class="sboxt">"I'm going to take a closer look and see exactly what's causing this. Give me a few minutes and I'll walk you through everything I find."</div></div>
-      <div class="sbox"><div class="sboxl">Findings Presentation</div><div class="sboxt">"Here's what I found today. [Walk through photos.] Based on what you told me about [their concern], here are three ways we can take care of this for you."</div></div>
-      <div class="sbox"><div class="sboxl">Price Presentation</div><div class="sboxt">"Most homeowners in your situation choose this option — it solves the problem permanently and protects your home long-term. But I want you to have all three options."</div></div>
-      <div class="sbox"><div class="sboxl">The Close</div><div class="sboxt">"Which option works best for you today?" — Stop talking. Stay silent. The next person to speak, loses.</div></div>
-      <div class="sbox"><div class="sboxl">Review Ask</div><div class="sboxt">"Hey [Name], quick favor — if I took care of you today, would you mind leaving us a Google review? Takes 60 seconds and means everything to us."</div></div>
-      <div class="sbox"><div class="sboxl">Membership Offer</div><div class="sboxt">"One more thing — we have a maintenance plan covering annual inspections, priority scheduling, and a discount on all services. Want me to go over what's included?"</div></div>
-    </div></div>
+    <!-- Script tabs -->
+    <div style="display:flex;gap:0;background:var(--navy);padding:0 20px 0;flex-shrink:0;">
+      <div class="script-tab active" id="stab-default" onclick="switchScriptTab('default')">Default Scripts</div>
+      <div class="script-tab" id="stab-custom" onclick="switchScriptTab('custom')">My Scripts</div>
+    </div>
+    <div class="sbody">
+      <!-- DEFAULT SCRIPTS -->
+      <div id="scripts-default" style="padding:18px 20px;">
+        <div class="sbox"><div class="sboxl">Opening / Intro</div><div class="sboxt">"Hi, I'm [Name] with [Company]. You reached out about [issue], correct? Great. I'm going to take a full look at everything related to this, then walk you through what I find and your options. Sound good?"</div></div>
+        <div class="sbox"><div class="sboxl">Transition to Inspect</div><div class="sboxt">"I'm going to take a closer look and see exactly what's causing this. Give me a few minutes and I'll walk you through everything I find."</div></div>
+        <div class="sbox"><div class="sboxl">Findings Presentation</div><div class="sboxt">"Here's what I found today. [Walk through photos.] Based on what you told me about [their concern], here are three ways we can take care of this for you."</div></div>
+        <div class="sbox"><div class="sboxl">Price Presentation</div><div class="sboxt">"Most homeowners in your situation choose this option — it solves the problem permanently and protects your home long-term. But I want you to have all three options."</div></div>
+        <div class="sbox"><div class="sboxl">The Close</div><div class="sboxt">"Which option works best for you today?" — Stop talking. Stay silent. The next person to speak, loses.</div></div>
+        <div class="sbox"><div class="sboxl">Review Ask</div><div class="sboxt">"Hey [Name], quick favor — if I took care of you today, would you mind leaving us a Google review? Takes 60 seconds and means everything to us."</div></div>
+        <div class="sbox"><div class="sboxl">Membership Offer</div><div class="sboxt">"One more thing — we have a maintenance plan covering annual inspections, priority scheduling, and a discount on all services. Want me to go over what's included?"</div></div>
+      </div>
+      <!-- CUSTOM SCRIPTS -->
+      <div id="scripts-custom" style="padding:18px 20px;display:none;">
+        <div style="font-size:13px;color:var(--text-muted);line-height:1.6;margin-bottom:16px;">Add scripts that work for you — your own words, your own style. These sit alongside the defaults.</div>
+        <!-- Add new script form -->
+        <div style="background:var(--surface);border-radius:12px;padding:16px;border:1px solid var(--border);margin-bottom:20px;">
+          <div class="fl" style="margin-bottom:7px;">Script Title</div>
+          <input class="fi" type="text" id="new-script-title" placeholder="e.g. My Water Heater Opener" style="margin-bottom:12px;" />
+          <div class="fl" style="margin-bottom:7px;">Script Content</div>
+          <textarea class="fi" id="new-script-body" style="min-height:100px;resize:none;margin-bottom:0;" placeholder="Write your script here — use your own natural words and style..."></textarea>
+          <button class="btn-navy" onclick="saveCustomScript()" style="margin-top:12px;font-size:14px;padding:12px;">+ Add Script</button>
+        </div>
+        <!-- Saved custom scripts render here -->
+        <div id="custom-scripts-list"></div>
+      </div>
+    </div>
     <div class="navtabs"><div class="ntab" onclick="go('s-home')">Home</div><div class="ntab" onclick="go('s-kpi')">Stats</div><div class="ntab" onclick="go('s-jobs')">Jobs</div><div class="ntab active">Scripts</div></div>
+  </div>
+
+  <!-- WEEKLY SCORECARD -->
+  <div id="s-scorecard" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="tb-back" onclick="go('s-home')">← Home</span><span class="tb-title">Weekly Scorecard</span><span></span></div>
+    <div class="sbody"><div style="padding:20px;">
+
+      <!-- Week selector -->
+      <div style="display:flex;gap:8px;margin-bottom:20px;">
+        <div class="kpibtn active" id="wk-this" onclick="loadScorecard('this',this)">This Week</div>
+        <div class="kpibtn" id="wk-last" onclick="loadScorecard('last',this)">Last Week</div>
+        <div class="kpibtn" id="wk-4wk" onclick="loadScorecard('4wk',this)">4-Week Avg</div>
+      </div>
+
+      <!-- Streak hero -->
+      <div id="sc-streak-hero" style="background:var(--navy);border-radius:14px;padding:20px;text-align:center;margin-bottom:20px;">
+        <div id="sc-streak-icon" style="font-size:40px;margin-bottom:4px;">🔥</div>
+        <div id="sc-streak-num" style="font-size:36px;font-weight:800;color:var(--gold-light);">0</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em;margin-top:2px;">Day Sold Streak</div>
+        <div id="sc-streak-msg" style="font-size:13px;color:rgba(255,255,255,.6);margin-top:8px;line-height:1.5;"></div>
+      </div>
+
+      <!-- Core KPIs -->
+      <div class="kpigrid" style="margin-bottom:16px;">
+        <div class="kpicard"><div class="kpiv" id="sc-calls">–</div><div class="kpil">Calls Run</div></div>
+        <div class="kpicard"><div class="kpiv" id="sc-close">–</div><div class="kpil">Close Rate</div></div>
+        <div class="kpicard"><div class="kpiv" id="sc-ticket">–</div><div class="kpil">Avg Ticket</div></div>
+        <div class="kpicard"><div class="kpiv" id="sc-revenue">–</div><div class="kpil">Revenue</div></div>
+      </div>
+
+      <!-- No-sale breakdown -->
+      <div class="sdiv">Why Deals Were Lost</div>
+      <div id="sc-nosale-breakdown" style="margin-bottom:16px;">
+        <div style="text-align:center;padding:16px;color:var(--text-muted);font-size:13px;">No lost deals this period 💪</div>
+      </div>
+
+      <!-- Compliance bars -->
+      <div class="sdiv">Execution Quality</div>
+      <div class="bars"><div class="barl"><span>Photo Compliance</span><span id="sc-photo">–</span></div><div class="bart"><div class="barf gold" id="sc-photo-f" style="width:0%"></div></div></div>
+      <div class="bars"><div class="barl"><span>Options Built / Call</span><span id="sc-opts">–</span></div><div class="bart"><div class="barf" id="sc-opts-f" style="width:0%"></div></div></div>
+      <div class="bars"><div class="barl"><span>Review Ask Rate</span><span id="sc-rev">–</span></div><div class="bart"><div class="barf succ" id="sc-rev-f" style="width:0%"></div></div></div>
+      <div class="bars"><div class="barl"><span>Membership Offer Rate</span><span id="sc-mem">–</span></div><div class="bart"><div class="barf gold" id="sc-mem-f" style="width:0%"></div></div></div>
+
+      <!-- Personal coaching note -->
+      <div id="sc-coaching" style="background:var(--gold-pale);border-left:4px solid var(--gold);border-radius:8px;padding:14px 16px;margin-top:16px;display:none;">
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);margin-bottom:6px;">This Week's Focus</div>
+        <div id="sc-coaching-text" style="font-size:14px;color:var(--navy);line-height:1.6;"></div>
+      </div>
+
+    </div></div>
+    <div class="navtabs"><div class="ntab" onclick="go('s-home')">Home</div><div class="ntab" onclick="go('s-kpi')">Stats</div><div class="ntab" onclick="go('s-jobs')">Jobs</div><div class="ntab" onclick="go('s-objref')">Scripts</div></div>
   </div>
 
 </div>
@@ -1545,6 +1633,242 @@ window.finishJob=async function(){
     go('s-review');
   }catch(e){alert('Error: '+e.message);}
 };
+
+// ══════════════════════════════════════════════════
+// FEATURE: SCRIPT CUSTOMIZATION
+// ══════════════════════════════════════════════════
+const SCRIPTS_KEY = 'psos_custom_scripts';
+
+function getCustomScripts(){
+  try{ return JSON.parse(localStorage.getItem(SCRIPTS_KEY)||'[]'); }catch(e){ return []; }
+}
+
+function saveCustomScripts(scripts){
+  localStorage.setItem(SCRIPTS_KEY, JSON.stringify(scripts));
+}
+
+window.switchScriptTab = function(tab){
+  document.getElementById('stab-default').classList.toggle('active', tab==='default');
+  document.getElementById('stab-custom').classList.toggle('active', tab==='custom');
+  document.getElementById('scripts-default').style.display = tab==='default'?'block':'none';
+  document.getElementById('scripts-custom').style.display = tab==='custom'?'block':'none';
+  if(tab==='custom') renderCustomScripts();
+};
+
+function renderCustomScripts(){
+  const scripts = getCustomScripts();
+  const container = document.getElementById('custom-scripts-list');
+  if(scripts.length === 0){
+    container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:13px;">No custom scripts yet.<br>Add your first one above.</div>';
+    return;
+  }
+  container.innerHTML = scripts.map((s,i) => `
+    <div class="custom-script-card">
+      <div class="custom-script-del" onclick="deleteCustomScript(${i})">✕ Delete</div>
+      <div class="custom-script-title">${s.title}</div>
+      <div class="custom-script-body">"${s.body}"</div>
+    </div>
+  `).join('');
+}
+
+window.saveCustomScript = function(){
+  const title = document.getElementById('new-script-title').value.trim();
+  const body = document.getElementById('new-script-body').value.trim();
+  if(!title) return alert('Give your script a title.');
+  if(!body) return alert('Write the script content.');
+  const scripts = getCustomScripts();
+  scripts.push({ title, body, createdAt: Date.now() });
+  saveCustomScripts(scripts);
+  document.getElementById('new-script-title').value = '';
+  document.getElementById('new-script-body').value = '';
+  renderCustomScripts();
+};
+
+window.deleteCustomScript = function(idx){
+  if(!confirm('Delete this script?')) return;
+  const scripts = getCustomScripts();
+  scripts.splice(idx, 1);
+  saveCustomScripts(scripts);
+  renderCustomScripts();
+};
+
+// ══════════════════════════════════════════════════
+// FEATURE: STREAK TRACKER
+// Streak = consecutive calendar days with at least one sold job
+// ══════════════════════════════════════════════════
+async function calcStreak(){
+  try{
+    const q = query(collection(db,'jobs'), where('deviceId','==',devId()));
+    const snap = await getDocs(q);
+    const jobs = snap.docs.map(d=>d.data()).filter(j=>j.outcome==='sold' && j.date);
+    // Get unique sold dates, sorted descending
+    const soldDates = [...new Set(jobs.map(j=>j.date))].sort((a,b)=>b.localeCompare(a));
+    if(soldDates.length === 0) return 0;
+    const today = new Date().toISOString().split('T')[0];
+    const yesterday = new Date(Date.now()-86400000).toISOString().split('T')[0];
+    // Streak must include today or yesterday to be active
+    if(soldDates[0] !== today && soldDates[0] !== yesterday) return 0;
+    let streak = 1;
+    for(let i=1; i<soldDates.length; i++){
+      const prev = new Date(soldDates[i-1]);
+      const curr = new Date(soldDates[i]);
+      const diff = Math.round((prev - curr) / 86400000);
+      if(diff === 1) streak++;
+      else break;
+    }
+    return streak;
+  }catch(e){ return 0; }
+}
+
+async function updateStreakBadge(){
+  const streak = await calcStreak();
+  const badge = document.getElementById('streak-badge');
+  const count = document.getElementById('streak-count');
+  const fire = document.getElementById('streak-fire');
+  if(streak > 0){
+    badge.style.display = 'flex';
+    count.textContent = streak;
+    fire.textContent = streak >= 7 ? '🔥🔥' : streak >= 3 ? '🔥' : '⚡';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+// ══════════════════════════════════════════════════
+// FEATURE: WEEKLY SCORECARD
+// ══════════════════════════════════════════════════
+let scorecardPeriod = 'this';
+
+window.loadScorecard = async function(period, btn){
+  scorecardPeriod = period;
+  document.querySelectorAll('#s-scorecard .kpibtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  await renderScorecard();
+};
+
+function getWeekRange(period){
+  const now = new Date();
+  const dayOfWeek = now.getDay(); // 0=Sun
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+  monday.setHours(0,0,0,0);
+
+  if(period === 'this'){
+    const start = monday.toISOString().split('T')[0];
+    const end = new Date().toISOString().split('T')[0];
+    return { start, end };
+  } else if(period === 'last'){
+    const lastMon = new Date(monday); lastMon.setDate(monday.getDate()-7);
+    const lastSun = new Date(monday); lastSun.setDate(monday.getDate()-1);
+    return { start: lastMon.toISOString().split('T')[0], end: lastSun.toISOString().split('T')[0] };
+  } else { // 4wk
+    const fourWk = new Date(monday); fourWk.setDate(monday.getDate()-28);
+    return { start: fourWk.toISOString().split('T')[0], end: new Date().toISOString().split('T')[0] };
+  }
+}
+
+async function renderScorecard(){
+  try{
+    const {start, end} = getWeekRange(scorecardPeriod);
+    const q = query(collection(db,'jobs'), where('deviceId','==',devId()));
+    const snap = await getDocs(q);
+    const allJobs = snap.docs.map(d=>d.data());
+    const jobs = allJobs.filter(j=>j.date >= start && j.date <= end && j.status==='completed');
+
+    const total = jobs.length;
+    const sold = jobs.filter(j=>j.outcome==='sold');
+    const soldCount = sold.length;
+    const revenue = sold.reduce((s,j)=>s+(Number(j.ticketAmount)||0),0);
+    const closeRate = total > 0 ? Math.round((soldCount/total)*100) : 0;
+    const avgTicket = soldCount > 0 ? Math.round(revenue/soldCount) : 0;
+
+    document.getElementById('sc-calls').textContent = total || '0';
+    document.getElementById('sc-close').textContent = total > 0 ? closeRate+'%' : '–';
+    document.getElementById('sc-ticket').textContent = avgTicket > 0 ? '$'+avgTicket.toLocaleString() : '–';
+    document.getElementById('sc-revenue').textContent = revenue > 0 ? '$'+revenue.toLocaleString() : '–';
+
+    // Streak
+    const streak = await calcStreak();
+    document.getElementById('sc-streak-num').textContent = streak;
+    document.getElementById('sc-streak-icon').textContent = streak >= 7 ? '🔥🔥' : streak >= 3 ? '🔥' : streak > 0 ? '⚡' : '💤';
+    const streakMsgs = {
+      0: 'No active streak. Close a deal today to start one.',
+      1: 'One day in. Keep it going tomorrow.',
+      2: 'Two days strong. Don't break the chain.',
+      3: 'Three days. You're building momentum.',
+      5: 'Five straight days with a sale. That's discipline.',
+      7: 'A full week. Elite level consistency.',
+      10: 'Ten days. You're in rare company.',
+      14: 'Two weeks straight. Legendary.'
+    };
+    const streakKey = Object.keys(streakMsgs).reverse().find(k=>streak >= Number(k)) || '0';
+    document.getElementById('sc-streak-msg').textContent = streakMsgs[streakKey];
+
+    // No-sale breakdown
+    const nosales = jobs.filter(j=>j.outcome==='nosale' && j.nosaleReason);
+    const reasonLabels = {price:'Price Too High',trust:'Trust Issue',notowner:'Not Decision Maker',competitor:'Going Competitor',timing:'Bad Timing',nourgency:'No Urgency Felt',callback:'Needs Callback',other:'Other'};
+    const reasonCounts = {};
+    nosales.forEach(j=>{ const r=j.nosaleReason; reasonCounts[r]=(reasonCounts[r]||0)+1; });
+    const nsContainer = document.getElementById('sc-nosale-breakdown');
+    if(Object.keys(reasonCounts).length === 0){
+      nsContainer.innerHTML = '<div style="text-align:center;padding:12px;color:var(--text-muted);font-size:13px;">No lost deals this period 💪</div>';
+    } else {
+      const sorted = Object.entries(reasonCounts).sort((a,b)=>b[1]-a[1]);
+      nsContainer.innerHTML = sorted.map(([r,c])=>`
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface);border-radius:8px;margin-bottom:6px;border-left:3px solid var(--danger);">
+          <div style="flex:1;font-size:13px;font-weight:600;color:var(--text-primary);">${reasonLabels[r]||r}</div>
+          <div style="font-size:13px;font-weight:800;color:var(--danger);">${c}x</div>
+        </div>`).join('');
+    }
+
+    // Compliance bars
+    const photoComp = total > 0 ? Math.round((jobs.filter(j=>(j.photoCount||0)>=3).length/total)*100) : 0;
+    const optsComp = total > 0 ? Math.round((jobs.filter(j=>j.options?.good&&j.options?.better).length/total)*100) : 0;
+    const revComp = total > 0 ? Math.round((jobs.filter(j=>j.reviewResult==='yes').length/total)*100) : 0;
+    const memComp = total > 0 ? Math.round((jobs.filter(j=>j.membershipAdded).length/total)*100) : 0;
+
+    document.getElementById('sc-photo').textContent = photoComp+'%';
+    document.getElementById('sc-photo-f').style.width = photoComp+'%';
+    document.getElementById('sc-opts').textContent = optsComp+'%';
+    document.getElementById('sc-opts-f').style.width = optsComp+'%';
+    document.getElementById('sc-rev').textContent = revComp+'%';
+    document.getElementById('sc-rev-f').style.width = revComp+'%';
+    document.getElementById('sc-mem').textContent = memComp+'%';
+    document.getElementById('sc-mem-f').style.width = memComp+'%';
+
+    // Auto coaching note — surfaces the weakest area
+    const coachingDiv = document.getElementById('sc-coaching');
+    const coachingText = document.getElementById('sc-coaching-text');
+    if(total > 0){
+      const weakest = [
+        { score: closeRate, msg: `Your close rate is ${closeRate}%. Focus on the silence after the price — most techs talk themselves out of the sale. Present and wait.` },
+        { score: photoComp, msg: `Photo compliance is at ${photoComp}%. Photos are your proof. Every flagged item needs a photo before you present.` },
+        { score: optsComp, msg: `You built options on ${optsComp}% of calls. Every call needs three options — no exceptions. Homeowners who choose feel respected.` },
+        { score: revComp, msg: `You asked for a review on ${revComp}% of calls. Ask every single sold job by name. It takes 10 seconds.` }
+      ].sort((a,b)=>a.score-b.score)[0];
+      coachingText.textContent = weakest.msg;
+      coachingDiv.style.display = 'block';
+    } else {
+      coachingDiv.style.display = 'none';
+    }
+
+  }catch(e){ console.error('Scorecard error:', e); }
+}
+
+// Hook go() to load scorecard when navigating there
+const _origGo = window.go;
+window.go = function(id){
+  _origGo(id);
+  if(id === 's-scorecard') renderScorecard();
+  if(id === 's-home') updateStreakBadge();
+};
+
+// Update streak on home load
+const _origApplyProfile = applyProfile;
+function applyProfile(){
+  _origApplyProfile && _origApplyProfile();
+  updateStreakBadge();
+}
 
 init();
 </script>
