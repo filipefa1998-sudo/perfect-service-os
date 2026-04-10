@@ -633,7 +633,7 @@
 
 <script type="module">
 import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import{getFirestore,doc,setDoc,addDoc,updateDoc,collection,query,where,orderBy,getDocs,serverTimestamp}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import{getFirestore,doc,setDoc,addDoc,updateDoc,collection,query,where,getDocs,serverTimestamp}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const cfg={apiKey:"AIzaSyBjFq_iD0wrLqgzbiAgd1zbPEkf-kvYawE",authDomain:"perfect-service-os.firebaseapp.com",projectId:"perfect-service-os",storageBucket:"perfect-service-os.firebasestorage.app",messagingSenderId:"7540754161",appId:"1:7540754161:web:56bd56999da60d7f8d8b50"};
 const db=getFirestore(initializeApp(cfg));
@@ -704,27 +704,27 @@ async function loadProfileScreen(){
   document.getElementById('p-name').textContent=profile.name||'–';
   document.getElementById('p-co').textContent=(profile.role?profile.role+' · ':'')+( profile.company||'');
   try{
-    const q=query(collection(db,'jobs'),where('deviceId','==',devId()),where('status','==','completed'));
+    const q=query(collection(db,'jobs'),where('deviceId','==',devId()));
     const snap=await getDocs(q);
-    const jobs=snap.docs.map(d=>d.data());
+    const jobs=snap.docs.map(d=>d.data()).filter(j=>j.status==='completed');
     const rev=jobs.reduce((s,j)=>s+(Number(j.ticketAmount)||0),0);
-    document.getElementById('p-calls').textContent=jobs.length;
+    document.getElementById('p-calls').textContent=jobs.length||'0';
     document.getElementById('p-rev').textContent=rev>0?'$'+rev.toLocaleString():'–';
-  }catch(e){}
+  }catch(e){console.error('loadProfileScreen error:',e);}
 }
 
 async function loadStats(){
   const today=new Date().toISOString().split('T')[0];
   try{
-    const q=query(collection(db,'jobs'),where('deviceId','==',devId()),where('date','==',today));
+    const q=query(collection(db,'jobs'),where('deviceId','==',devId()));
     const snap=await getDocs(q);
-    const jobs=snap.docs.map(d=>d.data());
+    const jobs=snap.docs.map(d=>d.data()).filter(j=>j.date===today);
     const total=jobs.length,sold=jobs.filter(j=>j.outcome==='sold').length;
     const rev=jobs.filter(j=>j.outcome==='sold').reduce((s,j)=>s+(Number(j.ticketAmount)||0),0);
     document.getElementById('st-calls').textContent=total||'0';
     document.getElementById('st-close').textContent=total>0?Math.round((sold/total)*100)+'%':'–';
     document.getElementById('st-ticket').textContent=sold>0?'$'+Math.round(rev/sold).toLocaleString():'–';
-  }catch(e){}
+  }catch(e){console.error('loadStats error:',e);}
 }
 
 window.startJob=function(){jobId=null;jobData={};curStep=0;photos=0;outcome=null;callType=null;document.querySelectorAll('.ctb').forEach(b=>b.classList.remove('sel'));document.getElementById('j-cust').value='';document.getElementById('j-addr').value='';document.getElementById('pctr').textContent='0 / 5';go('s-calltype');};
@@ -1019,7 +1019,10 @@ window.saveInsp=async function(){
   const opps=Array.from(document.querySelectorAll('#insp-cont .opp')).filter(el=>el.classList.contains('added')).map(el=>el.querySelector('.oppt').textContent);
   const notes=document.getElementById('insp-notes')?.value||'';
   const flagged=items.filter(i=>i.status==='flagged').length;
-  if(jobId){try{await updateDoc(doc(db,'jobs',jobId),{inspectionResults:items,opportunities:opps,inspectionNotes:notes,flaggedItems:flagged});}catch(e){}}
+  // Write back to jobData so finishJob can read it
+  jobData.flaggedItems=flagged;
+  jobData.inspectionResults=items;
+  if(jobId){try{await updateDoc(doc(db,'jobs',jobId),{inspectionResults:items,opportunities:opps,inspectionNotes:notes,flaggedItems:flagged});}catch(e){console.error('saveInsp error:',e);}}
   doneStep(5);
 };
 
@@ -1126,9 +1129,11 @@ async function loadKPI(){
   else if(kpiPer==='week'){const d=new Date(today);d.setDate(d.getDate()-7);start=d.toISOString().split('T')[0];}
   else{const d=new Date(today);d.setDate(1);start=d.toISOString().split('T')[0];}
   try{
-    const q=query(collection(db,'jobs'),where('deviceId','==',devId()),where('date','>=',start),where('status','==','completed'));
+    // Single where clause avoids composite index requirement
+    const q=query(collection(db,'jobs'),where('deviceId','==',devId()));
     const snap=await getDocs(q);
-    const jobs=snap.docs.map(d=>d.data());
+    // Filter in JS
+    const jobs=snap.docs.map(d=>d.data()).filter(j=>j.status==='completed'&&j.date>=start);
     const total=jobs.length,sold=jobs.filter(j=>j.outcome==='sold').length;
     const rev=jobs.filter(j=>j.outcome==='sold').reduce((s,j)=>s+(Number(j.ticketAmount)||0),0);
     const cr=total>0?Math.round((sold/total)*100):0;
@@ -1136,41 +1141,49 @@ async function loadKPI(){
     const pc=total>0?Math.round((jobs.filter(j=>(j.photoCount||0)>=3).length/total)*100):0;
     const ir=total>0?Math.round((jobs.filter(j=>j.inspectionResults?.length>0).length/total)*100):0;
     const or2=total>0?Math.round((jobs.filter(j=>j.options?.good&&j.options?.better).length/total)*100):0;
-    document.getElementById('kv-calls').textContent=total;
+    document.getElementById('kv-calls').textContent=total||'0';
     document.getElementById('kv-close').textContent=total>0?cr+'%':'–';
     document.getElementById('kv-ticket').textContent=at>0?'$'+at.toLocaleString():'–';
     document.getElementById('kv-rev').textContent=rev>0?'$'+rev.toLocaleString():'–';
     document.getElementById('bp').textContent=pc+'%';document.getElementById('bpf').style.width=pc+'%';
     document.getElementById('bi').textContent=ir+'%';document.getElementById('bif').style.width=ir+'%';
     document.getElementById('bo').textContent=or2+'%';document.getElementById('bof').style.width=or2+'%';
-  }catch(e){}
+  }catch(e){console.error('KPI error:',e);}
 }
 
 async function loadJobs(){
   const c=document.getElementById('jobslist');
   c.innerHTML='<div style="text-align:center;padding:30px;color:var(--text-muted);">Loading...</div>';
   try{
-    const q=query(collection(db,'jobs'),where('deviceId','==',devId()),orderBy('createdAt','desc'));
+    // No orderBy — avoids composite index. Sort in JS.
+    const q=query(collection(db,'jobs'),where('deviceId','==',devId()));
     const snap=await getDocs(q);
     if(snap.empty){c.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-muted);font-size:14px;">No jobs yet. Hit Start New Job to begin.</div>';return;}
-    c.innerHTML=snap.docs.map(d=>{
-      const j=d.data();
+    const jobs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    // Sort newest first in JS
+    jobs.sort((a,b)=>{
+      const ta=a.createdAt?.seconds||0;
+      const tb=b.createdAt?.seconds||0;
+      return tb-ta;
+    });
+    c.innerHTML=jobs.map(j=>{
       const oc=j.outcome==='sold'?'var(--success)':j.outcome==='nosale'?'var(--danger)':'var(--gold)';
       const ol=j.outcome==='sold'?'Sold':j.outcome==='nosale'?'No Sale':j.outcome==='callback'?'Callback':'In Progress';
+      const statusDot=j.status==='in_progress'?`<span style="font-size:10px;background:var(--gold-pale);color:var(--gold);font-weight:800;padding:2px 7px;border-radius:4px;text-transform:uppercase;">Active</span>`:'';
       return`<div style="background:var(--surface);border-radius:10px;padding:14px 16px;margin-bottom:10px;border:1px solid var(--border);">
-        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
           <div style="font-size:15px;font-weight:700;color:var(--text-primary);">${j.customer||'–'}</div>
-          <div style="font-size:11px;font-weight:800;color:${oc};text-transform:uppercase;">${ol}</div>
+          <div style="display:flex;gap:6px;align-items:center;">${statusDot}<div style="font-size:11px;font-weight:800;color:${oc};text-transform:uppercase;">${ol}</div></div>
         </div>
         <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px;">${j.address||''}</div>
-        <div style="display:flex;gap:10px;align-items:center;">
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
           <span style="font-size:11px;font-weight:700;color:var(--navy-light);">${j.callType||''}</span>
           ${j.ticketAmount?`<span style="font-size:12px;font-weight:800;color:var(--success);">$${Number(j.ticketAmount).toLocaleString()}</span>`:''}
           <span style="font-size:11px;color:var(--text-muted);">${j.date||''}</span>
         </div>
       </div>`;
     }).join('');
-  }catch(e){c.innerHTML='<div style="padding:20px;color:var(--danger);">Could not load jobs.</div>';}
+  }catch(e){c.innerHTML=`<div style="padding:20px;color:var(--danger);">Error: ${e.message}</div>`;}
 }
 
 window.go=function(id){
