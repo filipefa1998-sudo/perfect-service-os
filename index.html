@@ -1131,8 +1131,8 @@ import{getFirestore,doc,setDoc,addDoc,updateDoc,collection,query,where,getDocs,s
 const cfg={apiKey:"AIzaSyBjFq_iD0wrLqgzbiAgd1zbPEkf-kvYawE",authDomain:"perfect-service-os.firebaseapp.com",projectId:"perfect-service-os",storageBucket:"perfect-service-os.firebasestorage.app",messagingSenderId:"7540754161",appId:"1:7540754161:web:56bd56999da60d7f8d8b50"};
 const db=getFirestore(initializeApp(cfg));
 
-const PK='psos_profile',DK='psos_device';
-let profile=null,jobId=null,jobData={},curStep=0,photos=0,outcome=null,callType=null,kpiPer='today',setupAv='🔧',editAv='🔧',nosaleReason=null,callbackReason=null,membershipResult=null,reviewResult=null;
+const PK='psos_profile', DK='psos_device';
+let profile=null, jobId=null, jobData={}, curStep=0, photos=0, outcome=null, callType=null, kpiPer='today', setupAv='🔧', editAv='🔧', nosaleReason=null, callbackReason=null, membershipResult=null, reviewResult=null, finTerm=12, timerInterval=null, timerSeconds=0, timerRunning=false, returningCheckTimeout=null, scorecardPeriod='this';
 
 function devId(){let id=localStorage.getItem(DK);if(!id){id='dev_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);localStorage.setItem(DK,id);}return id;}
 
@@ -1153,6 +1153,63 @@ function applyProfile(){
   updateGreeting();
 }
 
+// ── AVATAR (initials) ──
+function getInitials(name){
+  if(!name)return '?';
+  const parts=name.trim().split(' ').filter(Boolean);
+  if(parts.length===1)return parts[0].slice(0,2).toUpperCase();
+  return (parts[0][0]+parts[parts.length-1][0]).toUpperCase();
+}
+function updateAvatars(){
+  if(!profile)return;
+  const initials=getInitials(profile.name);
+  const pav=document.getElementById('p-av');
+  if(pav){pav.textContent=initials;pav.className='initials-av-lg';}
+}
+
+// ── GREETING ──
+function updateGreeting(){
+  const el=document.getElementById('h-greeting');
+  if(!el)return;
+  const h=new Date().getHours();
+  el.textContent=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+}
+
+// ── SYNC INDICATOR ──
+function setSyncStatus(status){
+  const dot=document.getElementById('sync-dot');
+  const text=document.getElementById('sync-text');
+  if(!dot||!text)return;
+  dot.className='sync-dot';
+  if(status==='saving'){dot.classList.add('pending');text.textContent='Saving...';}
+  else if(status==='saved'){text.textContent='Saved';}
+  else if(status==='offline'){dot.classList.add('offline');text.textContent='Offline — will sync when reconnected';}
+  else if(status==='error'){dot.classList.add('offline');text.textContent='Save failed — check connection';}
+}
+window.addEventListener('online',()=>setSyncStatus('saved'));
+window.addEventListener('offline',()=>setSyncStatus('offline'));
+
+// ── CALL TIMER ──
+function startTimer(){
+  if(timerRunning)return;
+  timerRunning=true;timerSeconds=0;
+  timerInterval=setInterval(()=>{timerSeconds++;updateTimerDisplay();},1000);
+}
+function stopTimer(){clearInterval(timerInterval);timerRunning=false;}
+function resetTimer(){stopTimer();timerSeconds=0;updateTimerDisplay();}
+function updateTimerDisplay(){
+  const m=Math.floor(timerSeconds/60);
+  const s=timerSeconds%60;
+  const str=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  const el=document.getElementById('dash-timer');
+  if(!el)return;
+  el.textContent=str;
+  el.className='timer-display';
+  if(timerSeconds>2700)el.classList.add('long');
+  else if(timerSeconds>1800)el.classList.add('warn');
+}
+
+// ── PROFILE SETUP ──
 window.pickAv=function(el,em,ctx){
   const row=ctx==='edit'?'av-edit':'av-setup';
   document.querySelectorAll('#'+row+' .avopt').forEach(a=>a.classList.remove('sel'));
@@ -1196,7 +1253,8 @@ window.resetAll=function(){if(confirm('Reset ALL data? Cannot be undone.')){loca
 
 async function loadProfileScreen(){
   if(!profile)return;
-  document.getElementById('p-av').textContent=profile.avatar||'🔧';
+  document.getElementById('p-av').textContent=getInitials(profile.name);
+  document.getElementById('p-av').className='initials-av-lg';
   document.getElementById('p-name').textContent=profile.name||'–';
   document.getElementById('p-co').textContent=(profile.role?profile.role+' · ':'')+( profile.company||'');
   try{
@@ -1206,7 +1264,7 @@ async function loadProfileScreen(){
     const rev=jobs.reduce((s,j)=>s+(Number(j.ticketAmount)||0),0);
     document.getElementById('p-calls').textContent=jobs.length||'0';
     document.getElementById('p-rev').textContent=rev>0?'$'+rev.toLocaleString():'–';
-  }catch(e){console.error('loadProfileScreen error:',e);}
+  }catch(e){console.error('loadProfileScreen:',e);}
 }
 
 async function loadStats(){
@@ -1215,16 +1273,35 @@ async function loadStats(){
     const q=query(collection(db,'jobs'),where('deviceId','==',devId()));
     const snap=await getDocs(q);
     const jobs=snap.docs.map(d=>d.data()).filter(j=>j.date===today);
-    const total=jobs.length,sold=jobs.filter(j=>j.outcome==='sold').length;
+    const total=jobs.length, sold=jobs.filter(j=>j.outcome==='sold').length;
     const rev=jobs.filter(j=>j.outcome==='sold').reduce((s,j)=>s+(Number(j.ticketAmount)||0),0);
     document.getElementById('st-calls').textContent=total||'0';
     document.getElementById('st-close').textContent=total>0?Math.round((sold/total)*100)+'%':'–';
     document.getElementById('st-ticket').textContent=sold>0?'$'+Math.round(rev/sold).toLocaleString():'–';
-  }catch(e){console.error('loadStats error:',e);}
+  }catch(e){console.error('loadStats:',e);}
 }
 
-window.startJob=function(){jobId=null;jobData={};curStep=0;photos=0;outcome=null;callType=null;document.querySelectorAll('.ctb').forEach(b=>b.classList.remove('sel'));document.getElementById('j-cust').value='';document.getElementById('j-addr').value='';document.getElementById('pctr').textContent='0 / 5';go('s-calltype');};
-window.selCT=function(btn,t){document.querySelectorAll('#ct-grid .ctb').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');callType=t;};
+// ── JOB FLOW ──
+window.startJob=function(){
+  jobId=null;jobData={};curStep=0;photos=0;outcome=null;callType=null;
+  nosaleReason=null;callbackReason=null;
+  document.querySelectorAll('.ctb').forEach(b=>b.classList.remove('sel'));
+  const cust=document.getElementById('j-cust');
+  const addr=document.getElementById('j-addr');
+  if(cust)cust.value='';
+  if(addr)addr.value='';
+  const pctr=document.getElementById('pctr');
+  if(pctr)pctr.textContent='0 / 5';
+  const banner=document.getElementById('returning-banner');
+  if(banner)banner.style.display='none';
+  go('s-calltype');
+};
+
+window.selCT=function(btn,t){
+  document.querySelectorAll('#ct-grid .ctb').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');callType=t;
+};
+
 window.createJob=async function(){
   if(!callType)return alert('Select a call type.');
   const c=document.getElementById('j-cust').value.trim();
@@ -1232,28 +1309,33 @@ window.createJob=async function(){
   const a=document.getElementById('j-addr').value.trim();
   const today=new Date().toISOString().split('T')[0];
   const jd={deviceId:devId(),techName:profile?.name||'',customer:c,address:a,callType,date:today,status:'in_progress',currentStep:0,stepsCompleted:[],createdAt:serverTimestamp()};
-  try{const ref=await addDoc(collection(db,'jobs'),jd);jobId=ref.id;jobData={...jd,id:ref.id};curStep=0;renderInsp(callType);updDash();go('s-dash');startTimer();}
-  catch(e){alert('Firebase error: '+e.message);}
+  try{
+    const ref=await addDoc(collection(db,'jobs'),jd);
+    jobId=ref.id;jobData={...jd,id:ref.id};curStep=0;
+    renderInsp(callType);updDash();go('s-dash');startTimer();
+  }catch(e){alert('Firebase error: '+e.message);}
 };
 
 function updDash(){
   document.getElementById('d-cust').textContent=jobData.customer||'–';
   document.getElementById('d-addr').textContent=jobData.address||'–';
   document.getElementById('d-ct').textContent=jobData.callType||'–';
-  document.getElementById('insp-lbl').textContent=`Step 6 of 11 · ${jobData.callType||''}`;
-  document.getElementById('jpbar').style.width=Math.max(5,Math.round((curStep/10)*95))+'%';
+  const inspLbl=document.getElementById('insp-lbl');
+  if(inspLbl)inspLbl.textContent=`Step 6 of 11 · ${jobData.callType||''}`;
+  const pbar=document.getElementById('jpbar');
+  if(pbar)pbar.style.width=Math.max(5,Math.round((curStep/10)*95))+'%';
   const names=['Pre-Call Prep','Arrival & Setup','Introduction','Set the Agenda','Discovery Questions','Inspection','Photo Capture','Build Options','Present Findings','Handle Objections','Close & Complete'];
   const done=jobData.stepsCompleted||[];
   document.getElementById('steplist').innerHTML=names.map((n,i)=>{
     const d=done.includes(i),ac=i===curStep&&!d;
-    return`<div class="sitem ${d?'done':ac?'active':''}" onclick="goStep(${i})"><div class="snum ${d?'chk':''}">${d?'✓':i+1}</div><div class="sname">${n}</div><div class="sarr">→</div></div>`;
+    return `<div class="sitem ${d?'done':ac?'active':''}" onclick="goStep(${i})"><div class="snum ${d?'chk':''}">${d?'✓':i+1}</div><div class="sname">${n}</div><div class="sarr">→</div></div>`;
   }).join('');
 }
 
 window.goStep=function(n){
   curStep=n;updDash();go('s-step-'+n);
-  if(n===8) populatePresentScreen();
-  renderStepProgress(n, jobData.stepsCompleted||[]);
+  if(n===8)populatePresentScreen();
+  renderStepProgress(n,jobData.stepsCompleted||[]);
 };
 window.goToCurrentStep=function(){goStep(curStep);};
 
@@ -1262,221 +1344,67 @@ window.doneStep=async function(n){
   if(!done.includes(n))done.push(n);
   jobData.stepsCompleted=done;
   curStep=n<10?n+1:10;
-  if(jobId){try{await updateDoc(doc(db,'jobs',jobId),{stepsCompleted:done,currentStep:curStep});}catch(e){}}
+  if(jobId){try{setSyncStatus('saving');await updateDoc(doc(db,'jobs',jobId),{stepsCompleted:done,currentStep:curStep});setSyncStatus('saved');}catch(e){setSyncStatus('error');}}
   if(n<10)goStep(n+1);
-  if(n===7) populatePresentScreen();
-  renderStepProgress(curStep, done);
+  if(n===7)populatePresentScreen();
+  renderStepProgress(curStep,done);
 };
 
 window.logArr=async function(){
   const t=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-  document.getElementById('arr-ts').textContent='Arrived at '+t;
+  const ts=document.getElementById('arr-ts');
+  if(ts)ts.textContent='Arrived at '+t;
   if(jobId){try{await updateDoc(doc(db,'jobs',jobId),{arrivalTime:new Date().toISOString()});}catch(e){}}
-  doneStep(1);
+  window.doneStep(1);
 };
 
 window.saveDisc=async function(){
-  const disc={q1:document.getElementById('d1').value,q2:document.getElementById('d2').value,q3:document.getElementById('d3').value,q4:document.getElementById('d4').value,q5:document.getElementById('d5').value};
+  const disc={
+    q1:document.getElementById('d1')?.value||'',
+    q2:document.getElementById('d2')?.value||'',
+    q3:document.getElementById('d3')?.value||'',
+    q4:document.getElementById('d4')?.value||'',
+    q5:document.getElementById('d5')?.value||''
+  };
   jobData.discovery=disc;
   if(jobId){try{await updateDoc(doc(db,'jobs',jobId),{discovery:disc});}catch(e){}}
-  doneStep(4);
+  window.doneStep(4);
 };
 
-const inspData={
-  'Water Heater':{
-    req:[
-      {l:'Unit age — check model tag for manufacture date',note:'Flag if 10+ years old'},
-      {l:'Tank condition — rust, corrosion, mineral buildup',note:'Check base and connections'},
-      {l:'Expansion tank present and properly sized',note:'Required with closed systems'},
-      {l:'Shutoff valve — operation and condition',note:'Should turn fully without resistance'},
-      {l:'Supply lines — material, age, braided or copper',note:'Flag flex lines over 5 years'},
-      {l:'Venting — proper clearance, no blockage or corrosion',note:''},
-      {l:'Drain pan present and drain line clear',note:''},
-      {l:'Pressure relief valve — age and condition',note:'Replace if over 5 years or corroded'},
-      {l:'Pressure regulator — measured PSI reading',note:'Normal: 50–80 PSI'},
-      {l:'Sediment signs — discolored water or rumbling noise',note:''},
-      {l:'Temperature setting — check for scalding risk',note:'Recommend 120°F'},
-      {l:'Earthquake straps if seismic zone',note:''}
-    ],
-    opp:['Whole home water filtration absent','Maintenance membership not enrolled','Shutoff valve difficult to operate — replacement needed','No expansion tank on closed system','Pressure regulator aging or out of range','Water softener not present — hard water signs visible','PRV past service life'],
-    photos:['Model tag (full serial/model number visible)','Full unit front','Top connections and expansion tank','Base and drain pan','Completed repair or replacement']
-  },
-  'Drain':{
-    req:[
-      {l:'Primary blockage location confirmed',note:'Kitchen, bath, floor drain, main?'},
-      {l:'Drain accessibility — cleanout present',note:''},
-      {l:'Visual signs of root intrusion',note:''},
-      {l:'Backup frequency noted from homeowner',note:'Use discovery answers'},
-      {l:'P-trap condition — visible traps',note:'Look for leaks or improper slope'},
-      {l:'Vent stack accessible for camera if needed',note:''},
-      {l:'Multiple fixtures backing up or single',note:'Single = local, multiple = main'},
-      {l:'Grease buildup — kitchen drain history',note:''},
-      {l:'Age and material of drain lines if visible',note:'Cast iron, ABS, PVC'},
-      {l:'Camera inspection warranted',note:'Flag if recurring issue'}
-    ],
-    opp:['Hydro-jet cleaning recommended over snaking','Camera inspection not yet performed','Bio-clean monthly treatment plan','Maintenance drain plan to prevent recurrence','Whole home drain inspection while on-site','Cleanout installation if none present'],
-    photos:['Drain access point','Camera footage still if applicable','Before clearing','After clearing','Any root or debris pulled out']
-  },
-  'Leak':{
-    req:[
-      {l:'Leak source confirmed — supply or drain line',note:''},
-      {l:'Water damage scope assessed — walls, floors, cabinets',note:''},
-      {l:'Main shutoff valve location and operation',note:''},
-      {l:'Drywall, flooring or subfloor affected',note:'Note extent for homeowner'},
-      {l:'Mold or mildew visible',note:'Flag — requires remediation referral'},
-      {l:'Duration of leak estimated',note:''},
-      {l:'Other fixtures or lines in same area checked',note:''},
-      {l:'Pipe material at leak point',note:'Copper, PEX, galvanized, CPVC'},
-      {l:'Age of pipe at leak point',note:''},
-      {l:'Water meter checked for hidden leaks',note:'Turn off all fixtures, check meter movement'}
-    ],
-    opp:['Whole home shutoff valve upgrade','Water leak detector installation','Full pipe inspection while open','Insurance documentation photos provided','Mold remediation referral','Pressure regulator — check if high pressure caused failure'],
-    photos:['Active leak or source','Water damage extent','Pipe condition at leak','After repair','Water meter reading before and after']
-  },
-  'Toilet':{
-    req:[
-      {l:'Flush mechanism — full flush with single press',note:''},
-      {l:'Fill valve — fill time and noise',note:'Should fill in under 60 seconds'},
-      {l:'Flapper seal — dye test for silent leak',note:''},
-      {l:'Wax ring — floor seal and rocking',note:'Any movement means compromised seal'},
-      {l:'Supply line — age and material',note:'Replace braided if over 5 years'},
-      {l:'Shutoff valve — operation',note:''},
-      {l:'Tank lid and tank crack inspection',note:''},
-      {l:'Bowl condition — staining, cracks',note:''},
-      {l:'Water usage — 1.6GPF or older 3.5GPF',note:'Flag high-usage models'},
-      {l:'Ventilation adequate for bathroom',note:''}
-    ],
-    opp:['High-efficiency toilet upgrade — 1.28GPF','Bidet attachment offer','Shutoff valve replacement','Complete rebuild vs repair cost comparison','Slow flush root cause — venting issue','Maintenance membership'],
-    photos:['Full toilet front','Tank interior','Base and floor seal','Supply line and shutoff','Completed repair']
-  },
-  'Faucet':{
-    req:[
-      {l:'Faucet brand, model and approximate age',note:''},
-      {l:'Cartridge or ball valve type identified',note:''},
-      {l:'Supply lines — material and condition',note:''},
-      {l:'Shutoff valves under sink — operation',note:'Flag if stuck or corroded'},
-      {l:'Water pressure at fixture — hot and cold',note:''},
-      {l:'Aerator condition — flow restriction or buildup',note:''},
-      {l:'Drain assembly — stopper and p-trap',note:''},
-      {l:'Under-sink cabinet — signs of moisture or past leaks',note:''},
-      {l:'Hot water delivery time',note:'Note if slow — may indicate recirculation opportunity'},
-      {l:'Water quality — taste, odor or discoloration noted',note:''}
-    ],
-    opp:['Full faucet replacement vs repair — cost comparison','Under-sink shutoff upgrade','Water filtration system — point of use','Hot water recirculation pump','Matching fixture upgrade package','Whole home filtration'],
-    photos:['Faucet full view','Under-sink connections','Shutoff valves','Aerator or cartridge removed','Completed repair']
-  },
-  'Sewer':{
-    req:[
-      {l:'Camera inspection performed or needed',note:''},
-      {l:'Cleanout access location confirmed',note:''},
-      {l:'Tree root intrusion present',note:''},
-      {l:'Pipe material — clay, cast iron, ABS, Orangeburg',note:'Flag Orangeburg immediately'},
-      {l:'Belly, sag or offset visible on camera',note:''},
-      {l:'Distance from cleanout to street connection',note:''},
-      {l:'Permit required — check local requirements',note:''},
-      {l:'Grade and slope adequate',note:'Minimum 1/4" per foot'},
-      {l:'Multiple blockage locations or single',note:''},
-      {l:'History of backups from homeowner',note:'Use discovery answers'}
-    ],
-    opp:['Full sewer line replacement — trenchless or open cut','Hydro-jetting for root or grease removal','Annual camera inspection plan','Cleanout installation if none exists','Pipe lining as alternative to replacement','Whole home plumbing inspection'],
-    photos:['Camera footage still — problem area','Cleanout access','Root or debris pulled','Ground surface above line if relevant','After hydro-jet or repair']
-  },
-  'Repipe':{
-    req:[
-      {l:'Current pipe material throughout home',note:'Polybutylene, galvanized, copper, CPVC'},
-      {l:'Age of existing piping',note:'Galvanized 40–70yr, PB recalled, copper 50yr+'},
-      {l:'Water quality — discoloration, metallic taste',note:''},
-      {l:'Pressure at multiple fixtures',note:'Inconsistent pressure = scaling/corrosion'},
-      {l:'Number of fixtures and bathrooms',note:'Affects scope and bid'},
-      {l:'Access points — attic, crawlspace, slab',note:''},
-      {l:'Permit required — yes for full repipe',note:''},
-      {l:'Shut-off valves at fixtures — condition',note:''},
-      {l:'Water heater condition — replace during repipe?',note:'Flag if 8+ years'},
-      {l:'Homeowner timeline and displacement tolerance',note:''}
-    ],
-    opp:['Whole home filtration installed during repipe','Pressure regulator upgrade','Water heater replacement while walls open','Fixture upgrades — shutoffs and supply lines','Extended labor warranty offer','Maintenance membership at completion'],
-    photos:['Existing pipe material — close-up','Multiple locations showing pipe condition','Access points — attic or crawlspace','Pressure reading at fixture','Completed repipe sections']
-  },
-  'Filtration':{
-    req:[
-      {l:'Current water quality — taste, odor, color',note:''},
-      {l:'TDS reading if meter available',note:'Note reading — 0–50 excellent, 50–150 good, 150+ flag'},
-      {l:'Existing filtration system — brand, age, filter status',note:''},
-      {l:'Under-sink vs whole home vs point of entry',note:''},
-      {l:'Water softener present and functioning',note:'Check salt level and bypass valve'},
-      {l:'Water heater condition — scale buildup from hard water',note:''},
-      {l:'Iron, sulfur or chlorine smell present',note:''},
-      {l:'Well water or municipal',note:'Different treatment needs'},
-      {l:'Number of people in household',note:'Affects system sizing'},
-      {l:'Current filter maintenance history',note:''}
-    ],
-    opp:['Reverse osmosis system — under sink drinking water','Whole home softener + filtration combo','Annual filter replacement service plan','Water test report for homeowner','Scale prevention for water heater','Salt-free conditioner alternative'],
-    photos:['Existing system or lack of filtration','TDS meter reading on screen','Water heater scale evidence if present','Under-sink space for RO','Completed installation']
-  },
-  'Pressure':{
-    req:[
-      {l:'Measured PSI reading — static',note:'Normal: 50–80 PSI. Flag over 80'},
-      {l:'PRV location, brand and age',note:'Service life 7–12 years'},
-      {l:'PRV adjusted and re-tested after adjustment',note:''},
-      {l:'Main shutoff valve — location and operation',note:''},
-      {l:'Expansion tank present and pressure tested',note:''},
-      {l:'Symptoms noted — banging, whistling, high velocity',note:''},
-      {l:'Hot water pressure vs cold water pressure',note:'Should be equal'},
-      {l:'Pressure at multiple fixture locations',note:'Check if consistent throughout home'},
-      {l:'Supply line condition — any bulging or stress',note:''},
-      {l:'Water meter shutoff accessible',note:''}
-    ],
-    opp:['PRV replacement — out of range or past service life','Expansion tank installation or replacement','Water hammer arrestors at washing machine','Whole home plumbing inspection','Pressure gauge installation for monitoring','Maintenance membership'],
-    photos:['Pressure gauge reading','PRV location and condition','Expansion tank','Main shutoff valve','Completed adjustment or repair']
-  },
-  'Gas Line':{
-    req:[
-      {l:'Leak test performed — soap test or detector',note:'Never skip this step'},
-      {l:'Gas shutoff location confirmed — main and appliance',note:''},
-      {l:'Line material — black iron, CSST, copper',note:'CSST requires bonding'},
-      {l:'CSST bonding confirmed if present',note:'Code requirement'},
-      {l:'Permits required for work scope',note:'Almost always yes'},
-      {l:'Pressure test completed and documented',note:''},
-      {l:'All appliance connections inspected',note:''},
-      {l:'Flexible connectors — age and condition',note:'Replace if kinked or corroded'},
-      {l:'Drip leg present at appliances',note:''},
-      {l:'Carbon monoxide detectors present in home',note:''}
-    ],
-    opp:['Full gas line inspection while on-site','Gas shutoff upgrade to ball valve','Carbon monoxide detector installation','Flexible connector replacement — aging','CSST bonding installation if missing','Seismic gas shutoff valve'],
-    photos:['Gas meter and main shutoff','Leak test in progress','Line material close-up','Appliance connections','Completed repair or installation']
-  },
-  'Sump Pump':{
-    req:[
-      {l:'Pump brand, model and age',note:'Service life 7–10 years'},
-      {l:'Float switch operation — manual test',note:'Pour water into pit to test'},
-      {l:'Discharge line — clear, proper slope, check valve',note:''},
-      {l:'Discharge termination point — away from foundation',note:'Min 10 feet'},
-      {l:'Battery backup system present',note:'Critical in power outage scenarios'},
-      {l:'Basin condition — debris, sediment',note:''},
-      {l:'Check valve present and functioning',note:''},
-      {l:'Power source — dedicated outlet, GFCI',note:''},
-      {l:'Water intrusion history from homeowner',note:''},
-      {l:'Wi-Fi or alarm alert system present',note:''}
-    ],
-    opp:['Battery backup installation — no power protection currently','Wi-Fi alert system for remote monitoring','Basin cleaning and maintenance','Annual service plan','Second pump redundancy for high-risk homes','Discharge line extension or correction'],
-    photos:['Full pit and pump','Float switch','Discharge line and check valve','Backup system or lack of','After service or installation']
-  },
-  'Emergency':{
-    req:[
-      {l:'Emergency type confirmed and contained',note:'Stop active damage first'},
-      {l:'Main shutoff located and operated',note:'Confirm water or gas is off'},
-      {l:'Immediate damage assessment documented',note:''},
-      {l:'Utilities affected — water, gas, electric proximity',note:''},
-      {l:'Temporary fix possible vs full repair needed',note:''},
-      {l:'Permit needed for scope of repair',note:''},
-      {l:'Insurance claim likely — document thoroughly',note:'Photo everything now'},
-      {l:'Adjacent areas checked for hidden damage',note:''},
-      {l:'Cause of failure identified',note:'Age, freeze, pressure, corrosion'},
-      {l:'Homeowner aware of full scope and timeline',note:'Set expectations clearly'}
-    ],
-    opp:['Full repair vs patch — present both options clearly','Water damage restoration referral','Prevention upgrade — what failed and why','Main shutoff valve upgrade','Whole home inspection to find other risks','Priority membership for future response'],
-    photos:['Active emergency — before containment','Damage extent — walls, floors, ceiling','Source of failure close-up','Main shutoff and meter','After temporary or permanent repair']
+// ── HORIZONTAL STEP PROGRESS ──
+const STEP_NAMES=['Pre-Call','Arrival','Intro','Agenda','Discovery','Inspect','Photos','Options','Present','Objections','Close'];
+function renderStepProgress(currentN, completedSteps){
+  for(let si=0;si<=10;si++){
+    const track=document.getElementById('spt-'+si);
+    if(!track)continue;
+    let html='';
+    for(let i=0;i<=10;i++){
+      const isDone=completedSteps.includes(i);
+      const isActive=i===si;
+      const cls=isDone?'done':isActive?'active':'pending';
+      html+=`<div class="sp-node ${cls}" onclick="goStep(${i})" title="${STEP_NAMES[i]}">${isDone?'✓':i+1}</div>`;
+      if(i<10){html+=`<div class="sp-line ${isDone?'done':''}"></div>`;}
+    }
+    track.innerHTML=html;
+    const sub=document.getElementById('sps-'+si);
+    if(sub&&si===5&&jobData.callType)sub.textContent=`Step 6 of 11 · ${jobData.callType}`;
   }
+}
+
+// ── INSPECTION ──
+const inspData={
+  'Water Heater':{req:[{l:'Unit age — check model tag for manufacture date',note:'Flag if 10+ years old'},{l:'Tank condition — rust, corrosion, mineral buildup',note:'Check base and connections'},{l:'Expansion tank present and properly sized',note:'Required with closed systems'},{l:'Shutoff valve — operation and condition',note:'Should turn fully without resistance'},{l:'Supply lines — material, age, braided or copper',note:'Flag flex lines over 5 years'},{l:'Venting — proper clearance, no blockage or corrosion',note:''},{l:'Drain pan present and drain line clear',note:''},{l:'Pressure relief valve — age and condition',note:'Replace if over 5 years or corroded'},{l:'Pressure regulator — measured PSI reading',note:'Normal: 50–80 PSI'},{l:'Sediment signs — discolored water or rumbling noise',note:''},{l:'Temperature setting — check for scalding risk',note:'Recommend 120F'},{l:'Earthquake straps if seismic zone',note:''}],opp:['Whole home water filtration absent','Maintenance membership not enrolled','Shutoff valve difficult to operate','No expansion tank on closed system','Pressure regulator aging or out of range','Water softener not present','PRV past service life'],photos:['Model tag (full serial/model number visible)','Full unit front','Top connections and expansion tank','Base and drain pan','Completed repair or replacement']},
+  'Drain':{req:[{l:'Primary blockage location confirmed',note:'Kitchen, bath, floor drain, main?'},{l:'Drain accessibility — cleanout present',note:''},{l:'Visual signs of root intrusion',note:''},{l:'Backup frequency noted from homeowner',note:''},{l:'P-trap condition — visible traps',note:''},{l:'Vent stack accessible for camera if needed',note:''},{l:'Multiple fixtures backing up or single',note:'Single = local, multiple = main'},{l:'Grease buildup — kitchen drain history',note:''},{l:'Age and material of drain lines if visible',note:'Cast iron, ABS, PVC'},{l:'Camera inspection warranted',note:'Flag if recurring issue'}],opp:['Hydro-jet cleaning recommended','Camera inspection not yet performed','Bio-clean monthly treatment plan','Drain maintenance plan','Whole home drain inspection','Cleanout installation if none present'],photos:['Drain access point','Camera footage still if applicable','Before clearing','After clearing','Root or debris pulled out']},
+  'Leak':{req:[{l:'Leak source confirmed — supply or drain line',note:''},{l:'Water damage scope assessed',note:''},{l:'Main shutoff valve location and operation',note:''},{l:'Drywall, flooring or subfloor affected',note:''},{l:'Mold or mildew visible',note:'Flag — requires remediation referral'},{l:'Duration of leak estimated',note:''},{l:'Other fixtures in same area checked',note:''},{l:'Pipe material at leak point',note:''},{l:'Age of pipe at leak point',note:''},{l:'Water meter checked for hidden leaks',note:''}],opp:['Whole home shutoff valve upgrade','Water leak detector installation','Full pipe inspection while open','Insurance documentation photos','Mold remediation referral','Pressure regulator check'],photos:['Active leak or source','Water damage extent','Pipe condition at leak','After repair','Water meter reading']},
+  'Toilet':{req:[{l:'Flush mechanism — full flush with single press',note:''},{l:'Fill valve — fill time and noise',note:'Should fill under 60 seconds'},{l:'Flapper seal — dye test for silent leak',note:''},{l:'Wax ring — floor seal and rocking',note:''},{l:'Supply line — age and material',note:''},{l:'Shutoff valve — operation',note:''},{l:'Tank lid and tank crack inspection',note:''},{l:'Bowl condition — staining, cracks',note:''},{l:'Water usage — 1.6GPF or older 3.5GPF',note:''},{l:'Ventilation adequate',note:''}],opp:['High-efficiency toilet upgrade','Bidet attachment offer','Shutoff valve replacement','Complete rebuild vs repair comparison','Slow flush root cause','Maintenance membership'],photos:['Full toilet front','Tank interior','Base and floor seal','Supply line and shutoff','Completed repair']},
+  'Faucet':{req:[{l:'Faucet brand, model and approximate age',note:''},{l:'Cartridge or ball valve type identified',note:''},{l:'Supply lines — material and condition',note:''},{l:'Shutoff valves under sink — operation',note:''},{l:'Water pressure at fixture — hot and cold',note:''},{l:'Aerator condition — flow restriction',note:''},{l:'Drain assembly — stopper and p-trap',note:''},{l:'Under-sink cabinet — signs of moisture',note:''},{l:'Hot water delivery time',note:''},{l:'Water quality — taste, odor or discoloration',note:''}],opp:['Full faucet replacement vs repair','Under-sink shutoff upgrade','Water filtration system','Hot water recirculation pump','Matching fixture upgrade package'],photos:['Faucet full view','Under-sink connections','Shutoff valves','Aerator or cartridge','Completed repair']},
+  'Sewer':{req:[{l:'Camera inspection performed or needed',note:''},{l:'Cleanout access location confirmed',note:''},{l:'Tree root intrusion present',note:''},{l:'Pipe material — clay, cast iron, ABS, Orangeburg',note:'Flag Orangeburg immediately'},{l:'Belly, sag or offset visible on camera',note:''},{l:'Distance from cleanout to street',note:''},{l:'Permit required',note:''},{l:'Grade and slope adequate',note:'Minimum 1/4 inch per foot'},{l:'Multiple blockage locations or single',note:''},{l:'History of backups from homeowner',note:''}],opp:['Full sewer line replacement','Hydro-jetting for root removal','Annual camera inspection plan','Cleanout installation if none','Pipe lining as alternative','Whole home plumbing inspection'],photos:['Camera footage — problem area','Cleanout access','Root or debris','Ground surface if relevant','After hydro-jet or repair']},
+  'Repipe':{req:[{l:'Current pipe material throughout home',note:'Polybutylene, galvanized, copper, CPVC'},{l:'Age of existing piping',note:''},{l:'Water quality — discoloration, metallic taste',note:''},{l:'Pressure at multiple fixtures',note:''},{l:'Number of fixtures and bathrooms',note:''},{l:'Access points — attic, crawlspace, slab',note:''},{l:'Permit required',note:''},{l:'Shut-off valves at fixtures — condition',note:''},{l:'Water heater condition',note:''},{l:'Homeowner timeline and displacement tolerance',note:''}],opp:['Whole home filtration during repipe','Pressure regulator upgrade','Water heater replacement while walls open','Fixture upgrades','Extended labor warranty','Maintenance membership'],photos:['Existing pipe material','Multiple locations showing condition','Access points','Pressure reading','Completed repipe sections']},
+  'Filtration':{req:[{l:'Current water quality — taste, odor, color',note:''},{l:'TDS reading if meter available',note:'0–50 excellent, 50–150 good, 150+ flag'},{l:'Existing filtration system — brand, age',note:''},{l:'Under-sink vs whole home vs point of entry',note:''},{l:'Water softener present and functioning',note:''},{l:'Water heater condition — scale buildup',note:''},{l:'Iron, sulfur or chlorine smell',note:''},{l:'Well water or municipal',note:''},{l:'Number of people in household',note:''},{l:'Current filter maintenance history',note:''}],opp:['Reverse osmosis system','Whole home softener + filtration combo','Annual filter replacement service plan','Water test report','Scale prevention for water heater','Salt-free conditioner'],photos:['Existing system','TDS meter reading','Water heater scale evidence','Under-sink space','Completed installation']},
+  'Pressure':{req:[{l:'Measured PSI reading — static',note:'Normal: 50–80 PSI. Flag over 80'},{l:'PRV location, brand and age',note:'Service life 7–12 years'},{l:'PRV adjusted and re-tested',note:''},{l:'Main shutoff valve — location and operation',note:''},{l:'Expansion tank present and pressure tested',note:''},{l:'Symptoms — banging, whistling, high velocity',note:''},{l:'Hot water pressure vs cold water pressure',note:''},{l:'Pressure at multiple fixture locations',note:''},{l:'Supply line condition — any bulging',note:''},{l:'Water meter shutoff accessible',note:''}],opp:['PRV replacement','Expansion tank installation','Water hammer arrestors','Whole home plumbing inspection','Pressure gauge installation','Maintenance membership'],photos:['Pressure gauge reading','PRV location and condition','Expansion tank','Main shutoff valve','Completed repair']},
+  'Gas Line':{req:[{l:'Leak test performed — soap test or detector',note:'Never skip this step'},{l:'Gas shutoff location confirmed',note:''},{l:'Line material — black iron, CSST, copper',note:'CSST requires bonding'},{l:'CSST bonding confirmed if present',note:''},{l:'Permits required',note:''},{l:'Pressure test completed and documented',note:''},{l:'All appliance connections inspected',note:''},{l:'Flexible connectors — age and condition',note:''},{l:'Drip leg present at appliances',note:''},{l:'Carbon monoxide detectors in home',note:''}],opp:['Full gas line inspection','Gas shutoff upgrade to ball valve','Carbon monoxide detector installation','Flexible connector replacement','CSST bonding installation','Seismic gas shutoff valve'],photos:['Gas meter and main shutoff','Leak test in progress','Line material','Appliance connections','Completed repair']},
+  'Sump Pump':{req:[{l:'Pump brand, model and age',note:'Service life 7–10 years'},{l:'Float switch operation — manual test',note:'Pour water into pit to test'},{l:'Discharge line — clear, proper slope, check valve',note:''},{l:'Discharge termination point',note:'Min 10 feet from foundation'},{l:'Battery backup system present',note:''},{l:'Basin condition — debris, sediment',note:''},{l:'Check valve present and functioning',note:''},{l:'Power source — dedicated outlet, GFCI',note:''},{l:'Water intrusion history from homeowner',note:''},{l:'Wi-Fi or alarm alert system present',note:''}],opp:['Battery backup installation','Wi-Fi alert system','Basin cleaning and maintenance','Annual service plan','Second pump redundancy','Discharge line correction'],photos:['Full pit and pump','Float switch','Discharge line and check valve','Backup system','After service']},
+  'Emergency':{req:[{l:'Emergency type confirmed and contained',note:'Stop active damage first'},{l:'Main shutoff located and operated',note:''},{l:'Immediate damage assessment documented',note:''},{l:'Utilities affected — water, gas, electric proximity',note:''},{l:'Temporary fix possible vs full repair needed',note:''},{l:'Permit needed for scope of repair',note:''},{l:'Insurance claim likely — document thoroughly',note:''},{l:'Adjacent areas checked for hidden damage',note:''},{l:'Cause of failure identified',note:''},{l:'Homeowner aware of full scope and timeline',note:''}],opp:['Full repair vs patch — present both options','Water damage restoration referral','Prevention upgrade','Main shutoff valve upgrade','Whole home inspection','Priority membership'],photos:['Active emergency before containment','Damage extent','Source of failure','Main shutoff','After repair']}
 };
 
 function renderInsp(ct){
@@ -1486,22 +1414,15 @@ function renderInsp(ct){
   d.req.forEach((item,i)=>{
     const l=typeof item==='string'?item:item.l;
     const note=typeof item==='object'&&item.note?item.note:'';
-    h+=`<div class="insp" onclick="cycInsp(this)" data-idx="${i}">
-      <div class="idot"></div>
-      <div style="flex:1;">
-        <div class="ilbl">${l}</div>
-        ${note?`<div style="font-size:11px;color:var(--slate-400);margin-top:2px;">${note}</div>`:''}
-      </div>
-      <div class="istat">Tap</div>
-    </div>`;
+    h+=`<div class="insp" onclick="cycInsp(this)" data-idx="${i}"><div class="idot"></div><div style="flex:1;"><div class="ilbl">${l}</div>${note?`<div style="font-size:11px;color:var(--slate-400);margin-top:2px;">${note}</div>`:''}</div><div class="istat">Tap</div></div>`;
   });
   h+='<div class="sdiv" style="margin-top:20px;">Inspection Notes</div>';
-  h+=`<textarea style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;font-family:var(--font);color:var(--slate-900);background:var(--slate-50);outline:none;min-height:80px;resize:none;margin-bottom:4px;" id="insp-notes" placeholder="Additional observations, measurements, or notes..."></textarea>`;
+  h+=`<textarea style="width:100%;border:1.5px solid var(--border-mid);border-radius:10px;padding:10px 12px;font-size:14px;font-family:var(--font);color:var(--slate-900);background:var(--slate-50);outline:none;min-height:80px;resize:none;margin-bottom:4px;" id="insp-notes" placeholder="Additional observations, measurements, or notes..."></textarea>`;
   h+='<div class="sdiv" style="margin-top:16px;">Protection Opportunities</div>';
   d.opp.forEach(i=>{h+=`<div class="opp" onclick="togOpp(this)"><div style="font-size:14px;">⚡</div><div class="oppt">${i}</div><div class="oppa">+ Add</div></div>`;});
   if(d.photos&&d.photos.length){
     h+='<div class="sdiv" style="margin-top:16px;">Required Photos — This Call Type</div>';
-    d.photos.forEach((p,i)=>{h+=`<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--slate-50);border-radius:8px;margin-bottom:6px;border:1px solid var(--border);cursor:pointer;" onclick="togPhotoReq(this)"><div style="width:22px;height:22px;border-radius:6px;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#fff;font-size:11px;font-weight:700;" class="preq-box"></div><div style="flex:1;font-size:13px;font-weight:600;color:var(--slate-900);">${i+1}. ${p}</div></div>`;});
+    d.photos.forEach((p,i)=>{h+=`<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--slate-50);border-radius:8px;margin-bottom:6px;border:1px solid var(--border);cursor:pointer;" onclick="togPhotoReq(this)"><div style="width:22px;height:22px;border-radius:6px;border:2px solid var(--border-mid);flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#fff;font-size:11px;font-weight:700;" class="preq-box"></div><div style="flex:1;font-size:13px;font-weight:600;color:var(--slate-800);">${i+1}. ${p}</div></div>`;});
   }
   document.getElementById('insp-cont').innerHTML=h;
 }
@@ -1512,7 +1433,7 @@ window.togPhotoReq=function(el){
   el.classList.toggle('preq-done',done);
   box.textContent=done?'✓':'';
   box.style.background=done?'var(--success)':'#fff';
-  box.style.borderColor=done?'var(--success)':'var(--border)';
+  box.style.borderColor=done?'var(--success)':'var(--border-mid)';
   box.style.color='#fff';
 };
 
@@ -1521,265 +1442,274 @@ window.saveInsp=async function(){
   const opps=Array.from(document.querySelectorAll('#insp-cont .opp')).filter(el=>el.classList.contains('added')).map(el=>el.querySelector('.oppt').textContent);
   const notes=document.getElementById('insp-notes')?.value||'';
   const flagged=items.filter(i=>i.status==='flagged').length;
-  // Write back to jobData so finishJob can read it
   jobData.flaggedItems=flagged;
   jobData.inspectionResults=items;
-  if(jobId){try{await updateDoc(doc(db,'jobs',jobId),{inspectionResults:items,opportunities:opps,inspectionNotes:notes,flaggedItems:flagged});}catch(e){console.error('saveInsp error:',e);}}
-  doneStep(5);
+  if(jobId){try{setSyncStatus('saving');await updateDoc(doc(db,'jobs',jobId),{inspectionResults:items,opportunities:opps,inspectionNotes:notes,flaggedItems:flagged});setSyncStatus('saved');}catch(e){setSyncStatus('error');}}
+  window.doneStep(5);
 };
 
+// ── DISCOVERY CARRY-THROUGH ──
+function populatePresentScreen(){
+  const disc=jobData.discovery||{};
+  const questions=['When did this start?','How often does it happen?','Has anything been done before?','What concerns you most?','How long in this home?'];
+  const keys=['q1','q2','q3','q4','q5'];
+  const filled=keys.map((k,i)=>({q:questions[i],a:(disc[k]||'').trim()})).filter(x=>x.a.length>0);
+  const discPanel=document.getElementById('present-discovery');
+  const discContainer=document.getElementById('disc-carrythrough');
+  if(filled.length>0&&discPanel&&discContainer){
+    discContainer.innerHTML=filled.map(x=>`<div class="disc-card"><div class="disc-q">${x.q}</div><div class="disc-a">"${x.a}"</div></div>`).join('');
+    discPanel.style.display='block';
+  } else if(discPanel){discPanel.style.display='none';}
+  const flagged=(jobData.inspectionResults||[]).filter(i=>i.status==='flagged');
+  const flagPanel=document.getElementById('present-flags');
+  const flagContainer=document.getElementById('flag-carrythrough');
+  if(flagged.length>0&&flagPanel&&flagContainer){
+    flagContainer.innerHTML=flagged.map(f=>`<div class="flag-item"><div class="flag-dot"></div><div class="flag-lbl">${f.label}</div></div>`).join('');
+    flagPanel.style.display='block';
+  } else if(flagPanel){flagPanel.style.display='none';}
+}
+
+// ── PHOTOS ──
 window.capPhoto=function(el){
   if(!el.classList.contains('cap')){
     el.classList.add('cap');el.querySelector('.psli').textContent='✅';photos++;
-    document.getElementById('pctr').textContent=photos+' / 5';
+    const pctr=document.getElementById('pctr');
+    if(pctr)pctr.textContent=photos+' / 5';
     if(jobId){try{updateDoc(doc(db,'jobs',jobId),{photoCount:photos});}catch(e){}}
   }
 };
 
+// ── OPTIONS ──
 window.saveOpts=async function(){
-  const opts={good:{price:document.getElementById('og-p').value,desc:document.getElementById('og-d').value,warranty:document.getElementById('og-w').value},better:{price:document.getElementById('ob-p').value,desc:document.getElementById('ob-d').value,warranty:document.getElementById('ob-w').value},best:{price:document.getElementById('obe-p').value,desc:document.getElementById('obe-d').value,warranty:document.getElementById('obe-w').value,financing:document.getElementById('o-fin').checked}};
+  const opts={
+    good:{price:document.getElementById('og-p')?.value||'',desc:document.getElementById('og-d')?.value||'',warranty:document.getElementById('og-w')?.value||''},
+    better:{price:document.getElementById('ob-p')?.value||'',desc:document.getElementById('ob-d')?.value||'',warranty:document.getElementById('ob-w')?.value||''},
+    best:{price:document.getElementById('obe-p')?.value||'',desc:document.getElementById('obe-d')?.value||'',warranty:document.getElementById('obe-w')?.value||'',financing:document.getElementById('o-fin')?.checked||false}
+  };
   if(jobId){try{await updateDoc(doc(db,'jobs',jobId),{options:opts});}catch(e){}}
-  doneStep(7);
+  window.doneStep(7);
 };
 
+// ── FINANCING CALCULATOR ──
+window.selTerm=function(el,months){
+  finTerm=months;
+  document.querySelectorAll('.fin-term').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+  window.calcFinancing();
+};
+window.calcFinancing=function(){
+  const price=parseFloat(document.getElementById('fin-price')?.value)||0;
+  const rate=parseFloat(document.getElementById('fin-rate')?.value)||9.9;
+  const result=document.getElementById('fin-result');
+  if(!result)return;
+  if(price<=0){result.textContent='$–';return;}
+  const r=(rate/100)/12;
+  const n=finTerm;
+  const monthly=r===0?price/n:price*(r*Math.pow(1+r,n))/(Math.pow(1+r,n)-1);
+  result.textContent='$'+Math.ceil(monthly).toLocaleString();
+};
 
+// ── NO SALE / OUTCOME ──
+window.setOC=function(oc,btn){
+  outcome=oc;
+  ['oc-sold','oc-cb','oc-ns'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('sel');});
+  btn.classList.add('sel');
+  const nsp=document.getElementById('nosale-reason-panel');
+  const cbp=document.getElementById('callback-reason-panel');
+  if(nsp)nsp.style.display=oc==='nosale'?'block':'none';
+  if(cbp)cbp.style.display=oc==='callback'?'block':'none';
+  if(oc==='nosale'){nosaleReason=null;document.querySelectorAll('#nosale-grid .nosale-btn').forEach(b=>b.classList.remove('sel'));}
+  if(oc==='callback'){callbackReason=null;document.querySelectorAll('#callback-grid .nosale-btn').forEach(b=>b.classList.remove('sel'));}
+};
+window.setNSR=function(reason,btn){nosaleReason=reason;document.querySelectorAll('#nosale-grid .nosale-btn').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');};
+window.setCBR=function(reason,btn){callbackReason=reason;document.querySelectorAll('#callback-grid .nosale-btn').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');};
 
-window.setMembership=function(v,btn){membershipResult=v;['mem-yes','mem-no'].forEach(id=>document.getElementById(id).classList.remove('sel'));btn.classList.add('sel');};
+// ── RETURNING CUSTOMER ──
+window.checkReturning=function(){
+  clearTimeout(returningCheckTimeout);
+  returningCheckTimeout=setTimeout(async()=>{
+    const name=(document.getElementById('j-cust')?.value||'').trim().toLowerCase();
+    const addr=(document.getElementById('j-addr')?.value||'').trim().toLowerCase();
+    const banner=document.getElementById('returning-banner');
+    if(!banner)return;
+    if(name.length<3&&addr.length<5){banner.style.display='none';return;}
+    try{
+      const q=query(collection(db,'jobs'),where('deviceId','==',devId()));
+      const snap=await getDocs(q);
+      const matches=snap.docs.map(d=>d.data()).filter(j=>{
+        const jn=(j.customer||'').toLowerCase();
+        const ja=(j.address||'').toLowerCase();
+        return j.status==='completed'&&((name.length>=3&&jn.includes(name))||(addr.length>=5&&ja.includes(addr)));
+      }).sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,3);
+      if(!matches.length){banner.style.display='none';return;}
+      const ocColor={sold:'#4ECFA0',nosale:'#E8716A',callback:'#E8A85C'};
+      const ocLabel={sold:'Sold',nosale:'No Sale',callback:'Callback'};
+      banner.innerHTML=`<div class="returning-banner"><div class="returning-banner-title">⚡ Returning Customer — ${matches.length} Past Visit${matches.length>1?'s':''}</div>${matches.map(j=>`<div class="returning-job-card"><div class="rjc-top"><span class="rjc-type">${j.callType||'Unknown'}</span><span class="rjc-outcome" style="color:${ocColor[j.outcome]||'#9AA3B5'}">${ocLabel[j.outcome]||j.outcome||'–'}</span></div><div class="rjc-meta">${j.date||'–'}${j.ticketAmount?' · $'+Number(j.ticketAmount).toLocaleString():''}</div></div>`).join('')}</div>`;
+      banner.style.display='block';
+    }catch(e){banner.style.display='none';}
+  },600);
+};
+
+// ── FINISH JOB ──
+window.finishJob=async function(){
+  if(!outcome)return alert('Please select a job outcome.');
+  if(outcome==='nosale'&&!nosaleReason)return alert("Please select why they didn't buy — this helps improve your close rate.");
+  const t=Number(document.getElementById('ticket')?.value)||0;
+  const notes=document.getElementById('job-notes')?.value||'';
+  const nsNotes=document.getElementById('nosale-notes')?.value||'';
+  const cbDate=document.getElementById('callback-date')?.value||'';
+  const flagged=jobData.flaggedItems||0;
+  if(!jobId)return;
+  const payload={status:'completed',outcome,ticketAmount:t,jobNotes:notes,completedAt:serverTimestamp(),stepsCompleted:[0,1,2,3,4,5,6,7,8,9,10]};
+  if(outcome==='nosale'){payload.nosaleReason=nosaleReason;payload.nosaleNotes=nsNotes;}
+  if(outcome==='callback'){payload.callbackReason=callbackReason||'';payload.callbackDate=cbDate;}
+  try{
+    setSyncStatus('saving');
+    await updateDoc(doc(db,'jobs',jobId),payload);
+    setSyncStatus('saved');
+    const custName=jobData.customer?.split(' ')[0]||'there';
+    const revCustEl=document.getElementById('rev-cust-name');
+    if(revCustEl)revCustEl.textContent=custName;
+    const sumTicket=document.getElementById('sum-ticket');
+    if(sumTicket)sumTicket.textContent=t>0?'$'+t.toLocaleString():'–';
+    const sumCt=document.getElementById('sum-ct');
+    if(sumCt)sumCt.textContent=jobData.callType||'–';
+    const sumFlags=document.getElementById('sum-flags');
+    if(sumFlags)sumFlags.textContent=flagged||'0';
+    const isSold=outcome==='sold', isCB=outcome==='callback';
+    const _nsR=nosaleReason;
+    membershipResult=null;reviewResult=null;nosaleReason=null;callbackReason=null;
+    go('s-review');
+    showReviewScreen(isSold,isCB,t,_nsR);
+  }catch(e){setSyncStatus('error');alert('Error: '+e.message);}
+};
+
+window.finalClose=async function(){
+  stopTimer();resetTimer();
+  if(jobId&&(reviewResult||membershipResult)){
+    try{await updateDoc(doc(db,'jobs',jobId),{reviewAsked:reviewResult==='yes',reviewResult:reviewResult||'not_asked',membershipOffered:true,membershipAdded:membershipResult==='yes'});}catch(e){}
+  }
+  jobId=null;jobData={};membershipResult=null;reviewResult=null;
+  await loadStats();go('s-home');
+};
+
+// ── REVIEW SCREEN ──
+window.setMembership=function(v,btn){membershipResult=v;['mem-yes','mem-no'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('sel');});btn.classList.add('sel');};
 window.setReview=function(v,btn){
   reviewResult=v;
-  ['rev-yes','rev-no'].forEach(id=>document.getElementById(id).classList.remove('sel'));
+  ['rev-yes','rev-no'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('sel');});
   btn.classList.add('sel');
-  document.getElementById('rev-link-box').classList.toggle('hidden',v!=='yes');
+  const lb=document.getElementById('rev-link-box');
+  if(lb)lb.classList.toggle('hidden',v!=='yes');
 };
 window.openReviewLink=function(){
   const url=profile?.reviewUrl||'https://search.google.com/local/writereview';
   window.open(url,'_blank');
 };
 
-window.finishJob=async function(){
-  if(!outcome)return alert('Please select a job outcome.');
-  if(outcome==='nosale'&&!nosaleReason)return alert("Please select why they didn't buy — this helps improve your close rate.");
-  const t=Number(document.getElementById('ticket').value)||0;
-  const notes=document.getElementById('job-notes')?.value||'';
-  const nsNotes=document.getElementById('nosale-notes')?.value||'';
-  const cbDate=document.getElementById('callback-date')?.value||'';
-  const flagged=jobData.flaggedItems||0;
-  if(!jobId)return;
-  const updatePayload={status:'completed',outcome,ticketAmount:t,jobNotes:notes,completedAt:serverTimestamp(),stepsCompleted:[0,1,2,3,4,5,6,7,8,9,10]};
-  if(outcome==='nosale'){updatePayload.nosaleReason=nosaleReason;updatePayload.nosaleNotes=nsNotes;}
-  if(outcome==='callback'){updatePayload.callbackReason=callbackReason||'';updatePayload.callbackDate=cbDate;}
-  try{
-    await updateDoc(doc(db,'jobs',jobId),updatePayload);
-    const custName=jobData.customer?.split(' ')[0]||'there';
-    document.getElementById('rev-cust-name').textContent=custName;
-    document.getElementById('sum-ticket').textContent=t>0?'$'+t.toLocaleString():'–';
-    document.getElementById('sum-ct').textContent=jobData.callType||'–';
-    document.getElementById('sum-flags').textContent=flagged||'0';
-    const isSold=outcome==='sold';
-    const isCB=outcome==='callback';
-    document.getElementById('rev-outcome-icon').textContent=isSold?'✅':isCB?'📞':'❌';
-    document.getElementById('rev-outcome-title').textContent=isSold?'Job Sold!':isCB?'Callback Scheduled':'Call Complete';
-    const nsLabel={price:'price',trust:'trust issue',notowner:'not decision maker',competitor:'going competitor',timing:'bad timing',nourgency:'no urgency',callback:'callback needed',other:'other'};
-    document.getElementById('rev-outcome-sub').textContent=isSold?`$${t.toLocaleString()} — great work today.`:isCB?'Follow up promptly — callbacks go cold fast.':nosaleReason?`Lost to: ${nsLabel[nosaleReason]||nosaleReason}. Review and improve.`:'Not every call closes. Review and improve.';
-    document.getElementById('rev-outcome-banner').style.background=isSold?'#F0FBF6':isCB?'#FFF8EC':'var(--surface)';
-    document.getElementById('rev-membership').style.display=isSold?'block':'none';
-    membershipResult=null;reviewResult=null;
-    const _isSold=outcome==='sold';const _isCB=outcome==='callback';
-    const _tkAmt=t;const _nsR=nosaleReason;
-    nosaleReason=null;callbackReason=null;
-    go('s-review');
-    showReviewScreen(_isSold,_isCB,_tkAmt,_nsR);
-  }catch(e){alert('Error: '+e.message);}
-};
-
-window.finalClose=async function(){
-  stopTimer();resetTimer();
-  if(jobId&&(reviewResult||membershipResult)){
-    try{await updateDoc(doc(db,'jobs',jobId),{reviewAsked:reviewResult==='yes'?true:false,reviewResult:reviewResult||'not_asked',membershipOffered:true,membershipAdded:membershipResult==='yes'});}catch(e){}
+function showReviewScreen(isSold,isCB,ticketAmount,nsReason){
+  const soldHero=document.getElementById('rev-sold-hero');
+  const otherHero=document.getElementById('rev-other-hero');
+  if(isSold&&soldHero){
+    soldHero.style.display='block';
+    if(otherHero)otherHero.style.display='none';
+    const amtEl=document.getElementById('rev-sold-amount');
+    if(amtEl)amtEl.textContent=ticketAmount>0?'$'+ticketAmount.toLocaleString():'Sold';
+    const confetti=document.getElementById('rev-confetti');
+    if(confetti){confetti.innerHTML='';launchConfetti(confetti);}
+  } else if(otherHero){
+    if(soldHero)soldHero.style.display='none';
+    otherHero.style.display='block';
+    const icon=document.getElementById('rev-other-icon');
+    const title=document.getElementById('rev-other-title');
+    const sub=document.getElementById('rev-other-sub');
+    if(icon)icon.textContent=isCB?'📞':'❌';
+    if(title)title.textContent=isCB?'Callback Scheduled':'No Sale';
+    if(sub){
+      const nsLabels={price:"Lost on price.",trust:"Trust needs more time.",notowner:"Not the decision maker.",competitor:"Going with a competitor.",timing:"Bad timing.",nourgency:"No urgency felt.",callback:"Needs to think.",other:"Other reason."};
+      sub.textContent=isCB?'Follow up promptly — callbacks go cold in 24 hours.':(nsLabels[nsReason]||'Not every call closes. Review and improve.');
+    }
   }
-  jobId=null;jobData={};membershipResult=null;reviewResult=null;
-  await loadStats();go('s-home');
-};
+}
 
-// ── MULTI-STYLE OBJECTION ENGINE ──
-// Each objection has: meaning + 3-5 styles from different sales philosophies
+function launchConfetti(container){
+  const colors=['#E8A85C','#B87333','#4ECFA0','#fff','#E8716A'];
+  for(let i=0;i<20;i++){
+    const el=document.createElement('div');
+    const size=6+Math.random()*6;
+    el.style.cssText=`position:absolute;width:${size}px;height:${size}px;background:${colors[Math.floor(Math.random()*colors.length)]};border-radius:${Math.random()>0.5?'50%':'2px'};left:${10+Math.random()*80}%;top:-10px;opacity:0;animation:confettiFall ${1+Math.random()}s ${Math.random()*0.5}s ease-in forwards;`;
+    container.appendChild(el);
+  }
+  if(!document.getElementById('confetti-style')){
+    const s=document.createElement('style');
+    s.id='confetti-style';
+    s.textContent='@keyframes confettiFall{0%{transform:translateY(0) rotate(0);opacity:1;}100%{transform:translateY(200px) rotate(720deg);opacity:0;}}';
+    document.head.appendChild(s);
+  }
+}
+
+// ── OBJECTIONS ──
 const objs={
-  price:{
-    m:"They're not convinced the value matches the investment yet — or they haven't connected the cost of NOT fixing it.",
-    styles:[
-      {name:"Jeremy Miner — NEPQ",color:"#185FA5",tag:"Question-Based",
-       script:"Can I ask — what specifically felt high about it? Was it the total number, or is it more about what you're getting for that number?",
-       followup:"And if this ends up costing you two or three times more down the road because we waited — how would that sit with you?"},
-      {name:"Alex Hormozi — Value Framing",color:"#3B6D11",tag:"ROI Logic",
-       script:"Here's the math — this fix is [price]. If this fails in six months, you're looking at emergency rates, water damage, and the same repair anyway. The question isn't whether you can afford this. It's whether you can afford not to.",
-       followup:"Does that math make sense to you?"},
-      {name:"Daniel G — Emotional Close",color:"#854F0B",tag:"Pain Amplify",
-       script:"I totally get it. Can I be honest with you? The reason I'm bringing this up is because I've seen this exact situation get ignored, and six months later that homeowner is dealing with [worst case outcome]. I don't want that for you.",
-       followup:"What would make you feel comfortable making this decision today?"},
-      {name:"Jordan Belfort — Straight Line",color:"#533489",tag:"Certainty Build",
-       script:"I hear you on the price. But let me ask — on a scale of 1 to 10, how confident are you that this is the right fix for the problem? Because if you're a 9 or 10 on the solution, the price is just a detail we can work around.",
-       followup:"What would get you to a 10 on the solution side?"},
-      {name:"Tongan Close — Respect & Relationship",color:"#0F6E56",tag:"Trust & Honor",
-       script:"I respect that — and I wouldn't bring it up if I didn't genuinely believe this was the right call for your home. I'm not here to push you into anything. But I'd feel wrong leaving without making sure you had the full picture.",
-       followup:"What would make this feel like a fair deal for you?"}
-    ]
-  },
-  think:{
-    m:"They haven't bought into urgency. They want to feel in control of the decision — but 'think about it' almost always means the sale is dead unless you find what's really holding them back.",
-    styles:[
-      {name:"Jeremy Miner — NEPQ",color:"#185FA5",tag:"Question-Based",
-       script:"Of course — this is a big decision. Can I ask, what part of it are you still unsure about? Is it the price, is it whether this is actually necessary, or is there something else on your mind?",
-       followup:"Because I want to make sure you have everything you need to feel good about whatever you decide."},
-      {name:"Alex Hormozi — Urgency Logic",color:"#3B6D11",tag:"ROI Logic",
-       script:"Totally fair. Here's the only thing I'd say — the problem doesn't pause while you think. Every day this sits, [specific risk] gets worse. If you decide to move forward next week, the price is the same but the damage isn't.",
-       followup:"Is there anything I can clarify right now that would help you decide today?"},
-      {name:"Daniel G — Dig for the Real Objection",color:"#854F0B",tag:"Pain Amplify",
-       script:"Absolutely. And I don't want to pressure you at all. But in my experience, when someone says 'let me think about it,' there's usually one specific thing that's holding them back. What is it for you — honestly?",
-       followup:"Because if I can answer that, we can get this taken care of for you today."},
-      {name:"Jordan Belfort — Take Control",color:"#533489",tag:"Certainty Build",
-       script:"I respect that. But let me ask you something — are you thinking about whether this is the right fix, or are you thinking about the money? Because those are two very different conversations and I want to make sure I'm helping you with the right one.",
-       followup:"Which one is it?"},
-      {name:"Grant Cardone — Be Direct",color:"#0F6E56",tag:"Direct Close",
-       script:"What's there to think about? You've got a problem. We've got the solution. The longer you wait the worse it gets. What specifically is holding you back right now?",
-       followup:"Let's solve that right now."}
-    ]
-  },
-  spouse:{
-    m:"They want permission or alignment. This is legitimate — respect it. But the goal is to get both decision makers in the conversation NOW, not later.",
-    styles:[
-      {name:"Jeremy Miner — NEPQ",color:"#185FA5",tag:"Question-Based",
-       script:"That makes total sense — I'd want my partner involved in a decision like this too. Can I ask, is your spouse typically pretty aligned with you on home decisions, or do they usually have different concerns?",
-       followup:"Would it make sense to call them right now? I can walk them through exactly what I found — takes five minutes."},
-      {name:"Alex Hormozi — Preempt the Stall",color:"#3B6D11",tag:"ROI Logic",
-       script:"Completely understood. Here's what I'd suggest — let's call them right now. I can show them the photos, walk them through the findings, answer their questions. That way you're both making this together with the same information.",
-       followup:"Do you want to give them a call? I'll wait."},
-      {name:"Daniel G — Emotional Framing",color:"#854F0B",tag:"Pain Amplify",
-       script:"Of course — I love that you want to make this together. Here's what I'll say — your spouse is going to want to know exactly what I found and what the risk is. Let me give you everything you need to explain it to them clearly. Or better yet, let's get them on the phone.",
-       followup:"What time works for both of you today?"},
-      {name:"Jordan Belfort — Assume the Close",color:"#533489",tag:"Certainty Build",
-       script:"Absolutely. Let's do this — call them right now. I've got five minutes, they can look at the photos on your phone, and we can get this scheduled while I'm here. That way you're not making two trips.",
-       followup:"What's the best number to reach them?"},
-      {name:"Traditional Close",color:"#0F6E56",tag:"Simple & Respectful",
-       script:"No problem at all. Before I go, can I leave you with the written estimate and photos so you both have the same information? And what's a good time for me to follow up — tomorrow morning work?",
-       followup:"I'll call you at [time] to answer any questions you both have."}
-    ]
-  },
-  patch:{
-    m:"They're prioritizing short-term cost over long-term value. They haven't fully visualized what 'just patching it' actually costs them over time.",
-    styles:[
-      {name:"Jeremy Miner — NEPQ",color:"#185FA5",tag:"Question-Based",
-       script:"I can absolutely do that — it's your home and your call. Can I ask you something first though? If this patch holds for six months and then fails again, what does that look like for you — cost-wise, stress-wise, timing-wise?",
-       followup:"Is that a scenario you're okay with?"},
-      {name:"Alex Hormozi — Cost of Cheap",color:"#3B6D11",tag:"ROI Logic",
-       script:"Here's the math on patching: it costs [patch price] now, lasts maybe a year, and you're back here having this same conversation — except the damage is worse and the repair is bigger. The permanent fix costs [repair price]. Over two years the patch actually costs more.",
-       followup:"Knowing that, which one actually saves you money?"},
-      {name:"Daniel G — Paint the Picture",color:"#854F0B",tag:"Pain Amplify",
-       script:"I hear you — and I can patch it. I just want you to see what I see. In six months, this patch fails. It's probably a Sunday. You've got water everywhere. You're calling for an emergency visit at double the rate. I've watched this happen. I'd rather fix it right today.",
-       followup:"What would it take for the permanent fix to make sense right now?"},
-      {name:"Jordan Belfort — Challenge the Logic",color:"#533489",tag:"Certainty Build",
-       script:"I'll patch it if that's what you want. But real talk — you called us because it's already a problem. A patch doesn't fix the problem, it delays it. And you'll be right back here. Is saving [price difference] today worth dealing with this again in six months?",
-       followup:"What do you want to do?"},
-      {name:"Zig Ziglar — Future Pace",color:"#0F6E56",tag:"Visioning",
-       script:"Absolutely your call. I just want to ask — imagine it's a year from now and this has held. Great. Now imagine it's a year from now and it didn't. Which of those scenarios are you willing to bet on?",
-       followup:"Let's make sure we put you in the right position either way."}
-    ]
-  },
-  quotes:{
-    m:"They want to feel like a smart buyer. Often it's a delay tactic — but treat it as legitimate. Your job is to make comparison impossible.",
-    styles:[
-      {name:"Jeremy Miner — NEPQ",color:"#185FA5",tag:"Question-Based",
-       script:"That's a smart move. Can I ask — when you're comparing quotes, what are you mainly looking at? Is it just the price, or are you also looking at what's covered, the warranty, the company's track record?",
-       followup:"Because I want to make sure when you're comparing, you're comparing the full picture — not just the number."},
-      {name:"Alex Hormozi — Reframe the Comparison",color:"#3B6D11",tag:"ROI Logic",
-       script:"Get as many quotes as you want — that's smart. Here's what to watch for: any quote lower than ours either uses cheaper parts, skips steps, or doesn't carry the warranty we do. Ask every company what their warranty covers. Then compare.",
-       followup:"I'll leave our warranty in writing. Use it as your benchmark."},
-      {name:"Daniel G — Differentiate Now",color:"#854F0B",tag:"Pain Amplify",
-       script:"Completely fair. And I'll be honest — you'll probably find cheaper. What you won't find is a company that does what we do for what we charge. Let me show you exactly what makes us different before you go.",
-       followup:"If the other quotes can match our warranty and our process, go with them. If they can't — you already know who to call."},
-      {name:"Jordan Belfort — Create Urgency",color:"#533489",tag:"Certainty Build",
-       script:"You can absolutely get other quotes. But while you're doing that, this problem is getting worse. If someone else is cheaper and equally qualified — go with them. But if it's just about price, let's talk about what we can do right now to make this work for you.",
-       followup:"What number would make this a no-brainer for you today?"},
-      {name:"Grant Cardone — Own the Room",color:"#0F6E56",tag:"Direct Close",
-       script:"Get your quotes. And when you do, ask them this: what happens if something goes wrong? What's your warranty? How long have you been doing this? We've answered all of those. Can they?",
-       followup:"Call me after you have the other quotes. I'll still be here."}
-    ]
-  },
-  afford:{
-    m:"Real financial constraint — or they haven't seen the payment option. Never make someone feel bad about money. Open a door, don't close one.",
-    styles:[
-      {name:"Jeremy Miner — NEPQ",color:"#185FA5",tag:"Question-Based",
-       script:"I completely understand — and I appreciate you being straight with me. Can I ask — is it that the total number is too much, or is it more that the timing is bad right now?",
-       followup:"Because if it's timing, I have some options that might make this work without putting any stress on your budget."},
-      {name:"Alex Hormozi — Financing Frame",color:"#3B6D11",tag:"ROI Logic",
-       script:"That's exactly why we offer financing. For most homeowners this comes out to [monthly amount] a month — less than a car payment. You get the full repair done today, protect your home, and keep your cash flow comfortable.",
-       followup:"Want me to run the numbers on the monthly payment right now?"},
-      {name:"Daniel G — Remove the Shame",color:"#854F0B",tag:"Pain Amplify",
-       script:"Hey — I respect you for telling me that. Here's what I don't want to happen: you leave today without a solution because of money, and this gets worse. Let me find a way to make this work for you. What monthly payment would feel manageable?",
-       followup:"Let's start there and work backwards."},
-      {name:"Jordan Belfort — Reframe the Cost",color:"#533489",tag:"Certainty Build",
-       script:"Here's what I want you to think about — you're not spending money, you're protecting an asset. Your home is worth [X]. This repair costs [Y]. That's less than half a percent of your home's value to protect all of it.",
-       followup:"Does that framing change how you're looking at this?"},
-      {name:"Simple Financing Close",color:"#0F6E56",tag:"Direct & Warm",
-       script:"No problem at all. We work with a financing partner — zero interest for 12 months if you qualify. You'd be looking at roughly [payment] a month. Let me get you a quick approval — takes 60 seconds on my tablet.",
-       followup:"Want to see if you qualify? No commitment."}
-    ]
-  },
-  trust:{
-    m:"They've been burned before by a contractor — or something in your presentation felt off. Don't get defensive. Earn it.",
-    styles:[
-      {name:"Jeremy Miner — NEPQ",color:"#185FA5",tag:"Question-Based",
-       script:"I completely understand that feeling — and honestly, I'd feel the same way. Can I ask what's happened in the past that makes you feel that way? Because I want to make sure I'm addressing the right concern.",
-       followup:"What would make you feel like you could trust us with this?"},
-      {name:"Alex Hormozi — Proof Stack",color:"#3B6D11",tag:"ROI Logic",
-       script:"Fair. Here's what I'd say — don't trust me, trust the evidence. I've got [X] Google reviews you can read right now. Our license number is [#]. Our warranty is in writing. Every claim I made today I can back up on paper.",
-       followup:"What specific concern do you want me to address right now?"},
-      {name:"Daniel G — Acknowledge & Validate",color:"#854F0B",tag:"Pain Amplify",
-       script:"You know what — I'm not going to try to talk you out of that feeling, because that feeling has probably protected you before. All I can do is be transparent. Here's my license. Here's our reviews. Here's the warranty in writing. Judge me on the evidence.",
-       followup:"What else do you need to see?"},
-      {name:"Jordan Belfort — Disarm & Redirect",color:"#533489",tag:"Certainty Build",
-       script:"That's a fair position. Let me ask you this — what would a company have to do for you to trust them? Because I want to know if I can actually meet that bar. If I can, great. If I can't, I'll tell you.",
-       followup:"What does trust look like to you?"},
-      {name:"Relationship Close",color:"#0F6E56",tag:"Direct & Warm",
-       script:"I hear you — and I respect that. I'm not asking you to trust me blind. I'm asking you to look at the photos, read the reviews on your phone right now, and make a decision based on facts. That's all I've got.",
-       followup:"Want to pull up our Google reviews together right now?"}
-    ]
-  },
-  wait:{
-    m:"They don't feel urgency. The pain isn't real enough yet. Your job is to make the future consequence vivid — not scary, vivid.",
-    styles:[
-      {name:"Jeremy Miner — NEPQ",color:"#185FA5",tag:"Question-Based",
-       script:"Totally your call. Can I ask — what's your thinking on timing? Are you waiting for a specific reason, or is it more that it doesn't feel urgent right now?",
-       followup:"Because I want to understand what would make the timing feel right — so I can give you the right information."},
-      {name:"Alex Hormozi — Math of Waiting",color:"#3B6D11",tag:"ROI Logic",
-       script:"Here's what waiting costs: this repair is [price] today. If it fails — and this type of issue has about a [X]% chance of getting worse within [timeframe] — you're looking at emergency rates plus the original repair. Waiting is the most expensive option on the table.",
-       followup:"Does the math change your thinking at all?"},
-      {name:"Daniel G — Vivid Consequence",color:"#854F0B",tag:"Pain Amplify",
-       script:"I'll leave that completely up to you. I just want you to have a clear picture — what I found today, if it gets worse, doesn't give you a warning. It fails. Usually at the worst time. Usually on a weekend or a holiday. I've had customers call me in tears because they waited.",
-       followup:"Is that a risk you're comfortable with right now?"},
-      {name:"Jordan Belfort — Create the Movie",color:"#533489",tag:"Certainty Build",
-       script:"I understand. Let me paint a picture — it's 11pm on a Saturday. This fails. You've got water on the floor. You're calling emergency plumbing at double the rate. Your floors are damaged. Your weekend is ruined. And you're paying three times what you would have paid today.",
-       followup:"Is that scenario worth the risk of waiting?"},
-      {name:"Zig Ziglar — Gentle Future Pace",color:"#0F6E56",tag:"Visioning",
-       script:"I respect that completely. Here's the one thing I'd ask — if this does get worse in the next 90 days, what's your plan? I'm not trying to scare you. I just want to make sure you have a plan either way.",
-       followup:"If you had a plan, what would it look like?"}
-    ]
-  }
+  price:{m:"They're not convinced the value matches the investment yet.",styles:[
+    {name:"Jeremy Miner — NEPQ",color:"#185FA5",tag:"Question-Based",script:"Can I ask — what specifically felt high about it? Was it the total number, or is it more about what you're getting for that number?",followup:"And if this ends up costing two or three times more down the road because we waited — how would that sit with you?"},
+    {name:"Alex Hormozi — Value Framing",color:"#3B6D11",tag:"ROI Logic",script:"Here's the math — this fix is [price]. If this fails in six months, you're looking at emergency rates, water damage, and the same repair anyway. The question isn't whether you can afford this. It's whether you can afford not to.",followup:"Does that math make sense to you?"},
+    {name:"Daniel G — Emotional Close",color:"#854F0B",tag:"Pain Amplify",script:"I totally get it. Can I be honest with you? The reason I'm bringing this up is because I've seen this exact situation get ignored, and six months later that homeowner is dealing with a much bigger problem. I don't want that for you.",followup:"What would make you feel comfortable making this decision today?"},
+    {name:"Jordan Belfort — Straight Line",color:"#533489",tag:"Certainty Build",script:"I hear you on the price. But let me ask — on a scale of 1 to 10, how confident are you that this is the right fix for the problem? Because if you're a 9 or 10 on the solution, the price is just a detail we can work around.",followup:"What would get you to a 10 on the solution side?"},
+    {name:"Tongan Close — Respect and Relationship",color:"#0F6E56",tag:"Trust and Honor",script:"I respect that — and I wouldn't bring it up if I didn't genuinely believe this was the right call for your home. I'm not here to push you into anything. But I'd feel wrong leaving without making sure you had the full picture.",followup:"What would make this feel like a fair deal for you?"}
+  ]},
+  think:{m:"They haven't bought into urgency. They want to feel in control — but it usually means the sale is dead unless you find what's really holding them back.",styles:[
+    {name:"Jeremy Miner — NEPQ",color:"#185FA5",tag:"Question-Based",script:"Of course — this is a big decision. Can I ask, what part of it are you still unsure about? Is it the price, is it whether this is actually necessary, or is there something else on your mind?",followup:"Because I want to make sure you have everything you need to feel good about whatever you decide."},
+    {name:"Alex Hormozi — Urgency Logic",color:"#3B6D11",tag:"ROI Logic",script:"Totally fair. Here's the only thing I'd say — the problem doesn't pause while you think. Every day this sits, the risk gets worse. If you decide to move forward next week, the price is the same but the damage isn't.",followup:"Is there anything I can clarify right now that would help you decide today?"},
+    {name:"Daniel G — Dig for the Real Objection",color:"#854F0B",tag:"Pain Amplify",script:"Absolutely. And I don't want to pressure you at all. But in my experience, when someone says let me think about it, there's usually one specific thing that's holding them back. What is it for you — honestly?",followup:"Because if I can answer that, we can get this taken care of for you today."},
+    {name:"Jordan Belfort — Take Control",color:"#533489",tag:"Certainty Build",script:"I respect that. But let me ask you something — are you thinking about whether this is the right fix, or are you thinking about the money? Because those are two very different conversations.",followup:"Which one is it?"},
+    {name:"Grant Cardone — Be Direct",color:"#0F6E56",tag:"Direct Close",script:"What's there to think about? You've got a problem. We've got the solution. The longer you wait the worse it gets. What specifically is holding you back right now?",followup:"Let's solve that right now."}
+  ]},
+  spouse:{m:"They want permission or alignment. Legitimate — respect it. Goal is to get both decision makers in the conversation now.",styles:[
+    {name:"Jeremy Miner — NEPQ",color:"#185FA5",tag:"Question-Based",script:"That makes total sense — I'd want my partner involved in a decision like this too. Can I ask, is your spouse typically pretty aligned with you on home decisions, or do they usually have different concerns?",followup:"Would it make sense to call them right now? I can walk them through exactly what I found — takes five minutes."},
+    {name:"Alex Hormozi — Preempt the Stall",color:"#3B6D11",tag:"ROI Logic",script:"Completely understood. Here's what I'd suggest — let's call them right now. I can show them the photos, walk them through the findings, answer their questions. That way you're both making this together with the same information.",followup:"Do you want to give them a call? I'll wait."},
+    {name:"Daniel G — Emotional Framing",color:"#854F0B",tag:"Pain Amplify",script:"Of course — I love that you want to make this together. Your spouse is going to want to know exactly what I found and what the risk is. Let me give you everything you need. Or better yet, let's get them on the phone.",followup:"What time works for both of you today?"},
+    {name:"Jordan Belfort — Assume the Close",color:"#533489",tag:"Certainty Build",script:"Absolutely. Let's do this — call them right now. I've got five minutes, they can look at the photos on your phone, and we can get this scheduled while I'm here.",followup:"What's the best number to reach them?"},
+    {name:"Traditional Close",color:"#0F6E56",tag:"Simple and Respectful",script:"No problem at all. Before I go, can I leave you with the written estimate and photos so you both have the same information?",followup:"What's a good time to follow up — tomorrow morning?"}
+  ]},
+  patch:{m:"They're prioritizing short-term cost over long-term value. They haven't fully seen what patching actually costs over time.",styles:[
+    {name:"Jeremy Miner — NEPQ",color:"#185FA5",tag:"Question-Based",script:"I can absolutely do that — it's your home and your call. Can I ask you something first though? If this patch holds for six months and then fails again, what does that look like for you — cost-wise, stress-wise, timing-wise?",followup:"Is that a scenario you're okay with?"},
+    {name:"Alex Hormozi — Cost of Cheap",color:"#3B6D11",tag:"ROI Logic",script:"Here's the math on patching: it costs [patch price] now, lasts maybe a year, and you're back here having this same conversation — except the damage is worse and the repair is bigger. The permanent fix actually saves money over two years.",followup:"Knowing that, which one actually saves you money?"},
+    {name:"Daniel G — Paint the Picture",color:"#854F0B",tag:"Pain Amplify",script:"I hear you — and I can patch it. I just want you to see what I see. In six months, this patch fails. It's probably a Sunday. You've got water everywhere. You're calling for an emergency visit at double the rate. I've watched this happen.",followup:"What would it take for the permanent fix to make sense right now?"},
+    {name:"Jordan Belfort — Challenge the Logic",color:"#533489",tag:"Certainty Build",script:"I'll patch it if that's what you want. But real talk — you called us because it's already a problem. A patch doesn't fix the problem, it delays it. Is saving the difference today worth dealing with this again in six months?",followup:"What do you want to do?"},
+    {name:"Zig Ziglar — Future Pace",color:"#0F6E56",tag:"Visioning",script:"Absolutely your call. I just want to ask — imagine it's a year from now and this has held. Great. Now imagine it's a year from now and it didn't. Which of those scenarios are you willing to bet on?",followup:"Let's make sure we put you in the right position either way."}
+  ]},
+  quotes:{m:"They want to feel like a smart buyer. Often a delay tactic — but treat it as legitimate. Make comparison impossible.",styles:[
+    {name:"Jeremy Miner — NEPQ",color:"#185FA5",tag:"Question-Based",script:"That's a smart move. Can I ask — when you're comparing quotes, what are you mainly looking at? Is it just the price, or are you also looking at warranty, the company's track record?",followup:"Because I want to make sure when you're comparing, you're comparing the full picture."},
+    {name:"Alex Hormozi — Reframe the Comparison",color:"#3B6D11",tag:"ROI Logic",script:"Get as many quotes as you want — that's smart. Here's what to watch for: any quote lower than ours either uses cheaper parts, skips steps, or doesn't carry the warranty we do. Ask every company what their warranty covers.",followup:"I'll leave our warranty in writing. Use it as your benchmark."},
+    {name:"Daniel G — Differentiate Now",color:"#854F0B",tag:"Pain Amplify",script:"Completely fair. And I'll be honest — you'll probably find cheaper. What you won't find is a company that does what we do for what we charge. Let me show you exactly what makes us different before you go.",followup:"If the other quotes can match our warranty and process, go with them. If they can't — you already know who to call."},
+    {name:"Jordan Belfort — Create Urgency",color:"#533489",tag:"Certainty Build",script:"You can absolutely get other quotes. But while you're doing that, this problem is getting worse. If it's just about price, let's talk about what we can do right now to make this work for you.",followup:"What number would make this a no-brainer for you today?"},
+    {name:"Grant Cardone — Own the Room",color:"#0F6E56",tag:"Direct Close",script:"Get your quotes. And when you do, ask them: what happens if something goes wrong? What's your warranty? How long have you been doing this? We've answered all of those. Can they?",followup:"Call me after you have the other quotes. I'll still be here."}
+  ]},
+  afford:{m:"Real financial constraint — or they haven't seen the payment option. Never make someone feel bad about money.",styles:[
+    {name:"Jeremy Miner — NEPQ",color:"#185FA5",tag:"Question-Based",script:"I completely understand — and I appreciate you being straight with me. Can I ask — is it that the total number is too much, or is it more that the timing is bad right now?",followup:"Because if it's timing, I have some options that might make this work without putting stress on your budget."},
+    {name:"Alex Hormozi — Financing Frame",color:"#3B6D11",tag:"ROI Logic",script:"That's exactly why we offer financing. For most homeowners this comes out to [monthly amount] a month — less than a car payment. You get the full repair done today and keep your cash flow comfortable.",followup:"Want me to run the numbers on the monthly payment right now?"},
+    {name:"Daniel G — Remove the Shame",color:"#854F0B",tag:"Pain Amplify",script:"Hey — I respect you for telling me that. Here's what I don't want to happen: you leave today without a solution because of money, and this gets worse. Let me find a way to make this work for you. What monthly payment would feel manageable?",followup:"Let's start there and work backwards."},
+    {name:"Jordan Belfort — Reframe the Cost",color:"#533489",tag:"Certainty Build",script:"Here's what I want you to think about — you're not spending money, you're protecting an asset. Your home is worth [X]. This repair is a fraction of that to protect all of it.",followup:"Does that framing change how you're looking at this?"},
+    {name:"Simple Financing Close",color:"#0F6E56",tag:"Direct and Warm",script:"No problem at all. We work with a financing partner — zero interest for 12 months if you qualify. You'd be looking at roughly [payment] a month. Let me get you a quick approval — takes 60 seconds.",followup:"Want to see if you qualify? No commitment."}
+  ]},
+  trust:{m:"They've been burned before by a contractor — or something in your presentation felt off. Don't get defensive. Earn it.",styles:[
+    {name:"Jeremy Miner — NEPQ",color:"#185FA5",tag:"Question-Based",script:"I completely understand that feeling — and honestly, I'd feel the same way. Can I ask what's happened in the past that makes you feel that way? Because I want to make sure I'm addressing the right concern.",followup:"What would make you feel like you could trust us with this?"},
+    {name:"Alex Hormozi — Proof Stack",color:"#3B6D11",tag:"ROI Logic",script:"Fair. Here's what I'd say — don't trust me, trust the evidence. I've got [X] Google reviews you can read right now. Our license number is on file. Our warranty is in writing. Every claim I made today I can back up on paper.",followup:"What specific concern do you want me to address right now?"},
+    {name:"Daniel G — Acknowledge and Validate",color:"#854F0B",tag:"Pain Amplify",script:"You know what — I'm not going to try to talk you out of that feeling, because that feeling has probably protected you before. All I can do is be transparent. Here's my license. Here's our reviews. Here's the warranty in writing.",followup:"What else do you need to see?"},
+    {name:"Jordan Belfort — Disarm and Redirect",color:"#533489",tag:"Certainty Build",script:"That's a fair position. Let me ask you this — what would a company have to do for you to trust them? Because I want to know if I can actually meet that bar.",followup:"What does trust look like to you?"},
+    {name:"Relationship Close",color:"#0F6E56",tag:"Direct and Warm",script:"I hear you — and I respect that. I'm not asking you to trust me blind. I'm asking you to look at the photos, read the reviews on your phone right now, and make a decision based on facts.",followup:"Want to pull up our Google reviews together right now?"}
+  ]},
+  wait:{m:"They don't feel urgency. The pain isn't real enough yet. Make the future consequence vivid — not scary, vivid.",styles:[
+    {name:"Jeremy Miner — NEPQ",color:"#185FA5",tag:"Question-Based",script:"Totally your call. Can I ask — what's your thinking on timing? Are you waiting for a specific reason, or is it more that it doesn't feel urgent right now?",followup:"Because I want to understand what would make the timing feel right."},
+    {name:"Alex Hormozi — Math of Waiting",color:"#3B6D11",tag:"ROI Logic",script:"Here's what waiting costs: this repair is [price] today. If it fails — and this type of issue has a real chance of getting worse within [timeframe] — you're looking at emergency rates plus the original repair. Waiting is the most expensive option.",followup:"Does the math change your thinking at all?"},
+    {name:"Daniel G — Vivid Consequence",color:"#854F0B",tag:"Pain Amplify",script:"I'll leave that completely up to you. I just want you to have a clear picture — what I found today, if it gets worse, doesn't give you a warning. It fails. Usually at the worst time. Usually on a weekend.",followup:"Is that a risk you're comfortable with right now?"},
+    {name:"Jordan Belfort — Create the Movie",color:"#533489",tag:"Certainty Build",script:"I understand. Let me paint a picture — it's 11pm on a Saturday. This fails. You've got water on the floor. You're calling emergency plumbing at double the rate. Your weekend is ruined. And you're paying three times what you would have paid today.",followup:"Is that scenario worth the risk of waiting?"},
+    {name:"Zig Ziglar — Gentle Future Pace",color:"#0F6E56",tag:"Visioning",script:"I respect that completely. Here's the one thing I'd ask — if this does get worse in the next 90 days, what's your plan? I'm not trying to scare you. I just want to make sure you have a plan either way.",followup:"If you had a plan, what would it look like?"}
+  ]}
 };
 
 function buildStylesHTML(styles){
-  return styles.map((s,i)=>`
-    <div style="margin-bottom:14px;">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-        <div style="width:3px;height:100%;border-radius:2px;background:${s.color};align-self:stretch;min-height:14px;flex-shrink:0;"></div>
-        <div>
-          <span style="font-size:11px;font-weight:800;color:${s.color};">${s.name}</span>
-          <span style="font-size:10px;font-weight:700;background:${s.color}18;color:${s.color};padding:2px 7px;border-radius:10px;margin-left:6px;text-transform:uppercase;letter-spacing:.05em;">${s.tag}</span>
-        </div>
-      </div>
-      <div style="background:var(--copper-pale);border-left:3px solid ${s.color};border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;color:var(--slate-900);line-height:1.65;font-style:italic;margin-bottom:6px;">"${s.script}"</div>
-      <div style="font-size:12px;color:var(--slate-500);line-height:1.6;padding:0 2px;">↳ ${s.followup}</div>
-    </div>
-  `).join('<div style="height:1px;background:var(--border);margin:14px 0;"></div>');
+  return styles.map(s=>`<div style="margin-bottom:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><div style="width:3px;min-height:14px;border-radius:2px;background:${s.color};flex-shrink:0;"></div><div><span style="font-size:11px;font-weight:800;color:${s.color};">${s.name}</span><span style="font-size:10px;font-weight:700;background:${s.color}18;color:${s.color};padding:2px 7px;border-radius:10px;margin-left:6px;text-transform:uppercase;letter-spacing:.05em;">${s.tag}</span></div></div><div style="background:var(--copper-pale);border-left:3px solid ${s.color};border-radius:0 8px 8px 0;padding:12px 14px;font-size:13px;color:var(--slate-900);line-height:1.65;font-style:italic;margin-bottom:6px;">"${s.script}"</div><div style="font-size:12px;color:var(--slate-500);line-height:1.6;padding:0 2px;">↳ ${s.followup}</div></div>`).join('<div style="height:1px;background:var(--border);margin:14px 0;"></div>');
 }
 
 window.showObj=function(btn,key,ctx){
@@ -1790,13 +1720,20 @@ window.showObj=function(btn,key,ctx){
   const pid=ctx==='step'?'obj-step':'obj-ref';
   const mId=ctx==='step'?'os-m':'or-m';
   const stylesId=ctx==='step'?'os-styles':'or-styles';
-  document.getElementById(mId).textContent=d.m;
-  document.getElementById(stylesId).innerHTML=buildStylesHTML(d.styles);
-  document.getElementById(pid).classList.add('vis');
+  const mEl=document.getElementById(mId);
+  const sEl=document.getElementById(stylesId);
+  if(mEl)mEl.textContent=d.m;
+  if(sEl)sEl.innerHTML=buildStylesHTML(d.styles);
+  const res=document.getElementById(pid);
+  if(res)res.classList.add('vis');
 };
 
+// ── KPI / STATS ──
 window.setPer=async function(btn,p){
-  kpiPer=p;document.querySelectorAll('.kpibtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');loadKPI();
+  kpiPer=p;
+  document.querySelectorAll('.kpibtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  loadKPI();
 };
 
 async function loadKPI(){
@@ -1805,63 +1742,176 @@ async function loadKPI(){
   else if(kpiPer==='week'){const d=new Date(today);d.setDate(d.getDate()-7);start=d.toISOString().split('T')[0];}
   else{const d=new Date(today);d.setDate(1);start=d.toISOString().split('T')[0];}
   try{
-    // Single where clause avoids composite index requirement
     const q=query(collection(db,'jobs'),where('deviceId','==',devId()));
     const snap=await getDocs(q);
-    // Filter in JS
     const jobs=snap.docs.map(d=>d.data()).filter(j=>j.status==='completed'&&j.date>=start);
-    const total=jobs.length,sold=jobs.filter(j=>j.outcome==='sold').length;
+    const total=jobs.length, sold=jobs.filter(j=>j.outcome==='sold').length;
     const rev=jobs.filter(j=>j.outcome==='sold').reduce((s,j)=>s+(Number(j.ticketAmount)||0),0);
     const cr=total>0?Math.round((sold/total)*100):0;
     const at=sold>0?Math.round(rev/sold):0;
     const pc=total>0?Math.round((jobs.filter(j=>(j.photoCount||0)>=3).length/total)*100):0;
     const ir=total>0?Math.round((jobs.filter(j=>j.inspectionResults?.length>0).length/total)*100):0;
     const or2=total>0?Math.round((jobs.filter(j=>j.options?.good&&j.options?.better).length/total)*100):0;
-    document.getElementById('kv-calls').textContent=total||'0';
-    document.getElementById('kv-close').textContent=total>0?cr+'%':'–';
-    document.getElementById('kv-ticket').textContent=at>0?'$'+at.toLocaleString():'–';
-    document.getElementById('kv-rev').textContent=rev>0?'$'+rev.toLocaleString():'–';
-    document.getElementById('bp').textContent=pc+'%';document.getElementById('bpf').style.width=pc+'%';
-    document.getElementById('bi').textContent=ir+'%';document.getElementById('bif').style.width=ir+'%';
-    document.getElementById('bo').textContent=or2+'%';document.getElementById('bof').style.width=or2+'%';
-  }catch(e){console.error('KPI error:',e);}
+    const setT=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+    const setW=(id,v)=>{const el=document.getElementById(id);if(el)el.style.width=v+'%';};
+    setT('kv-calls',total||'0');setT('kv-close',total>0?cr+'%':'–');setT('kv-ticket',at>0?'$'+at.toLocaleString():'–');setT('kv-rev',rev>0?'$'+rev.toLocaleString():'–');
+    setT('bp',pc+'%');setW('bpf',pc);setT('bi',ir+'%');setW('bif',ir);setT('bo',or2+'%');setW('bof',or2);
+  }catch(e){console.error('KPI:',e);}
 }
 
+// ── PAST JOBS ──
 async function loadJobs(){
   const c=document.getElementById('jobslist');
+  if(!c)return;
   c.innerHTML='<div style="text-align:center;padding:30px;color:var(--slate-400);">Loading...</div>';
   try{
-    // No orderBy — avoids composite index. Sort in JS.
     const q=query(collection(db,'jobs'),where('deviceId','==',devId()));
     const snap=await getDocs(q);
     if(snap.empty){c.innerHTML='<div style="text-align:center;padding:40px;color:var(--slate-400);font-size:14px;">No jobs yet. Hit Start New Job to begin.</div>';return;}
     const jobs=snap.docs.map(d=>({id:d.id,...d.data()}));
-    // Sort newest first in JS
-    jobs.sort((a,b)=>{
-      const ta=a.createdAt?.seconds||0;
-      const tb=b.createdAt?.seconds||0;
-      return tb-ta;
-    });
-    c.innerHTML=jobs.map(j=>{
-      const oc=j.outcome==='sold'?'var(--success)':j.outcome==='nosale'?'var(--danger)':'var(--gold)';
-      const ol=j.outcome==='sold'?'Sold':j.outcome==='nosale'?'No Sale':j.outcome==='callback'?'Callback':'In Progress';
-      const statusDot=j.status==='in_progress'?`<span style="font-size:10px;background:var(--copper-pale);color:var(--copper);font-weight:800;padding:2px 7px;border-radius:4px;text-transform:uppercase;">Active</span>`:'';
-      return`<div style="background:var(--slate-50);border-radius:10px;padding:14px 16px;margin-bottom:10px;border:1px solid var(--border);">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
-          <div style="font-size:15px;font-weight:700;color:var(--slate-900);">${j.customer||'–'}</div>
-          <div style="display:flex;gap:6px;align-items:center;">${statusDot}<div style="font-size:11px;font-weight:800;color:${oc};text-transform:uppercase;">${ol}</div></div>
-        </div>
-        <div style="font-size:12px;color:var(--slate-400);margin-bottom:6px;">${j.address||''}</div>
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-          <span style="font-size:11px;font-weight:700;color:var(--slate-500);">${j.callType||''}</span>
-          ${j.ticketAmount?`<span style="font-size:12px;font-weight:800;color:var(--success);">$${Number(j.ticketAmount).toLocaleString()}</span>`:''}
-          <span style="font-size:11px;color:var(--slate-400);">${j.date||''}</span>
-        </div>
-      </div>`;
-    }).join('');
-  }catch(e){c.innerHTML=`<div style="padding:20px;color:var(--danger);">Error: ${e.message}</div>`;}
+    jobs.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    const ocColor={sold:'var(--success)',nosale:'var(--danger)',callback:'var(--copper)'};
+    const ocLabel={sold:'Sold',nosale:'No Sale',callback:'Callback',in_progress:'Active'};
+    c.innerHTML=jobs.map(j=>`<div style="background:var(--white);border-radius:10px;padding:14px 16px;margin-bottom:10px;border:1px solid var(--border);box-shadow:0 1px 3px rgba(26,29,35,.04);"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;"><div style="font-size:15px;font-weight:700;color:var(--slate-900);">${j.customer||'–'}</div><div style="font-size:10px;font-weight:800;color:${ocColor[j.outcome]||'var(--slate-400)'};text-transform:uppercase;">${ocLabel[j.outcome]||'In Progress'}</div></div><div style="font-size:12px;color:var(--slate-400);margin-bottom:6px;">${j.address||''}</div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;"><span style="font-size:11px;font-weight:700;color:var(--copper-dim);">${j.callType||''}</span>${j.ticketAmount?`<span style="font-size:12px;font-weight:800;color:var(--success);">$${Number(j.ticketAmount).toLocaleString()}</span>`:''}<span style="font-size:11px;color:var(--slate-400);">${j.date||''}</span></div></div>`).join('');
+  }catch(e){if(c)c.innerHTML=`<div style="padding:20px;color:var(--danger);">Error: ${e.message}</div>`;}
 }
 
+// ── STREAK ──
+async function calcStreak(){
+  try{
+    const q=query(collection(db,'jobs'),where('deviceId','==',devId()));
+    const snap=await getDocs(q);
+    const soldDates=[...new Set(snap.docs.map(d=>d.data()).filter(j=>j.outcome==='sold'&&j.date).map(j=>j.date))].sort((a,b)=>b.localeCompare(a));
+    if(!soldDates.length)return 0;
+    const today=new Date().toISOString().split('T')[0];
+    const yesterday=new Date(Date.now()-86400000).toISOString().split('T')[0];
+    if(soldDates[0]!==today&&soldDates[0]!==yesterday)return 0;
+    let streak=1;
+    for(let i=1;i<soldDates.length;i++){
+      const prev=new Date(soldDates[i-1]);
+      const curr=new Date(soldDates[i]);
+      if(Math.round((prev-curr)/86400000)===1)streak++;
+      else break;
+    }
+    return streak;
+  }catch(e){return 0;}
+}
+
+async function updateStreakBadge(){
+  const streak=await calcStreak();
+  const badge=document.getElementById('streak-badge');
+  const count=document.getElementById('streak-count');
+  const fire=document.getElementById('streak-fire');
+  if(!badge)return;
+  if(streak>0){
+    badge.style.display='flex';
+    if(count)count.textContent=streak;
+    if(fire)fire.textContent=streak>=7?'🔥🔥':streak>=3?'🔥':'⚡';
+  } else {badge.style.display='none';}
+}
+
+// ── SCORECARD ──
+window.loadScorecard=async function(period,btn){
+  scorecardPeriod=period;
+  document.querySelectorAll('#s-scorecard .kpibtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  await renderScorecard();
+};
+
+function getWeekRange(period){
+  const now=new Date();
+  const dow=now.getDay();
+  const monday=new Date(now);
+  monday.setDate(now.getDate()-(dow===0?6:dow-1));monday.setHours(0,0,0,0);
+  if(period==='this')return{start:monday.toISOString().split('T')[0],end:new Date().toISOString().split('T')[0]};
+  if(period==='last'){const lm=new Date(monday);lm.setDate(monday.getDate()-7);const ls=new Date(monday);ls.setDate(monday.getDate()-1);return{start:lm.toISOString().split('T')[0],end:ls.toISOString().split('T')[0]};}
+  const fw=new Date(monday);fw.setDate(monday.getDate()-28);return{start:fw.toISOString().split('T')[0],end:new Date().toISOString().split('T')[0]};
+}
+
+async function renderScorecard(){
+  try{
+    const{start,end}=getWeekRange(scorecardPeriod);
+    const q=query(collection(db,'jobs'),where('deviceId','==',devId()));
+    const snap=await getDocs(q);
+    const jobs=snap.docs.map(d=>d.data()).filter(j=>j.date>=start&&j.date<=end&&j.status==='completed');
+    const total=jobs.length, sold=jobs.filter(j=>j.outcome==='sold');
+    const soldCount=sold.length;
+    const revenue=sold.reduce((s,j)=>s+(Number(j.ticketAmount)||0),0);
+    const closeRate=total>0?Math.round((soldCount/total)*100):0;
+    const avgTicket=soldCount>0?Math.round(revenue/soldCount):0;
+    const setT=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+    const setW=(id,v)=>{const el=document.getElementById(id);if(el)el.style.width=v+'%';};
+    setT('sc-calls',total||'0');setT('sc-close',total>0?closeRate+'%':'–');setT('sc-ticket',avgTicket>0?'$'+avgTicket.toLocaleString():'–');setT('sc-revenue',revenue>0?'$'+revenue.toLocaleString():'–');
+    const streak=await calcStreak();
+    setT('sc-streak-num',streak);
+    const sIcon=document.getElementById('sc-streak-icon');
+    if(sIcon)sIcon.textContent=streak>=7?'🔥🔥':streak>=3?'🔥':streak>0?'⚡':'💤';
+    const msgs={"0":"No active streak. Close a deal today to start one.","1":"One day in. Keep it going tomorrow.","2":"Two days strong. Build the chain.","3":"Three days. You are building momentum.","5":"Five straight days with a sale. That is discipline.","7":"A full week. Elite level consistency.","10":"Ten days. You are in rare company.","14":"Two weeks straight. Legendary."};
+    const key=Object.keys(msgs).reverse().find(k=>streak>=Number(k))||"0";
+    setT('sc-streak-msg',msgs[key]);
+    const nosales=jobs.filter(j=>j.outcome==='nosale'&&j.nosaleReason);
+    const reasonLabels={price:'Price Too High',trust:'Trust Issue',notowner:'Not Decision Maker',competitor:'Going Competitor',timing:'Bad Timing',nourgency:'No Urgency Felt',callback:'Needs Callback',other:'Other'};
+    const reasonCounts={};
+    nosales.forEach(j=>{const r=j.nosaleReason;reasonCounts[r]=(reasonCounts[r]||0)+1;});
+    const nsContainer=document.getElementById('sc-nosale-breakdown');
+    if(nsContainer){
+      if(!Object.keys(reasonCounts).length){nsContainer.innerHTML='<div style="text-align:center;padding:12px;color:var(--slate-400);font-size:13px;">No lost deals this period</div>';}
+      else{const sorted=Object.entries(reasonCounts).sort((a,b)=>b[1]-a[1]);nsContainer.innerHTML=sorted.map(([r,cnt])=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--white);border-radius:8px;margin-bottom:6px;border-left:3px solid var(--danger);"><div style="flex:1;font-size:13px;font-weight:600;color:var(--slate-800);">${reasonLabels[r]||r}</div><div style="font-size:13px;font-weight:800;color:var(--danger);">${cnt}x</div></div>`).join('');}
+    }
+    const photoComp=total>0?Math.round((jobs.filter(j=>(j.photoCount||0)>=3).length/total)*100):0;
+    const optsComp=total>0?Math.round((jobs.filter(j=>j.options?.good&&j.options?.better).length/total)*100):0;
+    const revComp=total>0?Math.round((jobs.filter(j=>j.reviewResult==='yes').length/total)*100):0;
+    const memComp=total>0?Math.round((jobs.filter(j=>j.membershipAdded).length/total)*100):0;
+    setT('sc-photo',photoComp+'%');setW('sc-photo-f',photoComp);setT('sc-opts',optsComp+'%');setW('sc-opts-f',optsComp);setT('sc-rev',revComp+'%');setW('sc-rev-f',revComp);setT('sc-mem',memComp+'%');setW('sc-mem-f',memComp);
+    const coaching=document.getElementById('sc-coaching');
+    const coachingText=document.getElementById('sc-coaching-text');
+    if(total>0&&coaching&&coachingText){
+      const weakest=[{score:closeRate,msg:`Your close rate is ${closeRate}%. Focus on the silence after the price — most techs talk themselves out of the sale. Present and wait.`},{score:photoComp,msg:`Photo compliance is at ${photoComp}%. Photos are your proof. Every flagged item needs a photo before you present.`},{score:optsComp,msg:`You built options on ${optsComp}% of calls. Every call needs three options — no exceptions.`},{score:revComp,msg:`You asked for a review on ${revComp}% of calls. Ask every single sold job by name.`}].sort((a,b)=>a.score-b.score)[0];
+      coachingText.textContent=weakest.msg;coaching.style.display='block';
+    } else if(coaching){coaching.style.display='none';}
+  }catch(e){console.error('Scorecard:',e);}
+}
+
+// ── CUSTOM SCRIPTS ──
+const SCRIPTS_KEY='psos_custom_scripts';
+function getCustomScripts(){try{return JSON.parse(localStorage.getItem(SCRIPTS_KEY)||'[]');}catch(e){return[];}}
+function saveCustomScripts(scripts){localStorage.setItem(SCRIPTS_KEY,JSON.stringify(scripts));}
+window.switchScriptTab=function(tab){
+  document.getElementById('stab-default').classList.toggle('active',tab==='default');
+  document.getElementById('stab-custom').classList.toggle('active',tab==='custom');
+  document.getElementById('scripts-default').style.display=tab==='default'?'block':'none';
+  document.getElementById('scripts-custom').style.display=tab==='custom'?'block':'none';
+  if(tab==='custom')renderCustomScripts();
+};
+function renderCustomScripts(){
+  const scripts=getCustomScripts();
+  const container=document.getElementById('custom-scripts-list');
+  if(!container)return;
+  if(!scripts.length){container.innerHTML='<div style="text-align:center;padding:24px;color:var(--slate-400);font-size:13px;">No custom scripts yet.<br>Add your first one above.</div>';return;}
+  container.innerHTML=scripts.map((s,i)=>`<div class="custom-script-card"><div class="custom-script-del" onclick="deleteCustomScript(${i})">✕ Delete</div><div class="custom-script-title">${s.title}</div><div class="custom-script-body">"${s.body}"</div></div>`).join('');
+}
+window.saveCustomScript=function(){
+  const title=document.getElementById('new-script-title')?.value.trim();
+  const body=document.getElementById('new-script-body')?.value.trim();
+  if(!title)return alert('Give your script a title.');
+  if(!body)return alert('Write the script content.');
+  const scripts=getCustomScripts();
+  scripts.push({title,body,createdAt:Date.now()});
+  saveCustomScripts(scripts);
+  const t=document.getElementById('new-script-title');
+  const b=document.getElementById('new-script-body');
+  if(t)t.value='';if(b)b.value='';
+  renderCustomScripts();
+};
+window.deleteCustomScript=function(idx){
+  if(!confirm('Delete this script?'))return;
+  const scripts=getCustomScripts();
+  scripts.splice(idx,1);
+  saveCustomScripts(scripts);
+  renderCustomScripts();
+};
+
+// ── GO / NAVIGATION ──
 window.go=function(id){
   document.querySelectorAll('#app > div:not(#loading)').forEach(d=>d.classList.add('hidden'));
   const el=document.getElementById(id);if(!el)return;
@@ -1873,560 +1923,17 @@ window.go=function(id){
   if(id==='s-scorecard')renderScorecard();
 };
 
+// ── UI HELPERS ──
 window.chk=el=>el.classList.toggle('chk');
 window.cycInsp=function(el){
   if(!el.classList.contains('ok')&&!el.classList.contains('flag')){el.classList.add('ok');el.querySelector('.istat').textContent='OK';}
   else if(el.classList.contains('ok')){el.classList.remove('ok');el.classList.add('flag');el.querySelector('.istat').textContent='Flagged';}
-  else{el.classList.remove('flag');el.querySelector('.istat').textContent='Tap to note';}
+  else{el.classList.remove('flag');el.querySelector('.istat').textContent='Tap';}
 };
 window.togOpp=function(el){el.classList.toggle('added');el.querySelector('.oppa').textContent=el.classList.contains('added')?'✓ Added':'+ Add';};
 
-// ── FEATURE 1: DISCOVERY CARRY-THROUGH ──
-// Called when entering step 8 (present findings)
-function populatePresentScreen(){
-  const disc=jobData.discovery||{};
-  const questions=['When did this start?','How often does it happen?','Has anything been done before?','What concerns you most?','How long in this home?'];
-  const keys=['q1','q2','q3','q4','q5'];
-  const filled=keys.map((k,i)=>({q:questions[i],a:(disc[k]||'').trim()})).filter(x=>x.a.length>0);
-  const discPanel=document.getElementById('present-discovery');
-  const discContainer=document.getElementById('disc-carrythrough');
-  if(filled.length>0){
-    discContainer.innerHTML=filled.map(x=>`
-      <div class="disc-card">
-        <div class="disc-q">${x.q}</div>
-        <div class="disc-a">"${x.a}"</div>
-      </div>`).join('');
-    discPanel.style.display='block';
-  } else {
-    discPanel.style.display='none';
-  }
-
-  // ── FEATURE 2: FLAGGED ITEMS CARRY-THROUGH ──
-  const flagged=(jobData.inspectionResults||[]).filter(i=>i.status==='flagged');
-  const flagPanel=document.getElementById('present-flags');
-  const flagContainer=document.getElementById('flag-carrythrough');
-  if(flagged.length>0){
-    flagContainer.innerHTML=flagged.map(f=>`
-      <div class="flag-item">
-        <div class="flag-dot"></div>
-        <div class="flag-lbl">${f.label}</div>
-      </div>`).join('');
-    flagPanel.style.display='block';
-  } else {
-    flagPanel.style.display='none';
-  }
-}
-
-// ── FEATURE 3: NO-SALE & CALLBACK REASON CAPTURE ──
-
-window.setNSR=function(reason,btn){
-  nosaleReason=reason;
-  document.querySelectorAll('#nosale-grid .nosale-btn').forEach(b=>b.classList.remove('sel'));
-  btn.classList.add('sel');
-};
-
-window.setCBR=function(reason,btn){
-  callbackReason=reason;
-  document.querySelectorAll('#callback-grid .nosale-btn').forEach(b=>b.classList.remove('sel'));
-  btn.classList.add('sel');
-};
-
-// Override setOC to also show/hide the reason panels
-window.setOC=function(oc,btn){
-  outcome=oc;
-  ['oc-sold','oc-cb','oc-ns'].forEach(id=>document.getElementById(id).classList.remove('sel'));
-  btn.classList.add('sel');
-  // Show/hide reason panels
-  document.getElementById('nosale-reason-panel').style.display=oc==='nosale'?'block':'none';
-  document.getElementById('callback-reason-panel').style.display=oc==='callback'?'block':'none';
-  // Reset reason selections when switching
-  if(oc==='nosale'){nosaleReason=null;document.querySelectorAll('#nosale-grid .nosale-btn').forEach(b=>b.classList.remove('sel'));}
-  if(oc==='callback'){callbackReason=null;document.querySelectorAll('#callback-grid .nosale-btn').forEach(b=>b.classList.remove('sel'));}
-};
-
-
-
-
-
-
-
-// ══════════════════════════════════════════════════
-// FEATURE: SCRIPT CUSTOMIZATION
-// ══════════════════════════════════════════════════
-const SCRIPTS_KEY = 'psos_custom_scripts';
-
-function getCustomScripts(){
-  try{ return JSON.parse(localStorage.getItem(SCRIPTS_KEY)||'[]'); }catch(e){ return []; }
-}
-
-function saveCustomScripts(scripts){
-  localStorage.setItem(SCRIPTS_KEY, JSON.stringify(scripts));
-}
-
-window.switchScriptTab = function(tab){
-  document.getElementById('stab-default').classList.toggle('active', tab==='default');
-  document.getElementById('stab-custom').classList.toggle('active', tab==='custom');
-  document.getElementById('scripts-default').style.display = tab==='default'?'block':'none';
-  document.getElementById('scripts-custom').style.display = tab==='custom'?'block':'none';
-  if(tab==='custom') renderCustomScripts();
-};
-
-function renderCustomScripts(){
-  const scripts = getCustomScripts();
-  const container = document.getElementById('custom-scripts-list');
-  if(scripts.length === 0){
-    container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--slate-400);font-size:13px;">No custom scripts yet.<br>Add your first one above.</div>';
-    return;
-  }
-  container.innerHTML = scripts.map((s,i) => `
-    <div class="custom-script-card">
-      <div class="custom-script-del" onclick="deleteCustomScript(${i})">✕ Delete</div>
-      <div class="custom-script-title">${s.title}</div>
-      <div class="custom-script-body">"${s.body}"</div>
-    </div>
-  `).join('');
-}
-
-window.saveCustomScript = function(){
-  const title = document.getElementById('new-script-title').value.trim();
-  const body = document.getElementById('new-script-body').value.trim();
-  if(!title) return alert('Give your script a title.');
-  if(!body) return alert('Write the script content.');
-  const scripts = getCustomScripts();
-  scripts.push({ title, body, createdAt: Date.now() });
-  saveCustomScripts(scripts);
-  document.getElementById('new-script-title').value = '';
-  document.getElementById('new-script-body').value = '';
-  renderCustomScripts();
-};
-
-window.deleteCustomScript = function(idx){
-  if(!confirm('Delete this script?')) return;
-  const scripts = getCustomScripts();
-  scripts.splice(idx, 1);
-  saveCustomScripts(scripts);
-  renderCustomScripts();
-};
-
-// ══════════════════════════════════════════════════
-// FEATURE: STREAK TRACKER
-// Streak = consecutive calendar days with at least one sold job
-// ══════════════════════════════════════════════════
-async function calcStreak(){
-  try{
-    const q = query(collection(db,'jobs'), where('deviceId','==',devId()));
-    const snap = await getDocs(q);
-    const jobs = snap.docs.map(d=>d.data()).filter(j=>j.outcome==='sold' && j.date);
-    // Get unique sold dates, sorted descending
-    const soldDates = [...new Set(jobs.map(j=>j.date))].sort((a,b)=>b.localeCompare(a));
-    if(soldDates.length === 0) return 0;
-    const today = new Date().toISOString().split('T')[0];
-    const yesterday = new Date(Date.now()-86400000).toISOString().split('T')[0];
-    // Streak must include today or yesterday to be active
-    if(soldDates[0] !== today && soldDates[0] !== yesterday) return 0;
-    let streak = 1;
-    for(let i=1; i<soldDates.length; i++){
-      const prev = new Date(soldDates[i-1]);
-      const curr = new Date(soldDates[i]);
-      const diff = Math.round((prev - curr) / 86400000);
-      if(diff === 1) streak++;
-      else break;
-    }
-    return streak;
-  }catch(e){ return 0; }
-}
-
-async function updateStreakBadge(){
-  const streak = await calcStreak();
-  const badge = document.getElementById('streak-badge');
-  const count = document.getElementById('streak-count');
-  const fire = document.getElementById('streak-fire');
-  if(streak > 0){
-    badge.style.display = 'flex';
-    count.textContent = streak;
-    fire.textContent = streak >= 7 ? '🔥🔥' : streak >= 3 ? '🔥' : '⚡';
-  } else {
-    badge.style.display = 'none';
-  }
-}
-
-// ══════════════════════════════════════════════════
-// FEATURE: WEEKLY SCORECARD
-// ══════════════════════════════════════════════════
-let scorecardPeriod = 'this';
-
-window.loadScorecard = async function(period, btn){
-  scorecardPeriod = period;
-  document.querySelectorAll('#s-scorecard .kpibtn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  await renderScorecard();
-};
-
-function getWeekRange(period){
-  const now = new Date();
-  const dayOfWeek = now.getDay(); // 0=Sun
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
-  monday.setHours(0,0,0,0);
-
-  if(period === 'this'){
-    const start = monday.toISOString().split('T')[0];
-    const end = new Date().toISOString().split('T')[0];
-    return { start, end };
-  } else if(period === 'last'){
-    const lastMon = new Date(monday); lastMon.setDate(monday.getDate()-7);
-    const lastSun = new Date(monday); lastSun.setDate(monday.getDate()-1);
-    return { start: lastMon.toISOString().split('T')[0], end: lastSun.toISOString().split('T')[0] };
-  } else { // 4wk
-    const fourWk = new Date(monday); fourWk.setDate(monday.getDate()-28);
-    return { start: fourWk.toISOString().split('T')[0], end: new Date().toISOString().split('T')[0] };
-  }
-}
-
-async function renderScorecard(){
-  try{
-    const {start, end} = getWeekRange(scorecardPeriod);
-    const q = query(collection(db,'jobs'), where('deviceId','==',devId()));
-    const snap = await getDocs(q);
-    const allJobs = snap.docs.map(d=>d.data());
-    const jobs = allJobs.filter(j=>j.date >= start && j.date <= end && j.status==='completed');
-
-    const total = jobs.length;
-    const sold = jobs.filter(j=>j.outcome==='sold');
-    const soldCount = sold.length;
-    const revenue = sold.reduce((s,j)=>s+(Number(j.ticketAmount)||0),0);
-    const closeRate = total > 0 ? Math.round((soldCount/total)*100) : 0;
-    const avgTicket = soldCount > 0 ? Math.round(revenue/soldCount) : 0;
-
-    document.getElementById('sc-calls').textContent = total || '0';
-    document.getElementById('sc-close').textContent = total > 0 ? closeRate+'%' : '–';
-    document.getElementById('sc-ticket').textContent = avgTicket > 0 ? '$'+avgTicket.toLocaleString() : '–';
-    document.getElementById('sc-revenue').textContent = revenue > 0 ? '$'+revenue.toLocaleString() : '–';
-
-    // Streak
-    const streak = await calcStreak();
-    document.getElementById('sc-streak-num').textContent = streak;
-    document.getElementById('sc-streak-icon').textContent = streak >= 7 ? '🔥🔥' : streak >= 3 ? '🔥' : streak > 0 ? '⚡' : '💤';
-    const streakMsgs = {
-      0: "No active streak. Close a deal today to start one.",
-      1: "One day in. Keep it going tomorrow.",
-      2: "Two days strong. Don't break the chain.",
-      3: "Three days. You're building momentum.",
-      5: "Five straight days with a sale. That's discipline.",
-      7: "A full week. Elite level consistency.",
-      10: "Ten days. You're in rare company.",
-      14: "Two weeks straight. Legendary."
-    };
-    const streakKey = Object.keys(streakMsgs).reverse().find(k=>streak >= Number(k)) || '0';
-    document.getElementById('sc-streak-msg').textContent = streakMsgs[streakKey];
-
-    // No-sale breakdown
-    const nosales = jobs.filter(j=>j.outcome==='nosale' && j.nosaleReason);
-    const reasonLabels = {price:'Price Too High',trust:'Trust Issue',notowner:'Not Decision Maker',competitor:'Going Competitor',timing:'Bad Timing',nourgency:'No Urgency Felt',callback:'Needs Callback',other:'Other'};
-    const reasonCounts = {};
-    nosales.forEach(j=>{ const r=j.nosaleReason; reasonCounts[r]=(reasonCounts[r]||0)+1; });
-    const nsContainer = document.getElementById('sc-nosale-breakdown');
-    if(Object.keys(reasonCounts).length === 0){
-      nsContainer.innerHTML = '<div style="text-align:center;padding:12px;color:var(--slate-400);font-size:13px;">No lost deals this period 💪</div>';
-    } else {
-      const sorted = Object.entries(reasonCounts).sort((a,b)=>b[1]-a[1]);
-      nsContainer.innerHTML = sorted.map(([r,c])=>`
-        <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--slate-50);border-radius:8px;margin-bottom:6px;border-left:3px solid var(--danger);">
-          <div style="flex:1;font-size:13px;font-weight:600;color:var(--slate-900);">${reasonLabels[r]||r}</div>
-          <div style="font-size:13px;font-weight:800;color:var(--danger);">${c}x</div>
-        </div>`).join('');
-    }
-
-    // Compliance bars
-    const photoComp = total > 0 ? Math.round((jobs.filter(j=>(j.photoCount||0)>=3).length/total)*100) : 0;
-    const optsComp = total > 0 ? Math.round((jobs.filter(j=>j.options?.good&&j.options?.better).length/total)*100) : 0;
-    const revComp = total > 0 ? Math.round((jobs.filter(j=>j.reviewResult==='yes').length/total)*100) : 0;
-    const memComp = total > 0 ? Math.round((jobs.filter(j=>j.membershipAdded).length/total)*100) : 0;
-
-    document.getElementById('sc-photo').textContent = photoComp+'%';
-    document.getElementById('sc-photo-f').style.width = photoComp+'%';
-    document.getElementById('sc-opts').textContent = optsComp+'%';
-    document.getElementById('sc-opts-f').style.width = optsComp+'%';
-    document.getElementById('sc-rev').textContent = revComp+'%';
-    document.getElementById('sc-rev-f').style.width = revComp+'%';
-    document.getElementById('sc-mem').textContent = memComp+'%';
-    document.getElementById('sc-mem-f').style.width = memComp+'%';
-
-    // Auto coaching note — surfaces the weakest area
-    const coachingDiv = document.getElementById('sc-coaching');
-    const coachingText = document.getElementById('sc-coaching-text');
-    if(total > 0){
-      const weakest = [
-        { score: closeRate, msg: `Your close rate is ${closeRate}%. Focus on the silence after the price — most techs talk themselves out of the sale. Present and wait.` },
-        { score: photoComp, msg: `Photo compliance is at ${photoComp}%. Photos are your proof. Every flagged item needs a photo before you present.` },
-        { score: optsComp, msg: `You built options on ${optsComp}% of calls. Every call needs three options — no exceptions. Homeowners who choose feel respected.` },
-        { score: revComp, msg: `You asked for a review on ${revComp}% of calls. Ask every single sold job by name. It takes 10 seconds.` }
-      ].sort((a,b)=>a.score-b.score)[0];
-      coachingText.textContent = weakest.msg;
-      coachingDiv.style.display = 'block';
-    } else {
-      coachingDiv.style.display = 'none';
-    }
-
-  }catch(e){ console.error('Scorecard error:', e); }
-}
-
-
-
-
-// ══════════════════════════════════════════════════
-// CALL TIMER
-// ══════════════════════════════════════════════════
-let timerInterval = null;
-let timerSeconds = 0;
-let timerRunning = false;
-
-function startTimer(){
-  if(timerRunning) return;
-  timerRunning = true;
-  timerSeconds = 0;
-  timerInterval = setInterval(() => {
-    timerSeconds++;
-    updateTimerDisplay();
-  }, 1000);
-}
-
-function stopTimer(){
-  clearInterval(timerInterval);
-  timerRunning = false;
-}
-
-function resetTimer(){
-  stopTimer();
-  timerSeconds = 0;
-  updateTimerDisplay();
-}
-
-function updateTimerDisplay(){
-  const m = Math.floor(timerSeconds / 60);
-  const s = timerSeconds % 60;
-  const str = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
-  const el = document.getElementById('dash-timer');
-  if(!el) return;
-  el.textContent = str;
-  el.className = 'timer-display';
-  if(timerSeconds > 2700) el.classList.add('long');      // 45+ min
-  else if(timerSeconds > 1800) el.classList.add('warn'); // 30+ min
-}
-
-
-
-// ══════════════════════════════════════════════════
-// OFFLINE / SYNC INDICATOR
-// ══════════════════════════════════════════════════
-function setSyncStatus(status){
-  const dot = document.getElementById('sync-dot');
-  const text = document.getElementById('sync-text');
-  if(!dot || !text) return;
-  dot.className = 'sync-dot';
-  if(status === 'saving'){ dot.classList.add('pending'); text.textContent = 'Saving...'; }
-  else if(status === 'saved'){ text.textContent = 'Saved'; }
-  else if(status === 'offline'){ dot.classList.add('offline'); text.textContent = 'Offline — will sync when reconnected'; }
-  else if(status === 'error'){ dot.classList.add('offline'); text.textContent = 'Save failed — check connection'; }
-}
-
-window.addEventListener('online', () => setSyncStatus('saved'));
-window.addEventListener('offline', () => setSyncStatus('offline'));
-
-// Wrap Firebase writes to show sync status
-const _origUpdateDoc = window._updateDoc || updateDoc;
-async function syncedUpdate(ref, data){
-  setSyncStatus('saving');
-  try {
-    await updateDoc(ref, data);
-    setSyncStatus('saved');
-  } catch(e) {
-    setSyncStatus(navigator.onLine ? 'error' : 'offline');
-    throw e;
-  }
-}
-
-// ══════════════════════════════════════════════════
-// RETURNING CUSTOMER DETECTION
-// ══════════════════════════════════════════════════
-let returningCheckTimeout = null;
-
-window.checkReturning = function(){
-  clearTimeout(returningCheckTimeout);
-  returningCheckTimeout = setTimeout(async () => {
-    const name = document.getElementById('j-cust').value.trim().toLowerCase();
-    const addr = document.getElementById('j-addr').value.trim().toLowerCase();
-    const banner = document.getElementById('returning-banner');
-    if(!banner) return;
-    if(name.length < 3 && addr.length < 5){ banner.style.display='none'; return; }
-    try {
-      const q = query(collection(db,'jobs'), where('deviceId','==',devId()));
-      const snap = await getDocs(q);
-      const matches = snap.docs.map(d=>d.data()).filter(j => {
-        const jname = (j.customer||'').toLowerCase();
-        const jaddr = (j.address||'').toLowerCase();
-        return j.status === 'completed' && (
-          (name.length >= 3 && jname.includes(name)) ||
-          (addr.length >= 5 && jaddr.includes(addr))
-        );
-      }).sort((a,b) => (b.date||'').localeCompare(a.date||'')).slice(0,3);
-
-      if(matches.length === 0){ banner.style.display='none'; return; }
-
-      const outcomeColor = {sold:'#4ECFA0',nosale:'#E8716A',callback:'#E8A85C',in_progress:'#9AA3B5'};
-      const outcomeLabel = {sold:'Sold',nosale:'No Sale',callback:'Callback',in_progress:'Active'};
-
-      banner.innerHTML = `<div class="returning-banner">
-        <div class="returning-banner-title">⚡ Returning Customer — ${matches.length} Past Visit${matches.length>1?'s':''}</div>
-        ${matches.map(j => `<div class="returning-job-card">
-          <div class="rjc-top">
-            <span class="rjc-type">${j.callType||'Unknown'}</span>
-            <span class="rjc-outcome" style="color:${outcomeColor[j.outcome]||'#9AA3B5'}">${outcomeLabel[j.outcome]||j.outcome||'–'}</span>
-          </div>
-          <div class="rjc-meta">${j.date||'–'}${j.ticketAmount?' · $'+Number(j.ticketAmount).toLocaleString():''}</div>
-        </div>`).join('')}
-      </div>`;
-      banner.style.display = 'block';
-    } catch(e){ banner.style.display='none'; }
-  }, 600);
-};
-
-// ══════════════════════════════════════════════════
-// FINANCING CALCULATOR
-// ══════════════════════════════════════════════════
-
-window.selTerm = function(el, months){
-  finTerm = months;
-  document.querySelectorAll('.fin-term').forEach(b => b.classList.remove('sel'));
-  el.classList.add('sel');
-  calcFinancing();
-};
-
-window.calcFinancing = function(){
-  const price = parseFloat(document.getElementById('fin-price')?.value) || 0;
-  const annualRate = parseFloat(document.getElementById('fin-rate')?.value) || 9.9;
-  const result = document.getElementById('fin-result');
-  if(!result) return;
-  if(price <= 0){ result.textContent = '$–'; return; }
-  const r = (annualRate / 100) / 12;
-  const n = finTerm;
-  let monthly;
-  if(r === 0) monthly = price / n;
-  else monthly = price * (r * Math.pow(1+r,n)) / (Math.pow(1+r,n) - 1);
-  result.textContent = '$' + Math.ceil(monthly).toLocaleString();
-};
-
-// ══════════════════════════════════════════════════
-// HORIZONTAL STEP PROGRESS TRACK
-// ══════════════════════════════════════════════════
-const STEP_NAMES = ['Pre-Call','Arrival','Intro','Agenda','Discovery','Inspect','Photos','Options','Present','Objections','Close'];
-
-function renderStepProgress(currentStepNum, completedSteps){
-  for(let screenIdx = 0; screenIdx <= 10; screenIdx++){
-    const track = document.getElementById('spt-'+screenIdx);
-    if(!track) continue;
-    let html = '';
-    for(let i = 0; i <= 10; i++){
-      const isDone = completedSteps.includes(i);
-      const isActive = i === screenIdx;
-      const cls = isDone ? 'done' : isActive ? 'active' : 'pending';
-      html += `<div class="sp-node ${cls}" onclick="goStep(${i})" title="${STEP_NAMES[i]}">${isDone ? '✓' : i+1}</div>`;
-      if(i < 10){
-        const lineDone = completedSteps.includes(i);
-        html += `<div class="sp-line ${lineDone?'done':''}"></div>`;
-      }
-    }
-    track.innerHTML = html;
-    // Update step sub label with call type if inspection
-    const sub = document.getElementById('sps-'+screenIdx);
-    if(sub && screenIdx === 5 && jobData.callType){
-      sub.textContent = `Step 6 of 11 · ${jobData.callType}`;
-    }
-  }
-}
-
-
-
-// ══════════════════════════════════════════════════
-// INITIALS AVATAR — replaces emoji avatar
-// ══════════════════════════════════════════════════
-function getInitials(name){
-  if(!name) return '?';
-  const parts = name.trim().split(' ').filter(Boolean);
-  if(parts.length === 1) return parts[0].slice(0,2).toUpperCase();
-  return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
-}
-
-function updateAvatars(){
-  if(!profile) return;
-  const initials = getInitials(profile.name);
-  // Profile screen
-  const pav = document.getElementById('p-av');
-  if(pav){ pav.textContent = initials; pav.className='initials-av-lg'; }
-}
-
-// Dynamic greeting
-function updateGreeting(){
-  const el = document.getElementById('h-greeting');
-  if(!el) return;
-  const h = new Date().getHours();
-  el.textContent = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
-}
-
-// ══════════════════════════════════════════════════
-// ELEVATED REVIEW SCREEN
-// ══════════════════════════════════════════════════
-function showReviewScreen(isSold, isCB, ticketAmount, nosaleRsn){
-  const soldHero = document.getElementById('rev-sold-hero');
-  const otherHero = document.getElementById('rev-other-hero');
-
-  if(isSold && soldHero){
-    soldHero.style.display = 'block';
-    if(otherHero) otherHero.style.display = 'none';
-    const amountEl = document.getElementById('rev-sold-amount');
-    if(amountEl) amountEl.textContent = ticketAmount > 0 ? '$'+ticketAmount.toLocaleString() : 'Sold';
-    // Simple confetti burst
-    const confetti = document.getElementById('rev-confetti');
-    if(confetti){ confetti.innerHTML = ''; launchConfetti(confetti); }
-  } else if(otherHero) {
-    if(soldHero) soldHero.style.display = 'none';
-    otherHero.style.display = 'block';
-    const icon = document.getElementById('rev-other-icon');
-    const title = document.getElementById('rev-other-title');
-    const sub = document.getElementById('rev-other-sub');
-    if(icon) icon.textContent = isCB ? '📞' : '❌';
-    if(title) title.textContent = isCB ? 'Callback Scheduled' : 'No Sale';
-    if(sub){
-      const nsLabels = {price:"Lost on price.",trust:"Trust wasn"t there yet.',notowner:"Not the decision maker.",competitor:"Going with a competitor.",timing:"Bad timing.",nourgency:"No urgency felt.",callback:"Needs to think.",other:"Other reason."};
-      sub.textContent = isCB ? 'Follow up promptly — callbacks go cold in 24 hours.' : (nsLabels[nosaleRsn] || 'Not every call closes. Review and improve.');
-    }
-  }
-}
-
-function launchConfetti(container){
-  const colors = ['#E8A85C','#B87333','#4ECFA0','#fff','#E8716A'];
-  for(let i=0;i<20;i++){
-    const el = document.createElement('div');
-    const size = 6 + Math.random()*6;
-    el.style.cssText = `position:absolute;width:${size}px;height:${size}px;background:${colors[Math.floor(Math.random()*colors.length)]};border-radius:${Math.random()>0.5?'50%':'2px'};left:${10+Math.random()*80}%;top:-10px;opacity:0;animation:confettiFall ${1+Math.random()}s ${Math.random()*0.5}s ease-in forwards;`;
-    container.appendChild(el);
-  }
-  if(!document.getElementById('confetti-style')){
-    const s = document.createElement('style');
-    s.id = 'confetti-style';
-    s.textContent = '@keyframes confettiFall{0%{transform:translateY(0) rotate(0);opacity:1;}100%{transform:translateY(200px) rotate(720deg);opacity:0;}}';
-    document.head.appendChild(s);
-  }
-}
-
-
-
-
-
-
-
-
 init();
 </script>
+
 </body>
 </html>
