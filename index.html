@@ -1132,7 +1132,7 @@ const cfg={apiKey:"AIzaSyBjFq_iD0wrLqgzbiAgd1zbPEkf-kvYawE",authDomain:"perfect-
 const db=getFirestore(initializeApp(cfg));
 
 const PK='psos_profile',DK='psos_device';
-let profile=null,jobId=null,jobData={},curStep=0,photos=0,outcome=null,callType=null,kpiPer='today',setupAv='🔧',editAv='🔧';
+let profile=null,jobId=null,jobData={},curStep=0,photos=0,outcome=null,callType=null,kpiPer='today',setupAv='🔧',editAv='🔧',nosaleReason=null,callbackReason=null,membershipResult=null,reviewResult=null;
 
 function devId(){let id=localStorage.getItem(DK);if(!id){id='dev_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);localStorage.setItem(DK,id);}return id;}
 
@@ -1542,7 +1542,6 @@ window.saveOpts=async function(){
   doneStep(7);
 };
 
-let membershipResult=null,reviewResult=null;
 
 
 window.setMembership=function(v,btn){membershipResult=v;['mem-yes','mem-no'].forEach(id=>document.getElementById(id).classList.remove('sel'));btn.classList.add('sel');};
@@ -1919,7 +1918,6 @@ function populatePresentScreen(){
 }
 
 // ── FEATURE 3: NO-SALE & CALLBACK REASON CAPTURE ──
-let nosaleReason=null,callbackReason=null;
 
 window.setNSR=function(reason,btn){
   nosaleReason=reason;
@@ -2296,7 +2294,6 @@ window.checkReturning = function(){
 // ══════════════════════════════════════════════════
 // FINANCING CALCULATOR
 // ══════════════════════════════════════════════════
-let finTerm = 12;
 
 window.selTerm = function(el, months){
   finTerm = months;
@@ -2427,6 +2424,60 @@ function launchConfetti(container){
 
 
 
+
+
+// ── RETURNING CUSTOMER CHECK ──
+window.checkReturning = function(){
+  clearTimeout(returningCheckTimeout);
+  returningCheckTimeout = setTimeout(async () => {
+    const name = (document.getElementById('j-cust')?.value||'').trim().toLowerCase();
+    const addr = (document.getElementById('j-addr')?.value||'').trim().toLowerCase();
+    const banner = document.getElementById('returning-banner');
+    if(!banner) return;
+    if(name.length < 3 && addr.length < 5){ banner.style.display='none'; return; }
+    try {
+      const q = query(collection(db,'jobs'), where('deviceId','==',devId()));
+      const snap = await getDocs(q);
+      const matches = snap.docs.map(d=>d.data()).filter(j=>{
+        const jn=(j.customer||'').toLowerCase();
+        const ja=(j.address||'').toLowerCase();
+        return j.status==='completed'&&((name.length>=3&&jn.includes(name))||(addr.length>=5&&ja.includes(addr)));
+      }).sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,3);
+      if(!matches.length){ banner.style.display='none'; return; }
+      const ocColor={sold:'#4ECFA0',nosale:'#E8716A',callback:'#E8A85C'};
+      const ocLabel={sold:'Sold',nosale:'No Sale',callback:'Callback'};
+      banner.innerHTML=`<div class="returning-banner">
+        <div class="returning-banner-title">⚡ Returning Customer — ${matches.length} Past Visit${matches.length>1?'s':''}</div>
+        ${matches.map(j=>`<div class="returning-job-card">
+          <div class="rjc-top"><span class="rjc-type">${j.callType||'Unknown'}</span>
+          <span class="rjc-outcome" style="color:${ocColor[j.outcome]||'#9AA3B5'}">${ocLabel[j.outcome]||j.outcome||'–'}</span></div>
+          <div class="rjc-meta">${j.date||'–'}${j.ticketAmount?' · $'+Number(j.ticketAmount).toLocaleString():''}</div>
+        </div>`).join('')}
+      </div>`;
+      banner.style.display='block';
+    } catch(e){ banner.style.display='none'; }
+  }, 600);
+};
+
+// ── FINANCING CALCULATOR ──
+window.selTerm = function(el, months){
+  finTerm = months;
+  document.querySelectorAll('.fin-term').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+  calcFinancing();
+};
+
+window.calcFinancing = function(){
+  const price = parseFloat(document.getElementById('fin-price')?.value)||0;
+  const rate = parseFloat(document.getElementById('fin-rate')?.value)||9.9;
+  const result = document.getElementById('fin-result');
+  if(!result) return;
+  if(price<=0){ result.textContent='$–'; return; }
+  const r = (rate/100)/12;
+  const n = finTerm;
+  const monthly = r===0 ? price/n : price*(r*Math.pow(1+r,n))/(Math.pow(1+r,n)-1);
+  result.textContent = '$'+Math.ceil(monthly).toLocaleString();
+};
 
 init();
 </script>
