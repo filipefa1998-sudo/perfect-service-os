@@ -272,6 +272,86 @@
   .custom-script-del{position:absolute;top:12px;right:14px;font-size:11px;color:var(--danger);font-weight:700;cursor:pointer;padding:3px 7px;border-radius:5px;background:rgba(217,64,64,.08);}
 
   /* Utilities */
+
+  /* ── CALL TIMER ── */
+  .timer-bar{background:var(--slate-900);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+  .timer-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:rgba(255,255,255,.4);}
+  .timer-display{font-size:18px;font-weight:800;color:var(--copper-bright);letter-spacing:.04em;font-variant-numeric:tabular-nums;}
+  .timer-display.warn{color:#E8916A;}
+  .timer-display.long{color:var(--danger);}
+
+  /* ── OFFLINE INDICATOR ── */
+  .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--success);display:inline-block;margin-right:5px;flex-shrink:0;}
+  .sync-dot.pending{background:var(--copper);}
+  .sync-dot.offline{background:var(--danger);}
+  .sync-bar{background:var(--slate-800);padding:6px 20px;display:flex;align-items:center;gap:6px;flex-shrink:0;}
+  .sync-text{font-size:10px;color:rgba(255,255,255,.45);font-weight:600;letter-spacing:.03em;}
+
+  /* ── RETURNING CUSTOMER BANNER ── */
+  .returning-banner{background:linear-gradient(135deg,#22262E,#2C3240);border:1px solid var(--copper);border-radius:12px;padding:14px 16px;margin-bottom:16px;}
+  .returning-banner-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:var(--copper-bright);margin-bottom:8px;}
+  .returning-job-card{background:rgba(255,255,255,.06);border-radius:8px;padding:10px 12px;margin-bottom:6px;border:1px solid rgba(255,255,255,.08);}
+  .returning-job-card:last-child{margin-bottom:0;}
+  .rjc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;}
+  .rjc-type{font-size:12px;font-weight:700;color:#fff;}
+  .rjc-outcome{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;}
+  .rjc-meta{font-size:11px;color:rgba(255,255,255,.4);}
+
+  /* ── FINANCING CALCULATOR ── */
+  .fin-calc{background:var(--slate-50);border:1.5px solid var(--border-mid);border-radius:12px;padding:16px;margin-top:10px;}
+  .fin-calc-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--copper-dim);margin-bottom:12px;}
+  .fin-row{display:flex;gap:10px;align-items:flex-end;margin-bottom:10px;}
+  .fin-field{flex:1;}
+  .fin-field-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--slate-400);margin-bottom:5px;}
+  .fin-input{width:100%;border:1.5px solid var(--border-mid);border-radius:9px;padding:10px 12px;font-size:15px;font-family:var(--font);color:var(--slate-900);background:var(--white);outline:none;font-weight:700;}
+  .fin-input:focus{border-color:var(--copper);}
+  .fin-result{background:var(--slate-900);border-radius:10px;padding:14px 16px;text-align:center;}
+  .fin-monthly{font-size:28px;font-weight:800;color:var(--copper-bright);letter-spacing:-.02em;}
+  .fin-monthly-label{font-size:11px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.08em;margin-top:3px;font-weight:600;}
+  .fin-terms{display:flex;gap:6px;margin-bottom:10px;}
+  .fin-term{flex:1;padding:8px 4px;border-radius:8px;border:1.5px solid var(--border-mid);background:var(--white);font-size:11px;font-weight:700;color:var(--slate-500);cursor:pointer;text-align:center;transition:all .15s;}
+  .fin-term.sel{background:var(--slate-900);color:var(--copper-bright);border-color:var(--slate-900);}
+
+  /* ── HORIZONTAL STEP PROGRESS ── */
+  .step-progress{background:var(--slate-900);padding:14px 20px 16px;flex-shrink:0;}
+  .step-progress-track{display:flex;align-items:center;gap:0;margin-bottom:10px;}
+  .sp-node{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;transition:all .3s;cursor:pointer;}
+  .sp-node.done{background:var(--success);color:#fff;}
+  .sp-node.active{background:var(--copper);color:#fff;box-shadow:0 0 0 3px rgba(184,115,51,.3);}
+  .sp-node.pending{background:rgba(255,255,255,.1);color:rgba(255,255,255,.3);}
+  .sp-line{flex:1;height:2px;background:rgba(255,255,255,.1);transition:background .3s;}
+  .sp-line.done{background:var(--success);}
+  .sp-step-name{font-size:13px;font-weight:700;color:#fff;letter-spacing:-.01em;}
+  .sp-step-sub{font-size:11px;color:rgba(255,255,255,.4);margin-top:2px;}
+
+  /* ── SVG QUICK LINK ICONS ── */
+  .ql-icon{width:40px;height:40px;border-radius:10px;background:var(--slate-50);display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
+  .ql-icon svg{width:20px;height:20px;}
+
+  /* ── REVIEW CELEBRATION SCREEN ── */
+  .rev-sold-hero{background:var(--slate-900);padding:36px 24px 28px;text-align:center;position:relative;overflow:hidden;}
+  .rev-sold-amount{font-size:52px;font-weight:800;color:var(--copper-bright);letter-spacing:-.03em;line-height:1;margin-bottom:6px;}
+  .rev-sold-label{font-size:12px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.1em;font-weight:600;}
+  .rev-sold-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(26,158,110,.2);border:1px solid rgba(26,158,110,.4);border-radius:20px;padding:6px 14px;margin-top:12px;}
+  .rev-sold-badge-text{font-size:12px;font-weight:700;color:#4ECFA0;letter-spacing:.03em;}
+  .rev-confetti{position:absolute;top:0;left:0;right:0;height:100%;pointer-events:none;overflow:hidden;}
+  .rev-other-hero{background:var(--slate-900);padding:28px 24px 24px;text-align:center;}
+  .rev-other-icon{font-size:44px;margin-bottom:8px;}
+  .rev-other-title{font-size:22px;font-weight:800;color:#fff;letter-spacing:-.02em;margin-bottom:4px;}
+  .rev-other-sub{font-size:13px;color:rgba(255,255,255,.45);line-height:1.5;}
+
+  /* ── SCRIPTS HIERARCHY ── */
+  .script-primary{background:var(--slate-900);border-radius:12px;padding:20px;margin-bottom:16px;}
+  .script-primary .sboxl{color:var(--copper-bright);}
+  .script-primary .sboxt{color:rgba(255,255,255,.85);font-size:15px;}
+  .script-secondary{background:var(--slate-50);border-left:3px solid var(--copper);border-radius:0 10px 10px 0;padding:14px 16px;margin-bottom:12px;}
+  .script-secondary .sboxl{color:var(--copper-dim);}
+  .script-secondary .sboxt{color:var(--slate-700);font-size:13px;}
+
+  /* ── INITIALS AVATAR ── */
+  .initials-av{width:52px;height:52px;border-radius:50%;background:var(--copper);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;letter-spacing:-.01em;flex-shrink:0;}
+  .initials-av-lg{width:76px;height:76px;border-radius:50%;background:var(--copper);border:3px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#fff;margin:0 auto 16px;}
+
   .hidden{display:none!important;}
   .fade{animation:fi .2s ease;}
   @keyframes fi{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:translateY(0);}}
@@ -422,11 +502,12 @@
   <!-- HOME -->
   <div id="s-home" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
     <div class="topbar"><span class="tb-brand">Perfect Service OS</span><span class="tb-action" onclick="go('s-profile')">Profile</span></div>
+    <div class="sync-bar" id="sync-bar"><div class="sync-dot" id="sync-dot"></div><span class="sync-text" id="sync-text">Saved</span></div>
     <div class="sbody">
       <div class="hh">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;">
           <div>
-            <div class="hg">Ready to close</div>
+            <div class="hg" id="h-greeting">Good morning</div>
             <div class="hn" id="h-name">–</div>
             <div class="hc" id="h-co">–</div>
           </div>
@@ -445,10 +526,22 @@
       <div class="hbody">
         <button class="btn-gold" onclick="startJob()">Start New Job</button>
         <div class="qlinks">
-          <div class="ql" onclick="go('s-jobs')"><div class="qli">📋</div><div class="qll">Past Jobs</div><div class="qls">View history</div></div>
-          <div class="ql" onclick="go('s-scorecard')"><div class="qli">📈</div><div class="qll">Scorecard</div><div class="qls">Weekly report</div></div>
-          <div class="ql" onclick="go('s-objref')"><div class="qli">💬</div><div class="qll">Objections</div><div class="qls">Quick reference</div></div>
-          <div class="ql" onclick="go('s-scripts')"><div class="qli">🎯</div><div class="qll">Scripts</div><div class="qls">Full library</div></div>
+          <div class="ql" onclick="go('s-jobs')">
+            <div class="ql-icon"><svg viewBox="0 0 20 20" fill="none" stroke="var(--copper)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="2" width="14" height="16" rx="2"/><line x1="7" y1="7" x2="13" y2="7"/><line x1="7" y1="10.5" x2="13" y2="10.5"/><line x1="7" y1="14" x2="10" y2="14"/></svg></div>
+            <div class="qll">Past Jobs</div><div class="qls">View history</div>
+          </div>
+          <div class="ql" onclick="go('s-kpi')">
+            <div class="ql-icon"><svg viewBox="0 0 20 20" fill="none" stroke="var(--copper)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,14 6,9 10,12 14,6 18,3"/><line x1="2" y1="18" x2="18" y2="18"/></svg></div>
+            <div class="qll">Scorecard</div><div class="qls">Performance</div>
+          </div>
+          <div class="ql" onclick="go('s-objref')">
+            <div class="ql-icon"><svg viewBox="0 0 20 20" fill="none" stroke="var(--copper)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h14M3 10h10M3 14h7"/><circle cx="16" cy="14" r="3"/><line x1="18.5" y1="16.5" x2="20" y2="18"/></svg></div>
+            <div class="qll">Objections</div><div class="qls">Quick reference</div>
+          </div>
+          <div class="ql" onclick="go('s-scripts')">
+            <div class="ql-icon"><svg viewBox="0 0 20 20" fill="none" stroke="var(--copper)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h12v2H4zM4 9h8M4 13h6"/><path d="M14 11l3 3-3 3"/></svg></div>
+            <div class="qll">Scripts</div><div class="qls">Full library</div>
+          </div>
         </div>
       </div>
     </div>
@@ -464,7 +557,7 @@
   <div id="s-profile" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
     <div class="topbar"><span class="tb-back" onclick="go('s-home')">← Home</span><span class="tb-title">My Profile</span><span class="tb-action" onclick="openEditProfile()">Edit</span></div>
     <div class="sbody"><div style="padding:28px 24px;">
-      <div class="pav" id="p-av">🔧</div>
+      <div class="initials-av-lg" id="p-av">–</div>
       <div class="pname" id="p-name">–</div>
       <div class="pco" id="p-co">–</div>
       <div class="psgrid">
@@ -524,9 +617,10 @@
       </div>
       <div style="margin-top:20px;">
         <div class="fl" style="margin-bottom:7px;">Customer Name</div>
-        <input class="fi" type="text" id="j-cust" placeholder="e.g. Sarah Mitchell" style="margin-bottom:14px;" />
+        <input class="fi" type="text" id="j-cust" placeholder="e.g. Sarah Mitchell" style="margin-bottom:14px;" oninput="checkReturning()" />
         <div class="fl" style="margin-bottom:7px;">Address</div>
-        <input class="fi" type="text" id="j-addr" placeholder="e.g. 1847 Maple Creek Dr" />
+        <input class="fi" type="text" id="j-addr" placeholder="e.g. 1847 Maple Creek Dr" oninput="checkReturning()" />
+        <div id="returning-banner" style="display:none;margin-top:8px;"></div>
       </div>
     </div></div>
     <div class="bbar"><button class="btn-navy" onclick="createJob()">Start Job Flow →</button></div>
@@ -546,7 +640,11 @@
   <div id="s-step-0" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
     <div class="topbar"><span class="tb-back" onclick="go('s-dash')">← Overview</span><span class="tb-title">Step 1 of 11</span><span></span></div>
     <div class="pbar"><div class="pfill" style="width:9%"></div></div>
-    <div class="stephead"><div class="steplbl">Step 1 of 11</div><div class="steptit">Pre-Call Prep</div></div>
+    <div class="step-progress" id="step-progress-0">
+      <div class="step-progress-track" id="spt-0"></div>
+      <div class="sp-step-name" id="spn-0">Pre-Call Prep</div>
+      <div class="sp-step-sub">Step 1 of 11</div>
+    </div>
     <div class="sbody"><div class="stepcont">
       <div class="sbox"><div class="sboxl">Mindset Reset</div><div class="sboxt">"I'm not just a plumber today. I'm a trusted advisor. My job is to find out what this homeowner needs and give them options to protect their home."</div></div>
       <div class="chtit">Before You Drive</div>
@@ -561,7 +659,11 @@
   <div id="s-step-1" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
     <div class="topbar"><span class="tb-back" onclick="go('s-dash')">← Overview</span><span class="tb-title">Step 2 of 11</span><span></span></div>
     <div class="pbar"><div class="pfill" style="width:18%"></div></div>
-    <div class="stephead"><div class="steplbl">Step 2 of 11</div><div class="steptit">Arrival & Setup</div></div>
+    <div class="step-progress" id="step-progress-1">
+      <div class="step-progress-track" id="spt-1"></div>
+      <div class="sp-step-name" id="spn-1">Arrival & Setup</div>
+      <div class="sp-step-sub" id="sps-1">Step 2 of 11</div>
+    </div>
     <div class="sbody"><div class="stepcont">
       <div class="chtit">On-Site Checklist</div>
       <div class="chi" onclick="chk(this)"><div class="chb"><div class="chm">✓</div></div><div class="chl">Truck parked professionally</div></div>
@@ -579,7 +681,11 @@
   <div id="s-step-2" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
     <div class="topbar"><span class="tb-back" onclick="go('s-dash')">← Overview</span><span class="tb-title">Step 3 of 11</span><span></span></div>
     <div class="pbar"><div class="pfill" style="width:27%"></div></div>
-    <div class="stephead"><div class="steplbl">Step 3 of 11</div><div class="steptit">Introduction</div></div>
+    <div class="step-progress" id="step-progress-2">
+      <div class="step-progress-track" id="spt-2"></div>
+      <div class="sp-step-name" id="spn-2">Introduction</div>
+      <div class="sp-step-sub" id="sps-2">Step 3 of 11</div>
+    </div>
     <div class="sbody"><div class="stepcont">
       <div class="sbox"><div class="sboxl">Opening Script</div><div class="sboxt">"Hi, I'm [Your Name] with [Company]. You reached out about [issue], correct? Great. I'm going to take a full look at everything related to this, then walk you through exactly what I find and your options. Sound good?"</div></div>
       <div class="chtit">Introduction Checklist</div>
@@ -594,7 +700,11 @@
   <div id="s-step-3" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
     <div class="topbar"><span class="tb-back" onclick="go('s-dash')">← Overview</span><span class="tb-title">Step 4 of 11</span><span></span></div>
     <div class="pbar"><div class="pfill" style="width:36%"></div></div>
-    <div class="stephead"><div class="steplbl">Step 4 of 11</div><div class="steptit">Set the Agenda</div></div>
+    <div class="step-progress" id="step-progress-3">
+      <div class="step-progress-track" id="spt-3"></div>
+      <div class="sp-step-name" id="spn-3">Set the Agenda</div>
+      <div class="sp-step-sub" id="sps-3">Step 4 of 11</div>
+    </div>
     <div class="sbody"><div class="stepcont">
       <div class="sbox"><div class="sboxl">Agenda Script</div><div class="sboxt">"Before I get started, I want to make sure I cover everything for you today. Do you have any other concerns beyond the main issue? And is there anyone else who needs to be part of this conversation?"</div></div>
       <div class="chtit">Confirm Before You Inspect</div>
@@ -609,7 +719,11 @@
   <div id="s-step-4" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
     <div class="topbar"><span class="tb-back" onclick="go('s-dash')">← Overview</span><span class="tb-title">Step 5 of 11</span><span></span></div>
     <div class="pbar"><div class="pfill" style="width:45%"></div></div>
-    <div class="stephead"><div class="steplbl">Step 5 of 11</div><div class="steptit">Discovery Questions</div></div>
+    <div class="step-progress" id="step-progress-4">
+      <div class="step-progress-track" id="spt-4"></div>
+      <div class="sp-step-name" id="spn-4">Discovery Questions</div>
+      <div class="sp-step-sub" id="sps-4">Step 5 of 11</div>
+    </div>
     <div class="sbody"><div class="stepcont">
       <div class="sbox"><div class="sboxl">The Rule</div><div class="sboxt">"Ask, don't tell. Their answers tell you which option they'll choose — before you even present."</div></div>
       <div class="dq"><div class="dql">When did this issue start?</div><textarea class="dqi" id="d1" placeholder="Note their answer..."></textarea></div>
@@ -624,7 +738,11 @@
   <div id="s-step-5" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
     <div class="topbar"><span class="tb-back" onclick="go('s-dash')">← Overview</span><span class="tb-title">Step 6 of 11</span><span></span></div>
     <div class="pbar"><div class="pfill" style="width:54%"></div></div>
-    <div class="stephead"><div class="steplbl" id="insp-lbl">Step 6 of 11</div><div class="steptit">Inspection</div></div>
+    <div class="step-progress" id="step-progress-5">
+      <div class="step-progress-track" id="spt-5"></div>
+      <div class="sp-step-name" id="spn-5">Inspection</div>
+      <div class="sp-step-sub" id="sps-5">Step 6 of 11</div>
+    </div>
     <div class="sbody"><div class="stepcont" id="insp-cont"></div></div>
     <div class="bbar"><button class="btn-navy" onclick="saveInsp()">Inspection Complete →</button></div>
   </div>
@@ -632,7 +750,11 @@
   <div id="s-step-6" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
     <div class="topbar"><span class="tb-back" onclick="go('s-dash')">← Overview</span><span class="tb-title">Step 7 of 11</span><span></span></div>
     <div class="pbar"><div class="pfill" style="width:63%"></div></div>
-    <div class="stephead"><div class="steplbl">Step 7 of 11</div><div class="steptit">Photo Capture</div></div>
+    <div class="step-progress" id="step-progress-6">
+      <div class="step-progress-track" id="spt-6"></div>
+      <div class="sp-step-name" id="spn-6">Photo Capture</div>
+      <div class="sp-step-sub" id="sps-6">Step 7 of 11</div>
+    </div>
     <div class="sbody"><div class="stepcont">
       <div class="photoctr"><div class="photoctrt">Photos captured</div><div class="photoctrn" id="pctr">0 / 5</div></div>
       <div class="pgrid">
@@ -650,9 +772,31 @@
   <div id="s-step-7" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
     <div class="topbar"><span class="tb-back" onclick="go('s-dash')">← Overview</span><span class="tb-title">Step 8 of 11</span><span></span></div>
     <div class="pbar"><div class="pfill" style="width:72%"></div></div>
-    <div class="stephead"><div class="steplbl">Step 8 of 11</div><div class="steptit">Build Options</div></div>
+    <div class="step-progress" id="step-progress-7">
+      <div class="step-progress-track" id="spt-7"></div>
+      <div class="sp-step-name" id="spn-7">Build Options</div>
+      <div class="sp-step-sub" id="sps-7">Step 8 of 11</div>
+    </div>
     <div class="sbody"><div class="stepcont">
-      <div class="sbox"><div class="sboxl">The Rule</div><div class="sboxt">"Always present three options. Homeowners who choose feel respected. Homeowners given one price feel sold to."</div></div>
+      <div class="script-primary sbox"><div class="sboxl">The Rule</div><div class="sboxt">"Always present three options. Homeowners who choose feel respected. Homeowners given one price feel sold to."</div></div>
+      <!-- Financing Calculator -->
+      <div class="fin-calc">
+        <div class="fin-calc-title">Financing Calculator</div>
+        <div class="fin-row">
+          <div class="fin-field"><div class="fin-field-label">Price ($)</div><input class="fin-input" type="number" id="fin-price" placeholder="0" oninput="calcFinancing()" /></div>
+          <div class="fin-field"><div class="fin-field-label">Rate (%)</div><input class="fin-input" type="number" id="fin-rate" value="9.9" placeholder="9.9" oninput="calcFinancing()" /></div>
+        </div>
+        <div class="fin-terms" id="fin-terms">
+          <div class="fin-term sel" onclick="selTerm(this,12)">12 mo</div>
+          <div class="fin-term" onclick="selTerm(this,24)">24 mo</div>
+          <div class="fin-term" onclick="selTerm(this,36)">36 mo</div>
+          <div class="fin-term" onclick="selTerm(this,60)">60 mo</div>
+        </div>
+        <div class="fin-result">
+          <div class="fin-monthly" id="fin-result">$–</div>
+          <div class="fin-monthly-label">per month</div>
+        </div>
+      </div>
       <div class="optcard"><div class="opth"><span class="otier t-good">Good</span><div class="optpr"><span class="optd">$</span><input class="optpi" type="number" id="og-p" placeholder="0" /></div></div><textarea class="opti" id="og-d" placeholder="What this covers..."></textarea><input type="text" class="opti" id="og-w" placeholder="Warranty" /></div>
       <div class="optcard"><div class="opth"><span class="otier t-better">Better</span><div class="optpr"><span class="optd">$</span><input class="optpi" type="number" id="ob-p" placeholder="0" /></div></div><textarea class="opti" id="ob-d" placeholder="What this covers..."></textarea><input type="text" class="opti" id="ob-w" placeholder="Warranty" /></div>
       <div class="optcard best"><div class="opth"><span class="otier t-best">Best</span><div class="optpr"><span class="optd">$</span><input class="optpi" type="number" id="obe-p" placeholder="0" /></div></div><textarea class="opti" id="obe-d" placeholder="What this covers..."></textarea><input type="text" class="opti" id="obe-w" placeholder="Warranty" /><div style="display:flex;align-items:center;gap:8px;margin-top:4px;"><input type="checkbox" id="o-fin" /><label for="o-fin" style="font-size:13px;font-weight:700;color:var(--slate-900);">Financing available</label></div></div>
@@ -663,7 +807,11 @@
   <div id="s-step-8" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
     <div class="topbar"><span class="tb-back" onclick="go('s-dash')">← Overview</span><span class="tb-title">Step 9 of 11</span><span></span></div>
     <div class="pbar"><div class="pfill" style="width:81%"></div></div>
-    <div class="stephead"><div class="steplbl">Step 9 of 11</div><div class="steptit">Present Findings</div></div>
+    <div class="step-progress" id="step-progress-8">
+      <div class="step-progress-track" id="spt-8"></div>
+      <div class="sp-step-name" id="spn-8">Present Findings</div>
+      <div class="sp-step-sub" id="sps-8">Step 9 of 11</div>
+    </div>
     <div class="sbody"><div class="stepcont">
 
       <!-- DISCOVERY CARRY-THROUGH — auto-populated from Step 5 -->
@@ -692,7 +840,11 @@
   <div id="s-step-9" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
     <div class="topbar"><span class="tb-back" onclick="go('s-dash')">← Overview</span><span class="tb-title">Step 10 of 11</span><span></span></div>
     <div class="pbar"><div class="pfill" style="width:90%"></div></div>
-    <div class="stephead"><div class="steplbl">Step 10 of 11</div><div class="steptit">Handle Objections</div></div>
+    <div class="step-progress" id="step-progress-9">
+      <div class="step-progress-track" id="spt-9"></div>
+      <div class="sp-step-name" id="spn-9">Handle Objections</div>
+      <div class="sp-step-sub" id="sps-9">Step 10 of 11</div>
+    </div>
     <div class="sbody"><div class="stepcont">
       <div class="scrs" style="margin-bottom:14px;">Tap the objection you're hearing:</div>
       <div class="objgrid">
@@ -713,7 +865,11 @@
   <div id="s-step-10" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
     <div class="topbar"><span class="tb-back" onclick="go('s-dash')">← Overview</span><span class="tb-title">Step 11 of 11</span><span></span></div>
     <div class="pbar"><div class="pfill" style="width:100%"></div></div>
-    <div class="stephead"><div class="steplbl">Step 11 of 11</div><div class="steptit">Close & Complete</div></div>
+    <div class="step-progress" id="step-progress-10">
+      <div class="step-progress-track" id="spt-10"></div>
+      <div class="sp-step-name" id="spn-10">Close & Complete</div>
+      <div class="sp-step-sub" id="sps-10">Step 11 of 11</div>
+    </div>
     <div class="sbody"><div class="stepcont">
       <div class="sbox"><div class="sboxl">The Close</div><div class="sboxt">"Which option works best for you today?" — Stay silent. The next person to speak, loses.</div></div>
       <div class="chtit">Final Steps</div>
@@ -767,11 +923,18 @@
   <div id="s-review" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
     <div class="topbar"><span class="tb-brand">Perfect Service OS</span><span></span><span></span></div>
     <div class="sbody"><div style="padding:32px 24px;">
-      <!-- Outcome banner -->
-      <div id="rev-outcome-banner" style="border-radius:12px;padding:20px;text-align:center;margin-bottom:28px;background:var(--slate-50);">
-        <div id="rev-outcome-icon" style="font-size:36px;margin-bottom:8px;">✅</div>
-        <div id="rev-outcome-title" style="font-size:20px;font-weight:800;color:var(--slate-900);margin-bottom:4px;">Job Complete!</div>
-        <div id="rev-outcome-sub" style="font-size:13px;color:var(--slate-400);"></div>
+      <!-- Outcome hero — swaps based on outcome -->
+      <div id="rev-sold-hero" class="rev-sold-hero" style="display:none;">
+        <div class="rev-confetti" id="rev-confetti"></div>
+        <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);margin-bottom:8px;">Job Sold</div>
+        <div class="rev-sold-amount" id="rev-sold-amount">$0</div>
+        <div class="rev-sold-label">ticket closed</div>
+        <div class="rev-sold-badge"><span style="font-size:14px;">✓</span><span class="rev-sold-badge-text">Payment Collected</span></div>
+      </div>
+      <div id="rev-other-hero" class="rev-other-hero" style="display:none;">
+        <div class="rev-other-icon" id="rev-other-icon">📞</div>
+        <div class="rev-other-title" id="rev-other-title">Callback Scheduled</div>
+        <div class="rev-other-sub" id="rev-other-sub">Follow up promptly.</div>
       </div>
 
       <!-- Membership offer — shown when sold -->
@@ -875,15 +1038,20 @@
       <div class="script-tab" id="stab-custom" onclick="switchScriptTab('custom')">My Scripts</div>
     </div>
     <div class="sbody">
-      <!-- DEFAULT SCRIPTS -->
+      <!-- DEFAULT SCRIPTS — visual hierarchy: primary anchor + secondary supporting -->
       <div id="scripts-default" style="padding:18px 20px;">
-        <div class="sbox"><div class="sboxl">Opening / Intro</div><div class="sboxt">"Hi, I'm [Name] with [Company]. You reached out about [issue], correct? Great. I'm going to take a full look at everything related to this, then walk you through what I find and your options. Sound good?"</div></div>
-        <div class="sbox"><div class="sboxl">Transition to Inspect</div><div class="sboxt">"I'm going to take a closer look and see exactly what's causing this. Give me a few minutes and I'll walk you through everything I find."</div></div>
-        <div class="sbox"><div class="sboxl">Findings Presentation</div><div class="sboxt">"Here's what I found today. [Walk through photos.] Based on what you told me about [their concern], here are three ways we can take care of this for you."</div></div>
-        <div class="sbox"><div class="sboxl">Price Presentation</div><div class="sboxt">"Most homeowners in your situation choose this option — it solves the problem permanently and protects your home long-term. But I want you to have all three options."</div></div>
-        <div class="sbox"><div class="sboxl">The Close</div><div class="sboxt">"Which option works best for you today?" — Stop talking. Stay silent. The next person to speak, loses.</div></div>
-        <div class="sbox"><div class="sboxl">Review Ask</div><div class="sboxt">"Hey [Name], quick favor — if I took care of you today, would you mind leaving us a Google review? Takes 60 seconds and means everything to us."</div></div>
-        <div class="sbox"><div class="sboxl">Membership Offer</div><div class="sboxt">"One more thing — we have a maintenance plan covering annual inspections, priority scheduling, and a discount on all services. Want me to go over what's included?"</div></div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--slate-300);margin-bottom:14px;">Opening the Call</div>
+        <div class="script-primary sbox"><div class="sboxl">Opening Script</div><div class="sboxt">"Hi, I'm [Name] with [Company]. You reached out about [issue], correct? Great. I'm going to take a full look at everything, then walk you through what I find and your options. Sound good?"</div></div>
+        <div class="script-secondary sbox"><div class="sboxl">Transition to Inspect</div><div class="sboxt">"I'm going to take a closer look now. Give me a few minutes and I'll walk you through everything I find."</div></div>
+
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--slate-300);margin:20px 0 14px;">Presenting & Closing</div>
+        <div class="script-primary sbox"><div class="sboxl">Findings Presentation</div><div class="sboxt">"Here's what I found today. [Walk through photos.] Based on what you told me about [their concern], here are three ways we can take care of this for you."</div></div>
+        <div class="script-secondary sbox"><div class="sboxl">Price Framing</div><div class="sboxt">"Most homeowners in your situation choose this option — it solves the problem permanently. But I want you to have all three in front of you."</div></div>
+        <div class="script-primary sbox" style="border-left:3px solid var(--copper-bright);"><div class="sboxl" style="color:var(--copper-bright);">The Close — Say This Then Stop</div><div class="sboxt" style="font-size:16px;font-weight:700;">"Which option works best for you today?"</div></div>
+
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--slate-300);margin:20px 0 14px;">After the Sale</div>
+        <div class="script-primary sbox"><div class="sboxl">Review Ask</div><div class="sboxt">"Hey [Name], quick favor — if I took care of you today, would you mind leaving us a Google review? Takes 60 seconds and means everything to us."</div></div>
+        <div class="script-secondary sbox"><div class="sboxl">Membership Offer</div><div class="sboxt">"One more thing — we have a maintenance plan covering annual inspections, priority scheduling, and a discount on all services. Want me to go over what's included?"</div></div>
       </div>
       <!-- CUSTOM SCRIPTS -->
       <div id="scripts-custom" style="padding:18px 20px;display:none;">
@@ -981,6 +1149,8 @@ function applyProfile(){
   document.getElementById('h-co').textContent=(profile.role?profile.role+' · ':'')+( profile.company||'');
   loadStats();
   updateStreakBadge();
+  updateAvatars();
+  updateGreeting();
 }
 
 window.pickAv=function(el,em,ctx){
@@ -1062,7 +1232,7 @@ window.createJob=async function(){
   const a=document.getElementById('j-addr').value.trim();
   const today=new Date().toISOString().split('T')[0];
   const jd={deviceId:devId(),techName:profile?.name||'',customer:c,address:a,callType,date:today,status:'in_progress',currentStep:0,stepsCompleted:[],createdAt:serverTimestamp()};
-  try{const ref=await addDoc(collection(db,'jobs'),jd);jobId=ref.id;jobData={...jd,id:ref.id};curStep=0;renderInsp(callType);updDash();go('s-dash');}
+  try{const ref=await addDoc(collection(db,'jobs'),jd);jobId=ref.id;jobData={...jd,id:ref.id};curStep=0;renderInsp(callType);updDash();go('s-dash');startTimer();}
   catch(e){alert('Firebase error: '+e.message);}
 };
 
@@ -1083,6 +1253,7 @@ function updDash(){
 window.goStep=function(n){
   curStep=n;updDash();go('s-step-'+n);
   if(n===8) populatePresentScreen();
+  renderStepProgress(n, jobData.stepsCompleted||[]);
 };
 window.goToCurrentStep=function(){goStep(curStep);};
 
@@ -1094,6 +1265,7 @@ window.doneStep=async function(n){
   if(jobId){try{await updateDoc(doc(db,'jobs',jobId),{stepsCompleted:done,currentStep:curStep});}catch(e){}}
   if(n<10)goStep(n+1);
   if(n===7) populatePresentScreen();
+  renderStepProgress(curStep, done);
 };
 
 window.logArr=async function(){
@@ -1412,13 +1584,17 @@ window.finishJob=async function(){
     document.getElementById('rev-outcome-sub').textContent=isSold?`$${t.toLocaleString()} — great work today.`:isCB?'Follow up promptly — callbacks go cold fast.':nosaleReason?`Lost to: ${nsLabel[nosaleReason]||nosaleReason}. Review and improve.`:'Not every call closes. Review and improve.';
     document.getElementById('rev-outcome-banner').style.background=isSold?'#F0FBF6':isCB?'#FFF8EC':'var(--surface)';
     document.getElementById('rev-membership').style.display=isSold?'block':'none';
-    membershipResult=null;reviewResult=null;nosaleReason=null;callbackReason=null;
+    membershipResult=null;reviewResult=null;
+    const _isSold=outcome==='sold';const _isCB=outcome==='callback';
+    const _tkAmt=t;const _nsR=nosaleReason;
+    nosaleReason=null;callbackReason=null;
     go('s-review');
+    showReviewScreen(_isSold,_isCB,_tkAmt,_nsR);
   }catch(e){alert('Error: '+e.message);}
 };
 
 window.finalClose=async function(){
-  // Save review and membership data back to job
+  stopTimer();resetTimer();
   if(jobId&&(reviewResult||membershipResult)){
     try{await updateDoc(doc(db,'jobs',jobId),{reviewAsked:reviewResult==='yes'?true:false,reviewResult:reviewResult||'not_asked',membershipOffered:true,membershipAdded:membershipResult==='yes'});}catch(e){}
   }
@@ -1996,6 +2172,259 @@ async function renderScorecard(){
 
   }catch(e){ console.error('Scorecard error:', e); }
 }
+
+
+
+
+// ══════════════════════════════════════════════════
+// CALL TIMER
+// ══════════════════════════════════════════════════
+let timerInterval = null;
+let timerSeconds = 0;
+let timerRunning = false;
+
+function startTimer(){
+  if(timerRunning) return;
+  timerRunning = true;
+  timerSeconds = 0;
+  timerInterval = setInterval(() => {
+    timerSeconds++;
+    updateTimerDisplay();
+  }, 1000);
+}
+
+function stopTimer(){
+  clearInterval(timerInterval);
+  timerRunning = false;
+}
+
+function resetTimer(){
+  stopTimer();
+  timerSeconds = 0;
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay(){
+  const m = Math.floor(timerSeconds / 60);
+  const s = timerSeconds % 60;
+  const str = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const el = document.getElementById('dash-timer');
+  if(!el) return;
+  el.textContent = str;
+  el.className = 'timer-display';
+  if(timerSeconds > 2700) el.classList.add('long');      // 45+ min
+  else if(timerSeconds > 1800) el.classList.add('warn'); // 30+ min
+}
+
+
+
+// ══════════════════════════════════════════════════
+// OFFLINE / SYNC INDICATOR
+// ══════════════════════════════════════════════════
+function setSyncStatus(status){
+  const dot = document.getElementById('sync-dot');
+  const text = document.getElementById('sync-text');
+  if(!dot || !text) return;
+  dot.className = 'sync-dot';
+  if(status === 'saving'){ dot.classList.add('pending'); text.textContent = 'Saving...'; }
+  else if(status === 'saved'){ text.textContent = 'Saved'; }
+  else if(status === 'offline'){ dot.classList.add('offline'); text.textContent = 'Offline — will sync when reconnected'; }
+  else if(status === 'error'){ dot.classList.add('offline'); text.textContent = 'Save failed — check connection'; }
+}
+
+window.addEventListener('online', () => setSyncStatus('saved'));
+window.addEventListener('offline', () => setSyncStatus('offline'));
+
+// Wrap Firebase writes to show sync status
+const _origUpdateDoc = window._updateDoc || updateDoc;
+async function syncedUpdate(ref, data){
+  setSyncStatus('saving');
+  try {
+    await updateDoc(ref, data);
+    setSyncStatus('saved');
+  } catch(e) {
+    setSyncStatus(navigator.onLine ? 'error' : 'offline');
+    throw e;
+  }
+}
+
+// ══════════════════════════════════════════════════
+// RETURNING CUSTOMER DETECTION
+// ══════════════════════════════════════════════════
+let returningCheckTimeout = null;
+
+window.checkReturning = function(){
+  clearTimeout(returningCheckTimeout);
+  returningCheckTimeout = setTimeout(async () => {
+    const name = document.getElementById('j-cust').value.trim().toLowerCase();
+    const addr = document.getElementById('j-addr').value.trim().toLowerCase();
+    const banner = document.getElementById('returning-banner');
+    if(!banner) return;
+    if(name.length < 3 && addr.length < 5){ banner.style.display='none'; return; }
+    try {
+      const q = query(collection(db,'jobs'), where('deviceId','==',devId()));
+      const snap = await getDocs(q);
+      const matches = snap.docs.map(d=>d.data()).filter(j => {
+        const jname = (j.customer||'').toLowerCase();
+        const jaddr = (j.address||'').toLowerCase();
+        return j.status === 'completed' && (
+          (name.length >= 3 && jname.includes(name)) ||
+          (addr.length >= 5 && jaddr.includes(addr))
+        );
+      }).sort((a,b) => (b.date||'').localeCompare(a.date||'')).slice(0,3);
+
+      if(matches.length === 0){ banner.style.display='none'; return; }
+
+      const outcomeColor = {sold:'#4ECFA0',nosale:'#E8716A',callback:'#E8A85C',in_progress:'#9AA3B5'};
+      const outcomeLabel = {sold:'Sold',nosale:'No Sale',callback:'Callback',in_progress:'Active'};
+
+      banner.innerHTML = `<div class="returning-banner">
+        <div class="returning-banner-title">⚡ Returning Customer — ${matches.length} Past Visit${matches.length>1?'s':''}</div>
+        ${matches.map(j => `<div class="returning-job-card">
+          <div class="rjc-top">
+            <span class="rjc-type">${j.callType||'Unknown'}</span>
+            <span class="rjc-outcome" style="color:${outcomeColor[j.outcome]||'#9AA3B5'}">${outcomeLabel[j.outcome]||j.outcome||'–'}</span>
+          </div>
+          <div class="rjc-meta">${j.date||'–'}${j.ticketAmount?' · $'+Number(j.ticketAmount).toLocaleString():''}</div>
+        </div>`).join('')}
+      </div>`;
+      banner.style.display = 'block';
+    } catch(e){ banner.style.display='none'; }
+  }, 600);
+};
+
+// ══════════════════════════════════════════════════
+// FINANCING CALCULATOR
+// ══════════════════════════════════════════════════
+let finTerm = 12;
+
+window.selTerm = function(el, months){
+  finTerm = months;
+  document.querySelectorAll('.fin-term').forEach(b => b.classList.remove('sel'));
+  el.classList.add('sel');
+  calcFinancing();
+};
+
+window.calcFinancing = function(){
+  const price = parseFloat(document.getElementById('fin-price')?.value) || 0;
+  const annualRate = parseFloat(document.getElementById('fin-rate')?.value) || 9.9;
+  const result = document.getElementById('fin-result');
+  if(!result) return;
+  if(price <= 0){ result.textContent = '$–'; return; }
+  const r = (annualRate / 100) / 12;
+  const n = finTerm;
+  let monthly;
+  if(r === 0) monthly = price / n;
+  else monthly = price * (r * Math.pow(1+r,n)) / (Math.pow(1+r,n) - 1);
+  result.textContent = '$' + Math.ceil(monthly).toLocaleString();
+};
+
+// ══════════════════════════════════════════════════
+// HORIZONTAL STEP PROGRESS TRACK
+// ══════════════════════════════════════════════════
+const STEP_NAMES = ['Pre-Call','Arrival','Intro','Agenda','Discovery','Inspect','Photos','Options','Present','Objections','Close'];
+
+function renderStepProgress(currentStepNum, completedSteps){
+  for(let screenIdx = 0; screenIdx <= 10; screenIdx++){
+    const track = document.getElementById('spt-'+screenIdx);
+    if(!track) continue;
+    let html = '';
+    for(let i = 0; i <= 10; i++){
+      const isDone = completedSteps.includes(i);
+      const isActive = i === screenIdx;
+      const cls = isDone ? 'done' : isActive ? 'active' : 'pending';
+      html += `<div class="sp-node ${cls}" onclick="goStep(${i})" title="${STEP_NAMES[i]}">${isDone ? '✓' : i+1}</div>`;
+      if(i < 10){
+        const lineDone = completedSteps.includes(i);
+        html += `<div class="sp-line ${lineDone?'done':''}"></div>`;
+      }
+    }
+    track.innerHTML = html;
+    // Update step sub label with call type if inspection
+    const sub = document.getElementById('sps-'+screenIdx);
+    if(sub && screenIdx === 5 && jobData.callType){
+      sub.textContent = `Step 6 of 11 · ${jobData.callType}`;
+    }
+  }
+}
+
+
+
+// ══════════════════════════════════════════════════
+// INITIALS AVATAR — replaces emoji avatar
+// ══════════════════════════════════════════════════
+function getInitials(name){
+  if(!name) return '?';
+  const parts = name.trim().split(' ').filter(Boolean);
+  if(parts.length === 1) return parts[0].slice(0,2).toUpperCase();
+  return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
+}
+
+function updateAvatars(){
+  if(!profile) return;
+  const initials = getInitials(profile.name);
+  // Profile screen
+  const pav = document.getElementById('p-av');
+  if(pav){ pav.textContent = initials; pav.className='initials-av-lg'; }
+}
+
+// Dynamic greeting
+function updateGreeting(){
+  const el = document.getElementById('h-greeting');
+  if(!el) return;
+  const h = new Date().getHours();
+  el.textContent = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+}
+
+// ══════════════════════════════════════════════════
+// ELEVATED REVIEW SCREEN
+// ══════════════════════════════════════════════════
+function showReviewScreen(isSold, isCB, ticketAmount, nosaleRsn){
+  const soldHero = document.getElementById('rev-sold-hero');
+  const otherHero = document.getElementById('rev-other-hero');
+
+  if(isSold && soldHero){
+    soldHero.style.display = 'block';
+    if(otherHero) otherHero.style.display = 'none';
+    const amountEl = document.getElementById('rev-sold-amount');
+    if(amountEl) amountEl.textContent = ticketAmount > 0 ? '$'+ticketAmount.toLocaleString() : 'Sold';
+    // Simple confetti burst
+    const confetti = document.getElementById('rev-confetti');
+    if(confetti){ confetti.innerHTML = ''; launchConfetti(confetti); }
+  } else if(otherHero) {
+    if(soldHero) soldHero.style.display = 'none';
+    otherHero.style.display = 'block';
+    const icon = document.getElementById('rev-other-icon');
+    const title = document.getElementById('rev-other-title');
+    const sub = document.getElementById('rev-other-sub');
+    if(icon) icon.textContent = isCB ? '📞' : '❌';
+    if(title) title.textContent = isCB ? 'Callback Scheduled' : 'No Sale';
+    if(sub){
+      const nsLabels = {price:'Lost on price.',trust:'Trust wasn't there yet.',notowner:'Not the decision maker.',competitor:'Going with a competitor.',timing:'Bad timing.',nourgency:'No urgency felt.',callback:'Needs to think.',other:'Other reason.'};
+      sub.textContent = isCB ? 'Follow up promptly — callbacks go cold in 24 hours.' : (nsLabels[nosaleRsn] || 'Not every call closes. Review and improve.');
+    }
+  }
+}
+
+function launchConfetti(container){
+  const colors = ['#E8A85C','#B87333','#4ECFA0','#fff','#E8716A'];
+  for(let i=0;i<20;i++){
+    const el = document.createElement('div');
+    const size = 6 + Math.random()*6;
+    el.style.cssText = `position:absolute;width:${size}px;height:${size}px;background:${colors[Math.floor(Math.random()*colors.length)]};border-radius:${Math.random()>0.5?'50%':'2px'};left:${10+Math.random()*80}%;top:-10px;opacity:0;animation:confettiFall ${1+Math.random()}s ${Math.random()*0.5}s ease-in forwards;`;
+    container.appendChild(el);
+  }
+  if(!document.getElementById('confetti-style')){
+    const s = document.createElement('style');
+    s.id = 'confetti-style';
+    s.textContent = '@keyframes confettiFall{0%{transform:translateY(0) rotate(0);opacity:1;}100%{transform:translateY(200px) rotate(720deg);opacity:0;}}';
+    document.head.appendChild(s);
+  }
+}
+
+
+
+
 
 
 
