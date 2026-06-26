@@ -589,6 +589,43 @@
   .sr-s{font-size:11.5px;color:var(--slate-400);margin-top:2px;}
   .sr-empty{text-align:center;color:var(--slate-400);padding:40px 20px;font-size:14px;line-height:1.6;}
 
+
+  /* ===== NIGHT MODE (dark theme) ===== */
+  body.night{
+    --white:#1b212b;--slate-50:#161b23;--slate-100:#232b36;--slate-200:#2c3543;
+    --slate-900:#EAEDF3;--slate-800:#dfe3ec;--slate-700:#c6ccd9;--slate-600:#aab2c2;--slate-500:#929bad;--slate-400:#7c8598;--slate-300:#6c7589;
+    --border:rgba(255,255,255,.10);--border-mid:rgba(255,255,255,.17);
+    --copper-pale:#241c12;--up-pale:#0f2a2e;--danger-pale:#2c1517;--success-pale:#10251c;
+    --copper-dim:#E2A65C;--up-deep:#74cfda;
+  }
+  body.night .topbar,body.night .sh,body.night .hh,body.night .step-progress,body.night .stephead,body.night .jcard,body.night .photoctr,body.night .fin-result,body.night .rev-sold-hero,body.night .rev-other-hero,body.night .script-primary,body.night .timer-bar,body.night .overlay,body.night .g-cnum,body.night .g-specs,body.night .g-step-q,body.night .pav,body.night .btn-navy{background:#0e121b;}
+  body.night .barf{background:var(--copper);}
+  body.night .g-fbtn.active,body.night .kpibtn.active,body.night .fin-term.sel{background:var(--copper);color:#fff;border-color:var(--copper);}
+  body.night .g-card,body.night .g-say,body.night .g-up-pitch,body.night .sr-item,body.night .flag-item,body.night .opp,body.night .insp.flag,body.night .oug-item{background:var(--white);}
+  body.night .opti,body.night .fin-input,body.night .oug-select,body.night .g-fbtn,body.night .nosale-btn,body.night .chb,body.night .oug-btns button{background:var(--slate-50);}
+  body.night .btn-gold{color:#161b23;}
+  body.night .g-safety{color:#f0a8a8;}
+  body.night #pe-canvas{background:#000;}
+  /* ===== GUIDE -> OPTIONS PANEL ===== */
+  .oug-panel{background:var(--up-pale);border:1px solid rgba(14,124,140,.22);border-radius:12px;padding:14px;margin-bottom:16px;}
+  .oug-title{font-size:12px;font-weight:800;color:var(--up-deep);text-transform:uppercase;letter-spacing:.05em;}
+  .oug-sub{font-size:11.5px;color:var(--up-deep);opacity:.85;margin:3px 0 10px;line-height:1.45;}
+  .oug-select{width:100%;border:1.5px solid var(--border-mid);border-radius:9px;padding:11px 12px;font-size:14px;font-family:var(--font);background:#fff;color:var(--slate-900);font-weight:700;margin-bottom:10px;}
+  .oug-item{background:#fff;border:1px solid rgba(14,124,140,.18);border-radius:10px;padding:11px 12px;margin-bottom:8px;}
+  .oug-c{font-size:13px;font-weight:700;color:var(--slate-900);line-height:1.4;}
+  .oug-p{font-size:12px;color:var(--slate-600);font-style:italic;margin-top:4px;line-height:1.45;}
+  .oug-btns{display:flex;gap:6px;margin-top:9px;}
+  .oug-btns button{flex:1;border:1.5px solid var(--up);background:#fff;color:var(--up-deep);font-size:12px;font-weight:800;padding:8px 4px;border-radius:8px;cursor:pointer;}
+  .oug-btns button.added{background:var(--up);color:#fff;border-color:var(--up);}
+  /* ===== SETTINGS ROWS ===== */
+  .set-row{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid var(--border);gap:14px;}
+  .set-l{font-size:14px;font-weight:700;color:var(--slate-900);}
+  .set-s{font-size:12px;color:var(--slate-400);margin-top:2px;}
+  .set-toggle{flex-shrink:0;border:1.5px solid var(--border-mid);background:var(--slate-50);color:var(--slate-500);font-size:12px;font-weight:800;padding:9px 18px;border-radius:20px;cursor:pointer;min-width:64px;}
+  .set-toggle.on{background:var(--copper);color:#fff;border-color:var(--copper);}
+  /* ===== LOGIN ===== */
+  #login-err{background:var(--danger-pale);color:var(--danger);font-size:13px;font-weight:600;padding:10px 12px;border-radius:9px;margin-bottom:14px;border:1px solid rgba(217,64,64,.25);}
+
 </style>
   <link rel="manifest" href="./manifest.json" />
   <meta name="theme-color" content="#1A1D23" />
@@ -599,7 +636,7 @@
   <link rel="apple-touch-icon" href="./icon-192.png" />
 </head>
 <body>
-<script>try{if(localStorage.getItem('psos_field')==='1')document.body.classList.add('field');}catch(e){}</script>
+<script>try{if(localStorage.getItem('psos_field')==='1')document.body.classList.add('field');if(localStorage.getItem('psos_night')==='1')document.body.classList.add('night');}catch(e){}</script>
 <div class="app" id="app">
 
   <div class="overlay" id="loading"><div class="spin"></div><span>Perfect Service OS</span></div>
@@ -632,7 +669,7 @@
 
   <!-- HOME -->
   <div id="s-home" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
-    <div class="topbar"><span class="tb-brand">Perfect Service OS</span><span style="display:flex;align-items:center;gap:15px;"><span class="tb-icon" onclick="go('s-search')" title="Search">&#128269;</span><span class="tb-icon" id="field-toggle" onclick="toggleField()" title="Field mode">&#9680;</span><span class="tb-action" onclick="go('s-profile')">Profile</span></span></div>
+    <div class="topbar"><span class="tb-brand">Perfect Service OS</span><span style="display:flex;align-items:center;gap:13px;"><span class="tb-icon" onclick="go('s-search')" title="Search">&#128269;</span><span class="tb-icon" id="field-toggle" onclick="toggleField()" title="Field mode">&#9680;</span><span class="tb-icon" id="night-toggle" onclick="toggleNight()" title="Night mode">&#127769;</span><span class="tb-action" onclick="go('s-profile')">Profile</span></span></div>
     <div class="sync-bar" id="sync-bar"><div class="sync-dot" id="sync-dot"></div><span class="sync-text" id="sync-text">Saved</span></div>
     <div class="sbody">
       <div class="hh">
@@ -709,6 +746,7 @@
         <button class="btn-navy" onclick="saveEditProfile()" style="margin-top:16px;">Save Changes</button>
         <button class="btn-ghost" onclick="closeEditProfile()">Cancel</button>
       </div>
+      <div style="margin-top:24px;padding-top:18px;border-top:1px solid var(--border);"><div class="sdiv">Display &amp; Account</div><div class="set-row"><div><div class="set-l">Field mode</div><div class="set-s">High-contrast, large tap targets</div></div><button class="set-toggle" id="set-field" onclick="toggleField();syncSettingToggles();">Off</button></div><div class="set-row"><div><div class="set-l">Night mode</div><div class="set-s">Dark theme for low light</div></div><button class="set-toggle" id="set-night" onclick="toggleNight();syncSettingToggles();">Off</button></div><button class="btn-ghost" onclick="authSignOut()" style="margin-top:14px;">Sign Out</button></div>
       <div id="p-danger" style="margin-top:32px;padding-top:20px;border-top:1px solid var(--border);">
         <div style="font-size:12px;color:var(--slate-400);text-align:center;margin-bottom:8px;">Danger Zone</div>
         <button class="dangerbtn" onclick="resetAll()">Reset All Data</button>
@@ -919,6 +957,7 @@
           <div class="fin-monthly-label">per month</div>
         </div>
       </div>
+      <div class="oug-panel"><div class="oug-title">One-trip add-ons from the field guide</div><div class="oug-sub">Pick the problem you're on, then drop add-ons into a tier. Action's &ldquo;fix it once&rdquo; play.</div><select class="oug-select" id="opt-guide-select" onchange="renderOptUpsells()"></select><div id="opt-guide-upsells"></div></div>
       <div class="optcard"><div class="opth"><span class="otier t-good">Good</span><div class="optpr"><span class="optd">$</span><input class="optpi" type="number" id="og-p" placeholder="0" /></div></div><textarea class="opti" id="og-d" placeholder="What this covers..."></textarea><input type="text" class="opti" id="og-w" placeholder="Warranty" /></div>
       <div class="optcard"><div class="opth"><span class="otier t-better">Better</span><div class="optpr"><span class="optd">$</span><input class="optpi" type="number" id="ob-p" placeholder="0" /></div></div><textarea class="opti" id="ob-d" placeholder="What this covers..."></textarea><input type="text" class="opti" id="ob-w" placeholder="Warranty" /></div>
       <div class="optcard best"><div class="opth"><span class="otier t-best">Best</span><div class="optpr"><span class="optd">$</span><input class="optpi" type="number" id="obe-p" placeholder="0" /></div></div><textarea class="opti" id="obe-d" placeholder="What this covers..."></textarea><input type="text" class="opti" id="obe-w" placeholder="Warranty" /><div style="display:flex;align-items:center;gap:8px;margin-top:4px;"><input type="checkbox" id="o-fin" /><label for="o-fin" style="font-size:13px;font-weight:700;color:var(--slate-900);">Financing available</label></div></div>
@@ -1269,6 +1308,22 @@
     <div class="sbody"><div id="search-results" style="padding:14px 16px;"><div class="sr-empty">Search the diagnostic guide, objection responses, and your scripts — all at once.</div></div></div>
   </div>
 
+
+  <!-- LOGIN -->
+  <div id="s-login" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="sh"><div class="sl">Perfect Service OS</div><div class="st" id="login-title">Sign in to<br>your account.</div><div class="ss" id="login-sub">Your jobs and numbers stay private to you.</div></div>
+    <div class="sbody"><div class="sb">
+      <div class="fl">Email</div>
+      <input class="fi" type="email" id="login-email" placeholder="cary@example.com" autocomplete="username" autocapitalize="none" />
+      <div class="fl">Password</div>
+      <input class="fi" type="password" id="login-pass" placeholder="Your password" autocomplete="current-password" />
+      <div id="login-err" style="display:none;"></div>
+    </div></div>
+    <div class="bbar">
+      <button class="btn-gold" id="login-btn" onclick="authSubmit()">Sign In</button>
+      <div style="text-align:center;margin-top:12px;"><span id="login-switch" onclick="authToggleMode()" style="font-size:13px;font-weight:700;color:var(--copper);cursor:pointer;">First time? Create your login</span></div>
+    </div>
+  </div>
 </div>
 
 <div class="offline-pill">● Offline — saving locally</div>
@@ -1288,27 +1343,40 @@
       <button class="pe-color" data-color="#1A9E6E" style="background:#1A9E6E" onclick="peColor('#1A9E6E')"></button>
     </span>
   </div>
+
+
+
 </div>
 
 
 <script type="module">
 import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import{getFirestore,doc,setDoc,addDoc,updateDoc,collection,query,where,getDocs,serverTimestamp,enableIndexedDbPersistence}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import{getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut,setPersistence,browserLocalPersistence}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
 const cfg={apiKey:"AIzaSyBjFq_iD0wrLqgzbiAgd1zbPEkf-kvYawE",authDomain:"perfect-service-os.firebaseapp.com",projectId:"perfect-service-os",storageBucket:"perfect-service-os.firebasestorage.app",messagingSenderId:"7540754161",appId:"1:7540754161:web:56bd56999da60d7f8d8b50"};
-const db=getFirestore(initializeApp(cfg));
+const fbApp=initializeApp(cfg);
+const db=getFirestore(fbApp);
+const auth=getAuth(fbApp);
 try{enableIndexedDbPersistence(db).catch(function(){});}catch(e){}
+try{setPersistence(auth,browserLocalPersistence);}catch(e){}
 
 const PK='psos_profile', DK='psos_device';
 let profile=null, jobId=null, jobData={}, curStep=0, photos=0, outcome=null, callType=null, kpiPer='today', setupAv='🔧', editAv='🔧', nosaleReason=null, callbackReason=null, membershipResult=null, reviewResult=null, finTerm=12, timerInterval=null, timerSeconds=0, timerRunning=false, returningCheckTimeout=null, scorecardPeriod='this';
 
 function devId(){let id=localStorage.getItem(DK);if(!id){id='dev_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);localStorage.setItem(DK,id);}return id;}
 
-function init(){
+function boot(){
   const s=localStorage.getItem(PK);
-  document.getElementById('loading').style.display='none';
   if(s){profile=JSON.parse(s);applyProfile();go('s-home');}
   else go('s-setup');
+}
+function init(){
+  onAuthStateChanged(auth,function(user){
+    const ld=document.getElementById('loading');if(ld)ld.style.display='none';
+    if(!user){go('s-login');return;}
+    boot();
+  });
 }
 
 function applyProfile(){
@@ -2092,6 +2160,8 @@ window.go=function(id){
   if(id==='s-guide')renderGuide();
   if(id==='s-step-6')__restorePhotos();
   if(id==='s-search'){var gi=document.getElementById('global-search');if(gi)setTimeout(function(){gi.focus();},60);}
+  if(id==='s-step-7')optGuideInit();
+  if(id==='s-profile')setTimeout(syncSettingToggles,0);
   injectNav(id);
 };
 
@@ -2959,6 +3029,98 @@ window.peRetake=function(){var inp=document.getElementById('photo-input');if(inp
 window.closePhotoEditor=function(){document.getElementById('photo-editor').style.display='none';};
 window.savePhotoEditor=function(){try{var url=canvas.toDataURL('image/jpeg',0.85);if(window.__storePhoto)window.__storePhoto(slotEl,url);}catch(e){}window.closePhotoEditor();};
 })();
+
+
+// ===== NIGHT MODE + SETTINGS =====
+function applyNightIcon(){var t=document.getElementById('night-toggle');if(t)t.style.color=document.body.classList.contains('night')?'var(--copper-bright)':'';}
+window.toggleNight=function(){var on=document.body.classList.toggle('night');try{localStorage.setItem('psos_night',on?'1':'0');}catch(e){}applyNightIcon();};
+applyNightIcon();
+function syncSettingToggles(){
+  var f=document.getElementById('set-field'),n=document.getElementById('set-night');
+  var fo=document.body.classList.contains('field'),no=document.body.classList.contains('night');
+  if(f){f.textContent=fo?'On':'Off';f.classList.toggle('on',fo);}
+  if(n){n.textContent=no?'On':'Off';n.classList.toggle('on',no);}
+}
+window.syncSettingToggles=syncSettingToggles;
+
+// ===== GUIDE -> OPTIONS BUILDER =====
+function optBestCardIndex(){
+  if(!window.__GUIDE)return 0;
+  var ct=(callType||'').toLowerCase();if(!ct)return 0;
+  var words=ct.split(/\s+/),best=0,bs=-1;
+  window.__GUIDE.forEach(function(d,i){
+    var hay=(d.title+' '+d.says.join(' ')+' '+d.causes.join(' ')).toLowerCase(),sc=0;
+    words.forEach(function(w){if(w&&hay.indexOf(w)>=0)sc++;});
+    if(ct==='drain'&&d.role==='drain')sc++;
+    if(sc>bs){bs=sc;best=i;}
+  });
+  return best;
+}
+window.optGuideInit=function(){
+  var sel=document.getElementById('opt-guide-select');if(!sel||!window.__GUIDE)return;
+  if(!sel.dataset.built){
+    var dr='',pl='';
+    window.__GUIDE.forEach(function(d,i){var o='<option value="'+i+'">'+d.title+'</option>';if(d.role==='drain')dr+=o;else pl+=o;});
+    sel.innerHTML='<optgroup label="Drain calls">'+dr+'</optgroup><optgroup label="Plumbing calls">'+pl+'</optgroup>';
+    sel.dataset.built='1';
+  }
+  sel.value=optBestCardIndex();
+  window.renderOptUpsells();
+};
+window.renderOptUpsells=function(){
+  var sel=document.getElementById('opt-guide-select'),box=document.getElementById('opt-guide-upsells');
+  if(!sel||!box||!window.__GUIDE)return;
+  var d=window.__GUIDE[+sel.value];if(!d){box.innerHTML='';return;}
+  var ups=d.upsell||[];
+  if(!ups.length){box.innerHTML='<div style="font-size:12px;color:var(--slate-400);padding:6px 2px;">No one-trip add-ons listed for this one.</div>';return;}
+  box.innerHTML=ups.map(function(u,i){
+    return '<div class="oug-item"><div class="oug-c">'+u.c+'</div><div class="oug-p">'+u.p+'</div>'+
+    '<div class="oug-btns"><button onclick="addUpsell('+i+',\'good\',this)">+ Good</button><button onclick="addUpsell('+i+',\'better\',this)">+ Better</button><button onclick="addUpsell('+i+',\'best\',this)">+ Best</button></div></div>';
+  }).join('');
+};
+window.addUpsell=function(i,tier,btn){
+  var sel=document.getElementById('opt-guide-select');if(!sel||!window.__GUIDE)return;
+  var d=window.__GUIDE[+sel.value];if(!d)return;var u=(d.upsell||[])[i];if(!u)return;
+  var map={good:'og-d',better:'ob-d',best:'obe-d'},ta=document.getElementById(map[tier]);if(!ta)return;
+  var line='\u2022 '+u.c;
+  var cur=(ta.value||'').replace(/\s*$/,'');
+  if(cur.indexOf(line)>=0){if(btn){var p=btn.textContent;btn.textContent='Already added';setTimeout(function(){btn.textContent=p;},1100);}return;}
+  ta.value=cur?(cur+'\n'+line):line;
+  if(btn){var t=btn.textContent;btn.textContent='Added \u2713';btn.classList.add('added');setTimeout(function(){btn.textContent=t;btn.classList.remove('added');},1100);}
+};
+
+// ===== AUTH =====
+var _authMode='signin';
+function friendlyAuthErr(e){
+  var c=(e&&e.code)||'';
+  if(c.indexOf('invalid-credential')>=0||c.indexOf('wrong-password')>=0||c.indexOf('user-not-found')>=0)return 'Email or password is incorrect.';
+  if(c.indexOf('invalid-email')>=0)return 'That email address looks off.';
+  if(c.indexOf('email-already-in-use')>=0)return 'An account with that email already exists \u2014 sign in instead.';
+  if(c.indexOf('weak-password')>=0)return 'Password should be at least 6 characters.';
+  if(c.indexOf('too-many-requests')>=0)return 'Too many tries. Wait a moment and try again.';
+  if(c.indexOf('network')>=0)return 'No connection. Check your signal and try again.';
+  return (e&&e.message)||'Something went wrong. Try again.';
+}
+window.authToggleMode=function(){
+  _authMode=_authMode==='signin'?'create':'signin';
+  var title=document.getElementById('login-title'),sub=document.getElementById('login-sub'),btn=document.getElementById('login-btn'),sw=document.getElementById('login-switch'),pass=document.getElementById('login-pass');
+  if(_authMode==='create'){title.innerHTML='Create your<br>login.';sub.textContent='Set this up once. Only you will have it.';btn.textContent='Create Account';sw.textContent='Already have a login? Sign in';if(pass)pass.setAttribute('autocomplete','new-password');}
+  else{title.innerHTML='Sign in to<br>your account.';sub.textContent='Your jobs and numbers stay private to you.';btn.textContent='Sign In';sw.textContent='First time? Create your login';if(pass)pass.setAttribute('autocomplete','current-password');}
+  var err=document.getElementById('login-err');if(err)err.style.display='none';
+};
+window.authSubmit=async function(){
+  var em=(document.getElementById('login-email').value||'').trim();
+  var pw=document.getElementById('login-pass').value||'';
+  var err=document.getElementById('login-err'),btn=document.getElementById('login-btn');
+  if(!em||!pw){err.textContent='Enter your email and password.';err.style.display='block';return;}
+  err.style.display='none';var label=btn.textContent;btn.disabled=true;btn.textContent='Please wait\u2026';
+  try{
+    if(_authMode==='create')await createUserWithEmailAndPassword(auth,em,pw);
+    else await signInWithEmailAndPassword(auth,em,pw);
+    // onAuthStateChanged routes onward
+  }catch(e){err.textContent=friendlyAuthErr(e);err.style.display='block';btn.disabled=false;btn.textContent=label;}
+};
+window.authSignOut=async function(){try{await signOut(auth);}catch(e){}profile=null;jobId=null;jobData={};go('s-login');};
 
 init();
 </script>
