@@ -1,0 +1,21 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Lock everything to signed-in users only.
+    // Anyone without a valid login is denied read AND write.
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+
+    // OPTIONAL — lock to ONLY Cary's account.
+    // After Cary signs in once, copy his User UID from
+    // Firebase Console > Authentication > Users, paste it below,
+    // and replace the block above with this one:
+    //
+    // match /{document=**} {
+    //   allow read, write: if request.auth != null
+    //     && request.auth.uid == 'PASTE_CARYS_UID_HERE';
+    // }
+  }
+}
