@@ -17,6 +17,7 @@
     --success:#1A9E6E;--danger:#D94040;--info:#3B7DD8;
     --border:rgba(26,29,35,0.10);--border-mid:rgba(26,29,35,0.16);
     --font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    --gold:#C9973A;--up:#0E7C8C;--up-deep:#0A5A66;--up-pale:#E7F4F5;--danger-pale:#FBEDED;--success-pale:#E9F6F0;
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
   html,body{height:100%;overflow:hidden;}
@@ -461,6 +462,80 @@
   .overlay{position:absolute;inset:0;background:var(--slate-900);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:100;}
   .overlay span{color:var(--copper-bright);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;}
   .dangerbtn{background:transparent;border:none;color:var(--danger);font-size:13px;font-weight:600;cursor:pointer;padding:10px 0;width:100%;text-align:center;margin-top:8px;letter-spacing:.01em;}
+
+  /* ===== FIELD DIAGNOSTIC GUIDE (scoped) ===== */
+  #s-guide .g-controls{position:sticky;top:0;z-index:5;background:var(--white);border-bottom:1px solid var(--border);padding:12px 16px;}
+  #s-guide .g-search{width:100%;border:1.5px solid var(--border-mid);border-radius:11px;padding:11px 13px;font-size:15px;font-family:var(--font);background:var(--slate-50);outline:none;}
+  #s-guide .g-search:focus{border-color:var(--copper);background:#fff;box-shadow:0 0 0 3px rgba(184,115,51,.08);}
+  #s-guide .g-filters{display:flex;gap:7px;margin-top:9px;}
+  #s-guide .g-fbtn{flex:1;padding:8px 6px;border:1.5px solid var(--border-mid);background:#fff;border-radius:9px;font-size:12px;font-weight:700;color:var(--slate-500);cursor:pointer;}
+  #s-guide .g-fbtn.active{background:var(--slate-900);color:#fff;border-color:var(--slate-900);}
+  #s-guide .g-fbtn span{opacity:.55;font-size:11px;margin-left:2px;}
+  #s-guide .g-sec{padding:20px 16px 4px;}
+  #s-guide .g-sec-eyebrow{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--copper-dim);}
+  #s-guide .g-sec-title{font-size:18px;font-weight:800;color:var(--slate-900);margin-top:3px;letter-spacing:-.01em;}
+  #s-guide .g-sec-note{font-size:12px;color:var(--slate-400);margin-top:2px;}
+  #s-guide .g-list{padding:4px 16px 8px;}
+  #s-guide .g-card{background:#fff;border:1px solid var(--border);border-radius:14px;margin-bottom:10px;overflow:hidden;box-shadow:0 1px 3px rgba(26,29,35,.04);}
+  #s-guide .g-chead{padding:14px 15px;cursor:pointer;display:flex;gap:11px;align-items:flex-start;}
+  #s-guide .g-chead:active{background:var(--slate-50);}
+  #s-guide .g-cnum{flex-shrink:0;width:28px;height:28px;border-radius:8px;background:var(--slate-900);color:var(--copper-bright);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;}
+  #s-guide .g-ctw{flex:1;min-width:0;}
+  #s-guide .g-ctitle{font-size:15px;font-weight:700;color:var(--slate-900);letter-spacing:-.01em;}
+  #s-guide .g-says{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
+  #s-guide .g-say-chip{font-size:10.5px;color:var(--slate-500);background:var(--slate-100);border-radius:20px;padding:2px 8px;font-style:italic;}
+  #s-guide .g-chev{flex-shrink:0;color:var(--slate-300);font-size:12px;transition:transform .2s;margin-top:6px;}
+  #s-guide .g-card.open .g-chev{transform:rotate(90deg);}
+  #s-guide .g-cbody{display:none;padding:0 15px 16px;}
+  #s-guide .g-card.open .g-cbody{display:block;}
+  #s-guide .g-safety{background:var(--danger-pale);border:1px solid rgba(217,64,64,.25);border-radius:11px;padding:11px 13px;margin-bottom:14px;font-size:12.5px;color:#9c2e2e;font-weight:600;line-height:1.5;}
+  #s-guide .g-safety b{color:var(--danger);}
+  #s-guide .g-blab{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--slate-400);margin:16px 0 8px;}
+  #s-guide .g-cause{font-size:13px;color:var(--slate-700);padding:6px 0;border-bottom:1px dashed var(--border);display:flex;gap:8px;}
+  #s-guide .g-cause:last-child{border-bottom:none;}
+  #s-guide .g-rank{color:var(--copper);font-weight:800;font-size:12px;width:15px;flex-shrink:0;}
+  #s-guide .g-specs{background:var(--slate-900);border-radius:11px;padding:12px 14px;}
+  #s-guide .g-spec{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.07);}
+  #s-guide .g-spec:last-child{border-bottom:none;}
+  #s-guide .g-spec-k{flex-shrink:0;width:38%;font-size:11px;font-weight:700;color:var(--copper-bright);}
+  #s-guide .g-spec-v{flex:1;font-size:12px;color:rgba(255,255,255,.82);font-family:ui-monospace,Menlo,Consolas,monospace;line-height:1.45;}
+  #s-guide .g-step{border:1px solid var(--border);border-radius:11px;margin-bottom:10px;overflow:hidden;}
+  #s-guide .g-step-q{background:var(--slate-900);color:#fff;padding:10px 13px;font-size:13px;font-weight:700;display:flex;gap:8px;align-items:flex-start;}
+  #s-guide .g-sidx{color:var(--copper-bright);font-weight:800;flex-shrink:0;}
+  #s-guide .g-branch{padding:10px 13px;display:flex;gap:9px;font-size:12.5px;line-height:1.5;}
+  #s-guide .g-branch + .g-branch{border-top:1px solid var(--border);}
+  #s-guide .g-clear{background:var(--slate-50);}
+  #s-guide .g-found{background:var(--copper-pale);}
+  #s-guide .g-bico{flex-shrink:0;width:19px;height:19px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;margin-top:1px;}
+  #s-guide .g-clear .g-bico{background:var(--slate-400);}
+  #s-guide .g-found .g-bico{background:var(--copper);}
+  #s-guide .g-btag{font-weight:800;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:2px;}
+  #s-guide .g-clear .g-btag{color:var(--slate-500);}
+  #s-guide .g-found .g-btag{color:var(--copper-dim);}
+  #s-guide .g-jump{color:var(--info);font-style:normal;font-weight:700;font-size:11px;}
+  #s-guide .g-say{display:block;margin-top:5px;padding:7px 10px;background:#fff;border-left:3px solid var(--copper);border-radius:0 7px 7px 0;font-style:italic;color:var(--slate-700);font-size:12px;}
+  #s-guide .g-say::before{content:"Say it: ";font-style:normal;font-weight:800;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--copper-dim);}
+  #s-guide .g-foot{border-radius:11px;padding:11px 13px;margin-top:11px;font-size:12.5px;line-height:1.5;color:var(--slate-700);}
+  #s-guide .g-flag{background:var(--danger-pale);border:1px solid rgba(217,64,64,.2);}
+  #s-guide .g-option{background:var(--success-pale);border:1px solid rgba(26,158,110,.2);}
+  #s-guide .g-ftag{font-size:9.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;display:block;margin-bottom:4px;}
+  #s-guide .g-flag .g-ftag{color:var(--danger);}
+  #s-guide .g-option .g-ftag{color:var(--success);}
+  #s-guide .g-upsell{background:var(--up-pale);border:1px solid rgba(14,124,140,.22);border-radius:12px;padding:13px 14px;margin-top:13px;}
+  #s-guide .g-up-eyebrow{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--up-deep);}
+  #s-guide .g-up-motto{font-size:11.5px;color:var(--up-deep);font-weight:600;font-style:italic;margin-top:3px;opacity:.85;line-height:1.45;margin-bottom:4px;}
+  #s-guide .g-up-item{display:flex;gap:10px;padding:11px 0;border-top:1px dashed rgba(14,124,140,.22);}
+  #s-guide .g-up-letter{flex-shrink:0;width:23px;height:23px;border-radius:7px;background:var(--up);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px;}
+  #s-guide .g-up-check{font-size:13.5px;font-weight:700;color:var(--up-deep);}
+  #s-guide .g-up-risk{font-size:12px;color:var(--slate-600);line-height:1.5;margin-top:4px;}
+  #s-guide .g-up-risk b{color:var(--danger);}
+  #s-guide .g-up-pitch{display:block;margin-top:6px;padding:7px 10px;background:#fff;border-left:3px solid var(--up);border-radius:0 7px 7px 0;font-style:italic;color:var(--slate-700);font-size:12px;line-height:1.5;}
+  #s-guide .g-up-pitch::before{content:"Pitch it: ";font-style:normal;font-weight:800;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--up-deep);}
+  #s-guide .g-empty{text-align:center;color:var(--slate-400);padding:40px 20px;font-size:14px;display:none;}
+  /* ===== new icon nav ===== */
+  .navtabs .ntab{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 3px 7px;font-size:8.5px;letter-spacing:.02em;}
+  .navtabs .ntab svg{width:19px;height:19px;}
+
 </style>
 </head>
 <body>
@@ -473,11 +548,11 @@
     <div class="sh"><div class="sl">Perfect Service OS</div><div class="st">Let's set up<br>your profile.</div><div class="ss">Takes 30 seconds. You'll only see this once.</div></div>
     <div class="sbody"><div class="sb">
       <div class="fl">Your Name</div>
-      <input class="fi" type="text" id="su-name" placeholder="e.g. Jake Tuilagi" autocomplete="name" />
+      <input class="fi" type="text" id="su-name" placeholder="e.g. Jake Tuilagi" autocomplete="name" value="Cary" />
       <div class="fl">Company</div>
-      <input class="fi" type="text" id="su-company" placeholder="e.g. All Star Plumbing" />
+      <input class="fi" type="text" id="su-company" placeholder="e.g. All Star Plumbing" value="Action Plumbing" />
       <div class="fl">Role / Title</div>
-      <input class="fi" type="text" id="su-role" placeholder="e.g. Lead Technician" />
+      <input class="fi" type="text" id="su-role" placeholder="e.g. Lead Technician" value="Drain &amp; Plumbing Tech" />
       <div class="fl">Pick Your Avatar</div>
       <div class="avrow" id="av-setup">
         <div class="avopt sel" onclick="pickAv(this,'🔧','setup')">🔧</div>
@@ -520,6 +595,7 @@
       </div>
       <div class="hbody">
         <button class="btn-gold" onclick="startJob()">Start New Job</button>
+        <button class="btn-navy" onclick="go('s-guide')" style="margin-top:10px;">Field Diagnostic Guide</button>
         <div class="qlinks">
           <div class="ql" onclick="go('s-jobs')">
             <div class="ql-icon"><svg viewBox="0 0 20 20" fill="none" stroke="var(--copper)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="2" width="14" height="16" rx="2"/><line x1="7" y1="7" x2="13" y2="7"/><line x1="7" y1="10.5" x2="13" y2="10.5"/><line x1="7" y1="14" x2="10" y2="14"/></svg></div>
@@ -540,12 +616,7 @@
         </div>
       </div>
     </div>
-    <div class="navtabs">
-      <div class="ntab active" onclick="go('s-home')">Home</div>
-      <div class="ntab" onclick="go('s-kpi')">Stats</div>
-      <div class="ntab" onclick="go('s-jobs')">Jobs</div>
-      <div class="ntab" onclick="go('s-objref')">Scripts</div>
-    </div>
+    <div class="navtabs" data-nav></div>
   </div>
 
   <!-- PROFILE -->
@@ -582,12 +653,7 @@
         <button class="dangerbtn" onclick="resetAll()">Reset All Data</button>
       </div>
     </div></div>
-    <div class="navtabs">
-      <div class="ntab" onclick="go('s-home')">Home</div>
-      <div class="ntab" onclick="go('s-kpi')">Stats</div>
-      <div class="ntab" onclick="go('s-jobs')">Jobs</div>
-      <div class="ntab" onclick="go('s-objref')">Scripts</div>
-    </div>
+    <div class="navtabs" data-nav></div>
   </div>
 
   <!-- CALL TYPE -->
@@ -977,7 +1043,7 @@
   <div id="s-jobs" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
     <div class="topbar"><span class="tb-back" onclick="go('s-home')">← Home</span><span class="tb-title">Past Jobs</span><span></span></div>
     <div class="sbody"><div style="padding:16px 20px;" id="jobslist"><div style="text-align:center;padding:40px;color:var(--slate-400);">Loading...</div></div></div>
-    <div class="navtabs"><div class="ntab" onclick="go('s-home')">Home</div><div class="ntab" onclick="go('s-kpi')">Stats</div><div class="ntab active">Jobs</div><div class="ntab" onclick="go('s-objref')">Scripts</div></div>
+    <div class="navtabs" data-nav></div>
   </div>
 
   <!-- KPI -->
@@ -995,12 +1061,13 @@
         <div class="kpicard"><div class="kpiv" id="kv-ticket">–</div><div class="kpil">Avg Ticket</div></div>
         <div class="kpicard"><div class="kpiv" id="kv-rev">–</div><div class="kpil">Revenue</div></div>
       </div>
+      <div style="text-align:center;margin:2px 0 16px;"><span onclick="go('s-scorecard')" style="font-size:13px;font-weight:700;color:var(--copper);cursor:pointer;">View weekly scorecard &amp; streak &rarr;</span></div>
       <div class="sdiv">Compliance</div>
       <div class="bars"><div class="barl"><span>Photo Compliance</span><span id="bp">–</span></div><div class="bart"><div class="barf gold" id="bpf" style="width:0%"></div></div></div>
       <div class="bars"><div class="barl"><span>Inspection Rate</span><span id="bi">–</span></div><div class="bart"><div class="barf" id="bif" style="width:0%"></div></div></div>
       <div class="bars"><div class="barl"><span>Options Built</span><span id="bo">–</span></div><div class="bart"><div class="barf succ" id="bof" style="width:0%"></div></div></div>
     </div></div>
-    <div class="navtabs"><div class="ntab" onclick="go('s-home')">Home</div><div class="ntab active">Stats</div><div class="ntab" onclick="go('s-jobs')">Jobs</div><div class="ntab" onclick="go('s-objref')">Scripts</div></div>
+    <div class="navtabs" data-nav></div>
   </div>
 
   <!-- OBJECTIONS REF -->
@@ -1021,7 +1088,7 @@
       </div>
       <div class="objres" id="obj-ref"><div class="objsec"><div class="objsl">What they really mean</div><div class="objst" id="or-m"></div></div><div id="or-styles"></div></div>
     </div></div>
-    <div class="navtabs"><div class="ntab" onclick="go('s-home')">Home</div><div class="ntab" onclick="go('s-kpi')">Stats</div><div class="ntab" onclick="go('s-jobs')">Jobs</div><div class="ntab active">Scripts</div></div>
+    <div class="navtabs" data-nav></div>
   </div>
 
   <!-- SCRIPTS -->
@@ -1063,7 +1130,7 @@
         <div id="custom-scripts-list"></div>
       </div>
     </div>
-    <div class="navtabs"><div class="ntab" onclick="go('s-home')">Home</div><div class="ntab" onclick="go('s-kpi')">Stats</div><div class="ntab" onclick="go('s-jobs')">Jobs</div><div class="ntab active">Scripts</div></div>
+    <div class="navtabs" data-nav></div>
   </div>
 
   <!-- WEEKLY SCORECARD -->
@@ -1114,7 +1181,23 @@
       </div>
 
     </div></div>
-    <div class="navtabs"><div class="ntab" onclick="go('s-home')">Home</div><div class="ntab" onclick="go('s-kpi')">Stats</div><div class="ntab" onclick="go('s-jobs')">Jobs</div><div class="ntab" onclick="go('s-objref')">Scripts</div></div>
+    <div class="navtabs" data-nav></div>
+  </div>
+
+
+  <!-- FIELD DIAGNOSTIC GUIDE -->
+  <div id="s-guide" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="tb-back" onclick="go('s-home')">&larr; Home</span><span class="tb-title">Field Diagnostic Guide</span><span></span></div>
+    <div class="g-controls">
+      <input class="g-search" id="guide-search" type="text" placeholder="Search a symptom — gurgling, no hot water, drips…" oninput="guideFilter()" />
+      <div class="g-filters">
+        <button class="g-fbtn active" data-grole="all" onclick="guideSetRole('all')">All <span id="gc-all"></span></button>
+        <button class="g-fbtn" data-grole="drain" onclick="guideSetRole('drain')">Drain <span id="gc-drain"></span></button>
+        <button class="g-fbtn" data-grole="plumb" onclick="guideSetRole('plumb')">Plumbing <span id="gc-plumb"></span></button>
+      </div>
+    </div>
+    <div class="sbody"><div id="guide-render"></div><div class="g-empty" id="guide-empty">No matching calls. Try a different word.</div></div>
+    <div class="navtabs" data-nav></div>
   </div>
 
 </div>
@@ -1916,6 +1999,8 @@ window.go=function(id){
   if(id==='s-home'){loadStats();updateStreakBadge();}
   if(id==='s-profile')loadProfileScreen();
   if(id==='s-scorecard')renderScorecard();
+  if(id==='s-guide')renderGuide();
+  injectNav(id);
 };
 
 // ── UI HELPERS ──
@@ -1926,6 +2011,750 @@ window.cycInsp=function(el){
   else{el.classList.remove('flag');el.querySelector('.istat').textContent='Tap';}
 };
 window.togOpp=function(el){el.classList.toggle('added');el.querySelector('.oppa').textContent=el.classList.contains('added')?'✓ Added':'+ Add';};
+
+
+// ===== ICON BOTTOM NAV =====
+const NAV_ITEMS=[
+ {id:'s-home',label:'Home',svg:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V20h14V9.5"/></svg>`},
+ {id:'s-guide',label:'Guide',svg:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1"/><path d="M8.5 11l2 2 4-4"/></svg>`},
+ {id:'s-objref',label:'Objections',svg:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H8l-4 4z"/></svg>`},
+ {id:'s-kpi',label:'Scorecard',svg:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V4M4 20h16"/><rect x="7" y="11" width="3" height="6"/><rect x="12" y="7" width="3" height="10"/><rect x="17" y="13" width="3" height="4"/></svg>`},
+ {id:'s-jobs',label:'Jobs',svg:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg>`}
+];
+const NAV_ACTIVE={'s-home':'s-home','s-profile':'s-home','s-guide':'s-guide','s-objref':'s-objref','s-scripts':'s-objref','s-kpi':'s-kpi','s-scorecard':'s-kpi','s-jobs':'s-jobs'};
+window.injectNav=function(id){
+  const cur=NAV_ACTIVE[id]||id;
+  document.querySelectorAll('#'+id+' [data-nav]').forEach(nav=>{
+    nav.innerHTML=NAV_ITEMS.map(n=>`<div class="ntab${n.id===cur?' active':''}" onclick="go('${n.id}')">${n.svg}<span>${n.label}</span></div>`).join('');
+  });
+};
+
+// ===== FIELD DIAGNOSTIC GUIDE DATA + RENDER =====
+(function(){
+const DATA = [
+/* ============================== DRAIN TECH ============================== */
+{role:'drain', title:'Kitchen sink — slow or won\u2019t drain', says:['won\u2019t drain','water just sits','slow for weeks','backs up when the dishwasher runs'],
+ causes:[
+  'Grease + food sludge coating the kitchen branch line (most common)',
+  'Clog past the disposal in the trap / trap arm',
+  'Disposal itself jammed or backed up',
+  'If other fixtures are involved \u2014 it\u2019s the main line, not the kitchen'
+ ],
+ steps:[
+  {q:'Run other fixtures \u2014 bath sink, tub, flush a toilet. Is anything else slow?',
+   clear:{t:'Local to the kitchen',say:'Good news \u2014 everything else in the house drains fine, so this is just your kitchen line, not the main sewer. That keeps it a straightforward cleaning.'},
+   found:{t:'Multiple fixtures = main line',say:'When more than one fixture backs up, the blockage is downstream in the main line, not just this sink. I\u2019d want to pull the cleanout and camera it before we touch anything else.',jump:'(go to Main sewer line backup)'}},
+  {q:'Run the disposal and water on both sides. Does it spin and drain?',
+   clear:{t:'Disposal is fine',say:'Disposal\u2019s clear and turning, so the restriction is past it, down the branch line.'},
+   found:{t:'Jammed or holding water',say:'The disposal\u2019s the holdup \u2014 let me free it first, then we\u2019ll check the line.',jump:'(go to Disposal \u2014 hums / jammed / leaking)'}},
+  {q:'Pull the P-trap and trap arm. Standing water? Packed with grease/food?',
+   clear:{t:'Trap is clean',say:'Trap\u2019s clean, so the clog is farther down the branch toward the stack. I\u2019ll cable it from here.'},
+   found:{t:'Trap packed',say:'Your trap was packed solid with grease and food \u2014 that was the blockage. Cleared and reseated it. Let\u2019s run it.'}},
+  {q:'Cable the branch through the trap arm / cleanout. What comes back?',
+   clear:{t:'Cable\u2019s clean but no flow / hard stop',say:'Cable\u2019s coming back clean but it\u2019s not flowing, which points deeper or to a damaged section. Let\u2019s put a camera down so we\u2019re not guessing.'},
+   found:{t:'Pulled grease ring',say:'Pulled a heavy grease ring out a few feet in \u2014 classic kitchen buildup. It\u2019s flowing now. Snaking opens a hole, but the grease is still coating the walls, so here\u2019s how we keep it open\u2026'}}
+ ],
+ flag:'Recurring kitchen clogs mean grease is coating the whole branch \u2014 snaking just bores a hole through it. Recommend a hydro-jet to scour the walls. Old galvanized/cast-iron arm narrowing? Flag for a re-pipe quote.',
+ option:'Hydro-jet vs. snake \u2022 enzyme/bio maintenance treatment \u2022 drain maintenance plan'},
+
+{role:'drain', title:'Bathroom sink \u2014 slow drain', says:['fills up while brushing teeth','draining slow','smells'],
+ causes:['Hair + toothpaste + soap scum on the pop-up stopper (almost always)','Buildup in the P-trap','Buildup in the trap arm'],
+ steps:[
+  {q:'Pull and inspect the pop-up stopper.',
+   clear:{t:'Stopper is clean',say:'Stopper\u2019s clear, so it\u2019s a little farther in. Let me check the trap.'},
+   found:{t:'Hair wad on stopper',say:'Most of it was right here on the stopper \u2014 pulled a big hair clog. That alone usually does it.'}},
+  {q:'Check the P-trap.',
+   clear:{t:'Trap is clean',say:'Trap\u2019s clean too, so I\u2019ll zip the trap arm to be sure.'},
+   found:{t:'Sludge in trap',say:'Trap had a sludge buildup \u2014 cleared it out and reseated it.'}},
+  {q:'Zip-it / small auger the trap arm if still slow.',
+   clear:{t:'Both sinks on that wall slow?',say:'If both sinks on this wall are slow, the buildup\u2019s in the shared branch \u2014 worth cleaning that, not just the trap.'},
+   found:{t:'Pulled buildup',say:'Pulled the rest of the buildup from the arm \u2014 full flow back.'}}
+ ],
+ flag:'Both lavs on one wall slowing together points to the shared branch line, not just one trap.',
+ option:'Drain screen / hair catcher \u2022 stopper upgrade \u2022 maintenance treatment'},
+
+{role:'drain', title:'Tub / shower \u2014 standing water', says:['standing in water in the shower','drains slow','tub won\u2019t empty'],
+ causes:['Hair + soap scum at the strainer and trap (almost always)','Buildup in the trap arm','If lower fixtures back up too \u2014 main line'],
+ steps:[
+  {q:'Remove the strainer / stopper mechanism and inspect.',
+   clear:{t:'Strainer is clear',say:'Strainer\u2019s clear, so the hair\u2019s collected a little deeper. I\u2019ll auger the trap.'},
+   found:{t:'Hair mass',say:'That hair mass right under the strainer was the whole problem \u2014 pulled it out.'}},
+  {q:'Auger / zip the drain through the trap.',
+   clear:{t:'Tub gurgles when toilet flushed?',say:'If the tub gurgles or fills when you flush the toilet, that\u2019s the main line talking, not the tub. I\u2019d camera it.',jump:'(go to Main sewer line backup)'},
+   found:{t:'Pulled hair/soap',say:'Pulled the soap-and-hair plug out of the trap \u2014 draining freely now.'}}
+ ],
+ flag:'Tub backing up or gurgling when a toilet flushes = developing main-line issue. Recommend a camera before it overflows.',
+ option:'Hair catcher \u2022 maintenance plan'},
+
+{role:'drain', title:'Toilet \u2014 clogged (single)', says:['toilet won\u2019t flush','overflows','weak / won\u2019t clear'],
+ causes:['Local obstruction in the toilet\u2019s internal trap \u2014 paper, wipes, or a foreign object','If other fixtures react \u2014 main line','Foreign object lodged (kids\u2019 toy, brush) needing the toilet pulled'],
+ steps:[
+  {q:'Flush and watch the rest of the bathroom. Does the tub fill or gurgle, or other drains react?',
+   clear:{t:'Just the toilet',say:'Nothing else is reacting, so this is a clog right in the toilet \u2014 not your sewer line.'},
+   found:{t:'Other fixtures react',say:'Water coming up elsewhere when you flush means the blockage is past the toilet, in the main line.',jump:'(go to Main sewer line backup)'}},
+  {q:'Run a closet auger through the toilet trap.',
+   clear:{t:'Won\u2019t clear / hits something solid',say:'It\u2019s hitting something solid the auger won\u2019t move \u2014 likely an object lodged in the trap. To get it out cleanly I\u2019ll need to pull the toilet.'},
+   found:{t:'Augered it free',say:'It was lodged right in the toilet\u2019s built-in trap \u2014 augered it out and it\u2019s clearing strong now.'}},
+  {q:'If an object is suspected \u2014 pull the toilet, retrieve, reset on a new wax ring.',
+   clear:{t:'',say:''},
+   found:{t:'Pulled & reset',say:'Found the [object] wedged in the trap \u2014 pulled the toilet, cleared it, and reset it on a fresh wax ring so it seals right.'}}
+ ],
+ flag:'Repeated clogs on an old 3.5-gallon toilet \u2014 recommend a high-efficiency replacement (better trapway, more flushing power). \u201CFlushable\u201D wipes habit? Educate \u2014 they don\u2019t break down.',
+ option:'HE toilet upgrade \u2022 new wax ring & supply line while it\u2019s pulled'},
+
+{role:'drain', title:'Main sewer line backup', specs:[['Drain slope','1/4 in per ft (2.5 in pipe and under) \u00B7 1/8 in per ft (3 in+)'],['Cleanout reading','Full = clog downstream \u00B7 empty = clog inside'],['High-risk pipe','Clay / Orangeburg / cast iron \u2014 roots + failure'],['Clear method','Snake = a hole \u00B7 hydro-jet = scour to full diameter']], says:['everything\u2019s backing up','flush comes up in the tub','basement floor drain overflowing','sewage smell'],
+ safety:'Stop all water use first and keep people clear. Do not keep flushing or run appliances \u2014 every gallon has fewer places to go. Skip chemical drain cleaners; they don\u2019t move roots or grease and make the line hazardous to work on.',
+ causes:['Tree roots through joints in older clay / cast-iron pipe (#1 cause)','Grease (FOG) hardening and choking the diameter','\u201CFlushable\u201D wipes building a fatberg','Bellied, offset, or collapsed pipe'],
+ steps:[
+  {q:'Confirm it\u2019s the main: multiple fixtures, lowest drains first, water rises in the tub when a toilet is flushed.',
+   clear:{t:'Only one fixture \u2014 it\u2019s local',say:'Only this one fixture\u2019s affected, so it\u2019s a local clog, not the main. That\u2019s the better news.'},
+   found:{t:'Confirmed main line',say:'When the lowest drains back up and water comes up somewhere else as you flush, that\u2019s the main line carrying the whole house \u2014 not a single fixture.'}},
+  {q:'Locate and open the main cleanout \u2014 stand clear, it can be under pressure.',
+   clear:{t:'Cleanout sits empty',say:'Cleanout\u2019s empty but you\u2019re still backing up inside, so the clog is upstream, inside the house\u2019s stacks. That tells me where to cable.'},
+   found:{t:'Cleanout standing full',say:'The cleanout\u2019s standing full of water, so the blockage is downstream toward the street. That\u2019s where I\u2019ll cable.'}},
+  {q:'No cleanout on the property?',
+   clear:{t:'Has a cleanout',say:''},
+   found:{t:'No access point',say:'There\u2019s no cleanout here, which makes the line hard to access and service. I\u2019d recommend installing one to code \u2014 it pays for itself every future visit.'}},
+  {q:'Cable the main from the cleanout. What comes back?',
+   clear:{t:'Hard stop / cable won\u2019t pass',say:'The cable\u2019s hitting a stop it can\u2019t get through, which usually means a collapse, offset, or sag, not just a clog. We need a camera to see exactly what and where.'},
+   found:{t:'Roots / grease / wipes',say:'Pulled [roots / grease / wipes] out \u2014 got flow back. But roots regrow and grease re-coats, so I want to camera it and show you what\u2019s actually down there before this comes back on you.'}},
+  {q:'Camera the line to confirm cause and locate the spot.',
+   clear:{t:'Pipe is clean',say:'Line looks clean on camera now \u2014 here\u2019s how we keep it that way.'},
+   found:{t:'Found the defect',say:'Camera shows [roots / belly / offset / break] at about [X] feet. Here\u2019s what that means and your options to fix it for good.'}}
+ ],
+ flag:'Roots, belly, offset, Orangeburg/clay, or collapse \u2192 repair / lining / replacement quote. Recurring \u2192 annual root + jetting plan. Document everything for the homeowner\u2019s insurance \u2014 many policies need a sewer-backup rider.',
+ option:'Hydro-jet \u2022 camera + locate \u2022 cleanout install \u2022 trenchless lining vs. dig \u2022 annual root/jet plan'},
+
+{role:'drain', title:'Basement / floor drain backup', says:['water comes up in the floor drain when we do laundry','basement drain overflows'],
+ causes:['Restriction downstream in the main \u2014 the floor drain is the lowest escape point','Local debris in the floor-drain trap (less common)'],
+ steps:[
+  {q:'Does it only back up during heavy use upstairs (laundry, showers)?',
+   clear:{t:'Isolated to the floor drain',say:'It\u2019s only this drain and nothing else, so I\u2019ll clear the floor-drain trap directly.'},
+   found:{t:'Backs up under load = main',say:'It\u2019s coming up here only when the house dumps a lot of water at once \u2014 that\u2019s the main line not keeping up. Let\u2019s treat it from the cleanout.',jump:'(go to Main sewer line backup)'}},
+  {q:'If isolated \u2014 snake the floor-drain trap.',
+   clear:{t:'',say:''},
+   found:{t:'Cleared the trap',say:'Cleared the debris out of the floor-drain trap \u2014 draining clean.'}}
+ ],
+ flag:'Recurring basement backups \u2014 talk about a backwater valve so the street can\u2019t push sewage back into the basement.',
+ option:'Backwater valve \u2022 camera \u2022 hydro-jet'},
+
+{role:'drain', title:'Recurring clogs \u2014 \u201Cit keeps coming back\u201D', says:['you guys were just here','clogs every few months','snaked it but it returned'],
+ causes:['Snaking only bores a hole \u2014 the coating (grease / scale / roots) stays and closes back up','Roots regrowing','A pipe defect: belly, offset, crack, or collapse'],
+ steps:[
+  {q:'Get the history \u2014 how often, which fixtures, last service date.',
+   clear:{t:'',say:''},
+   found:{t:'Pattern of repeats',say:'If this keeps coming back, snaking it again just buys a few months. Let\u2019s find out why.'}},
+  {q:'Camera the line \u2014 don\u2019t just re-snake it.',
+   clear:{t:'Coating / roots',say:'Snaking punches a hole through the clog but leaves the buildup coating the pipe, so it closes back up. A hydro-jet scours the walls back to full diameter \u2014 that\u2019s what actually stops the cycle.'},
+   found:{t:'Defect on camera',say:'Camera shows the real reason it keeps clogging \u2014 [belly / offset / roots / break]. No amount of snaking fixes that; here are your repair options.'}}
+ ],
+ flag:'This is where you stop the snake-loop. Camera first, then jet or repair. Re-snaking a known defect is a disservice (and a callback).',
+ option:'Hydro-jet \u2022 camera + locate \u2022 spot repair / lining \u2022 maintenance plan'},
+
+{role:'drain', title:'Sewer / drain odor (no backup)', says:['smells like sewer','rotten egg smell from a drain','musty smell in a bathroom'],
+ causes:['Dried-out P-trap on a rarely-used fixture or floor drain (easy win)','Failed wax ring under a rocking toilet','Biofilm in the drain / overflow','Cracked or disconnected vent in the wall'],
+ steps:[
+  {q:'Find a rarely-used fixture or floor drain \u2014 is the trap dry? Pour water in.',
+   clear:{t:'Traps are wet',say:'Traps are holding water, so it\u2019s not a dried-out trap. Let me keep tracing it.'},
+   found:{t:'Dry trap',say:'A trap you don\u2019t use much dried out and let sewer gas up through. Refilled it \u2014 just run a little water in that drain now and then to keep the seal.'}},
+  {q:'Check the toilet base \u2014 does it rock? Sign of a failed wax ring.',
+   clear:{t:'Toilet solid',say:'Toilet\u2019s solid and sealed, so it\u2019s not the wax ring.'},
+   found:{t:'Rocking / failed seal',say:'The toilet\u2019s rocking and the wax ring\u2019s let go \u2014 that\u2019s leaking gas (and eventually water). I\u2019ll reset it on a new ring.'}},
+  {q:'Clean biofilm in the offending drain / overflow.',
+   clear:{t:'Smell persists with wet traps',say:'Traps are wet and it\u2019s clean but it still smells, which points to a cracked vent or broken drain in the wall. I\u2019d want to smoke-test or camera it to find it.'},
+   found:{t:'Biofilm gunk',say:'There was a biofilm buildup in the drain giving off that smell \u2014 cleaned and treated it.'}}
+ ],
+ flag:'Persistent odor with wet traps and a clean drain \u2192 cracked vent or broken pipe. Smoke test / camera to locate.',
+ option:'Bio / deodorizing treatment \u2022 wax ring reset \u2022 vent repair'},
+
+{role:'drain', title:'Gurgling drains', says:['drain gurgles','glug-glug after flushing','bubbling when the sink drains'],
+ causes:['Partial main-line blockage \u2014 air forced past the restriction (early warning)','Blocked vent for that fixture','Partial branch clog'],
+ steps:[
+  {q:'Does it gurgle when another fixture drains or a toilet flushes? More than one fixture?',
+   clear:{t:'Single fixture only',say:'It\u2019s just this one fixture, so it\u2019s likely a vent or a partial branch clog right here \u2014 not the main.'},
+   found:{t:'Multiple fixtures',say:'Gurgling across fixtures means air is getting forced past a partial blockage in the main \u2014 that\u2019s the early warning before a real backup.'}},
+  {q:'Treat it as an early main-line restriction \u2014 cable / camera.',
+   clear:{t:'',say:''},
+   found:{t:'Confirmed restriction',say:'Better to camera and clear it now than wait for it to overflow on you. Here\u2019s what I\u2019d recommend.'}}
+ ],
+ flag:'Don\u2019t dismiss gurgling \u2014 it\u2019s the polite version of a backup. Recommend inspection now.',
+ option:'Camera \u2022 cable \u2022 maintenance plan'},
+
+{role:'drain', title:'Garbage disposal \u2014 won\u2019t drain', specs:[['Jam check','1/4 in hex wrench; never reach in by hand'],['Clog location','Usually the trap / branch, not the unit']], says:['sink full of water with the disposal','disposal backs up','dishwasher backs up into the sink'],
+ safety:'Switch off and unplug before any hand work. Never put your hand in the disposal \u2014 use tongs or pliers.',
+ causes:['Clog downstream in the trap / branch (disposal pushed food + grease into it)','Disposal jammed (different problem \u2014 see the repair card)','Shared dishwasher drain clogged'],
+ steps:[
+  {q:'Run it briefly. Does it spin and drain, or hum / hold water?',
+   clear:{t:'Spins but water won\u2019t go',say:'Disposal turns fine, so it\u2019s not the unit \u2014 the clog is downstream in the line.'},
+   found:{t:'Hums / won\u2019t spin',say:'It\u2019s jammed, not clogged \u2014 let me free the unit first.',jump:'(go to Disposal \u2014 hums / jammed / leaking)'}},
+  {q:'Disconnect and clear the P-trap and trap arm.',
+   clear:{t:'Trap clean',say:'Trap\u2019s clean, so I\u2019ll cable the branch line past it.'},
+   found:{t:'Packed with food/grease',say:'Trap was packed with food and grease \u2014 very common right off a disposal. Cleared it and reassembled.'}}
+ ],
+ flag:'Dishwasher backing up too = shared drain clog. Recurring = grease/food habit \u2192 jet + a quick lesson on what not to put down.',
+ option:'Hydro-jet \u2022 usage education \u2022 maintenance plan'},
+
+/* ============================== PLUMBING TECH ============================== */
+{role:'plumb', title:'No hot water at all', specs:[['Element ohms (240V)','3500W \u2248 16\u03A9 \u00B7 4500W \u2248 13\u03A9 \u00B7 5500W \u2248 10.5\u03A9'],['Bad element','0\u03A9 = shorted \u00B7 OL/\u221E = burned open'],['Short to ground','Any continuity from element terminal to tank = bad'],['Breaker','240V double-pole; trips again instantly = stop, do not reset'],['Temp setting','120\u00B0F (DOE); both thermostats matched'],['One fixture only','Not the heater \u2014 cartridge or mixing valve']], says:['no hot water anywhere','cold showers','heater stopped'],
+ safety:'Smell gas near a gas unit? Stop \u2014 don\u2019t switch anything electrical, get everyone out, and call the gas utility. Don\u2019t relight.',
+ causes:['Electric: tripped breaker, tripped high-limit (ECO) reset, failed upper element or thermostat','Gas: pilot/igniter out, thermocouple, gas valve, gas supply','One fixture only? It\u2019s the fixture\u2019s cartridge / mixing valve \u2014 not the heater'],
+ steps:[
+  {q:'Cold at multiple taps, or just one fixture?',
+   clear:{t:'Just one fixture',say:'Hot water\u2019s fine everywhere except this one spot, so your heater\u2019s working \u2014 it\u2019s the cartridge or mixing valve at this fixture.'},
+   found:{t:'All hot taps cold',say:'Every hot tap\u2019s cold, so it\u2019s the heater itself, not a fixture. Let\u2019s work it from the simplest cause up.'}},
+  {q:'(Electric) Check the double-pole breaker \u2014 tripped or mid-position?',
+   clear:{t:'Breaker fine',say:'It\u2019s getting power, so the breaker\u2019s not it. Next is the safety reset inside the unit.'},
+   found:{t:'Tripped',say:'The breaker had tripped \u2014 I reset it. But they don\u2019t trip for nothing, so if it goes again it\u2019s telling us an element is shorting, and I\u2019ll test for that rather than just keep resetting it.'}},
+  {q:'(Electric) Press the high-limit / ECO reset (red button, upper thermostat \u2014 power off, panel off).',
+   clear:{t:'Not tripped',say:'The safety switch hasn\u2019t tripped, so the tank isn\u2019t overheating. That moves us to the elements and thermostats.'},
+   found:{t:'Popped \u2014 clicks in',say:'The high-limit safety had tripped \u2014 that protects the tank when water gets too hot. I reset it. If it trips again, an element or thermostat is failing, so I\u2019d test before it leaves you cold again.'}},
+  {q:'(Electric) Test the elements \u2014 power OFF, confirm dead with a tester. Ohms 10\u201330 good; 0/short or open/infinite bad. Test for short to ground.',
+   clear:{t:'Elements good',say:'Elements test good, so the heat source is fine \u2014 I\u2019ll check the thermostats next.'},
+   found:{t:'Element failed',say:'Found the failed element \u2014 [upper out = no hot at all / lower out = lukewarm and runs out fast]. Replacing it gets your hot water back.'}},
+  {q:'(Gas) Verify gas shutoff open (handle parallel to pipe), pilot/igniter, thermocouple, gas valve. (Tankless) all breakers/gas on, read the error code, check flow & supply valve.',
+   clear:{t:'Supply & ignition OK',say:'Gas is on and it\u2019s igniting, so we\u2019re looking at the control/valve side.'},
+   found:{t:'Pilot/ignition fault',say:'The [pilot/igniter/thermocouple] is the issue \u2014 here\u2019s what it takes to get it firing again.'}}
+ ],
+ flag:'Breaker trips again immediately \u2192 electrical fault, stop resetting. Tank leaking \u2192 replacement. Gas-valve failure or unit 10\u201312+ yrs \u2192 repair-vs-replace conversation. Gas work past your scope \u2192 licensed lead.',
+ option:'Repair vs. replace \u2022 tankless upgrade \u2022 expansion tank \u2022 annual flush/maintenance plan'},
+
+{role:'plumb', title:'Not enough hot water / runs out fast', specs:[['Temp target','120\u00B0F'],['Lower element out','Symptom: hot, then quickly cold'],['Anode rod','Inspect every 3\u20135 yrs'],['Sediment','Flush yearly; popping = sediment insulating elements']], says:['runs out halfway through a shower','only lukewarm','hot water doesn\u2019t last'],
+ causes:['Electric: failed LOWER element','Sediment insulating the elements (also causes popping)','Thermostat set too low','Broken dip tube (cold mixing in at the top)','Undersized tank for the household','Mixing / anti-scald valve blending in too much cold'],
+ steps:[
+  {q:'Check the thermostat setting \u2014 around 120\u00B0F? Both thermostats matched?',
+   clear:{t:'Set correctly',say:'Temperature\u2019s set right, so it\u2019s not a setting \u2014 let\u2019s look at the tank.'},
+   found:{t:'Set low',say:'It was set low \u2014 bumped it to about 120\u00B0. Give it an hour and we\u2019ll see if that\u2019s the whole story.'}},
+  {q:'Lukewarm everywhere, or plenty then suddenly cold?',
+   clear:{t:'Lukewarm everywhere',say:'If it\u2019s lukewarm everywhere, I\u2019m looking at a mixing valve, thermostat, or a broken dip tube letting cold mix in.'},
+   found:{t:'Good then cold/short',say:'Plenty of hot and then it drops out fast points to the lower element or sediment building up in the tank.'}},
+  {q:'Listen for popping/rumbling and check sediment \u2014 flush the tank. Then test the lower element.',
+   clear:{t:'Clean & element good',say:'Tank\u2019s clean and the element tests good \u2014 so we look at the dip tube / mixing valve.'},
+   found:{t:'Heavy sediment / bad element',say:'Found [heavy sediment / a failed lower element] \u2014 that\u2019s why it runs out. Here\u2019s what fixes it.'}}
+ ],
+ flag:'Heavy sediment + age \u2192 a flush won\u2019t save it, talk replacement. Genuinely undersized for the household \u2192 upsize conversation.',
+ option:'Annual flush plan \u2022 upsize tank \u2022 tankless \u2022 mixing-valve service'},
+
+{role:'plumb', title:'Water heater leaking', specs:[['Tank life','Tank-style \u2248 8\u201312 yrs'],['T&amp;P discharging','A pressure / expansion problem, not just the valve'],['Expansion tank','Pre-charge = house static PSI'],['Body or seam leak','Not repairable \u2192 replacement']], says:['water around the base of the heater','puddle by the water heater','dripping heater'],
+ safety:'A significant leak \u2014 shut the water supply to the unit. If the tank body itself is weeping, the heater is failing and needs replacing.',
+ causes:['Connections / unions / nipples at the top (repairable)','T&P relief valve discharging \u2014 often a pressure / thermal-expansion problem','Drain valve at the bottom','The tank itself rusted through (replace \u2014 not repairable)'],
+ steps:[
+  {q:'Dry everything, then watch where water returns to find the source.',
+   clear:{t:'',say:''},
+   found:{t:'Source located',say:'Dried it out and watched it \u2014 the water\u2019s coming from [the top fittings / the T&P valve / the drain valve / the tank body].'}},
+  {q:'Top connections, unions, nipples.',
+   clear:{t:'Dry up top',say:'Connections up top are dry, so it\u2019s lower.'},
+   found:{t:'Fitting leak',say:'It\u2019s a connection up top \u2014 a fitting that\u2019s repairable. I\u2019ll [tighten/replace] it.'}},
+  {q:'T&P relief valve / discharge tube. Check house pressure and the expansion tank if it\u2019s discharging.',
+   clear:{t:'T&P dry',say:'Relief valve\u2019s dry, so it\u2019s not pressure pushing water out.'},
+   found:{t:'T&P discharging',say:'The relief valve\u2019s doing its job dumping pressure \u2014 the real question is why pressure\u2019s that high. I want to check your house pressure and expansion tank, because that\u2019s the actual fix.'}},
+  {q:'Drain valve at the bottom, then the tank body / seam itself.',
+   clear:{t:'Drain valve only',say:'It\u2019s just the drain valve at the bottom \u2014 I\u2019ll [tighten / cap / replace] it.'},
+   found:{t:'Tank rusted through',say:'This is the tank itself leaking. Once the inner tank corrodes through, it can\u2019t be repaired \u2014 it\u2019s a replacement. Let me walk you through your options.'}}
+ ],
+ flag:'Tank-body leak = replacement, full stop. T&P discharging = solve the pressure / expansion problem, not just the valve.',
+ option:'Right-size replacement / tankless \u2022 expansion tank \u2022 PRV \u2022 drain pan + leak sensor'},
+
+{role:'plumb', title:'Water heater noises', specs:[['Popping / rumbling','Sediment at tank bottom \u2192 flush'],['Anode rod','Inspect every 3\u20135 yrs'],['Tank life','\u2248 8\u201312 yrs; noise + age = end of life']], says:['rumbling like a kettle','popping sounds','banging from the heater'],
+ causes:['Sediment at the tank bottom \u2014 water boiling underneath it (popping / rumbling)','Hissing \u2014 condensation or a small leak hitting the burner','Heavy sediment + age = end of life'],
+ steps:[
+  {q:'Popping / rumbling \u2192 sediment. Flush the tank.',
+   clear:{t:'Quiets down',say:'Flushed out the sediment and it\u2019s quiet again. An annual flush keeps it that way and helps it last.'},
+   found:{t:'Old + heavy sediment',say:'There\u2019s heavy sediment and the tank\u2019s up there in age \u2014 a flush only does so much at this point. Worth talking about replacement before it fails.'}},
+  {q:'Hissing \u2192 check for a leak / condensation and the T&P.',
+   clear:{t:'',say:''},
+   found:{t:'Leak/condensation',say:'The hiss is water hitting the burner \u2014 let me find where it\u2019s coming from.',jump:'(go to Water heater leaking)'}}
+ ],
+ flag:'Noise + age + less hot water than before = end of life. Set up the replacement conversation early.',
+ option:'Annual flush plan \u2022 replacement \u2022 anode-rod inspection'},
+
+{role:'plumb', title:'Running toilet', specs:[['Tank water level','\u2248 1/2 in below top of overflow tube'],['Refill time','Under \u2248 60 sec'],['Flapper size','2 in (most) or 3 in (some Kohler / American Standard)'],['Chain slack','1\u20132 links; too tight leaks, too loose fails to lift'],['Silent-leak test','Dye in tank \u2192 color in bowl = flapper']], says:['toilet keeps running','runs by itself','hissing','phantom flushing'],
+ causes:['Flapper / flush-valve seal not sealing (most common)','Fill valve won\u2019t shut off','Water level too high, spilling into the overflow','Chain too long/short, or refill tube siphoning','Damaged flush-valve seat','High house pressure'],
+ steps:[
+  {q:'Watch the tank after a flush \u2014 is water running into the overflow tube?',
+   clear:{t:'Level sits below overflow',say:'Water\u2019s stopping below the overflow, so it\u2019s not the fill valve overfilling \u2014 it\u2019s leaking down into the bowl. That\u2019s the flapper or seat.'},
+   found:{t:'Spilling into overflow',say:'Water\u2019s running into the overflow tube, so the fill valve isn\u2019t shutting off. I\u2019ll drop the float first \u2014 if it still won\u2019t stop, the fill valve\u2019s worn out and gets replaced.'}},
+  {q:'Dye/level test: food coloring in the tank (or mark the level, water off, wait). Does color reach the bowl?',
+   clear:{t:'No leak-through',say:'No color\u2019s getting to the bowl, so the seal\u2019s holding \u2014 back to the fill side.'},
+   found:{t:'Color in bowl',say:'Color\u2019s bleeding into the bowl, so the flapper\u2019s not sealing \u2014 that\u2019s your silent leak.'}},
+  {q:'Check the flapper (soft & pliable?), chain slack (1\u20132 links), and the seat for mineral/nicks.',
+   clear:{t:'Flapper & seat fine',say:'Flapper\u2019s good and the seat\u2019s smooth \u2014 so if it still leaks down, the flush valve itself is the problem.'},
+   found:{t:'Stiff flapper / bad seat',say:'The flapper\u2019s [stiff/warped] and the seat had buildup \u2014 swapped the flapper and cleaned the seat. That\u2019s the usual fix.'}},
+  {q:'If a new flapper still leaks below the flapper line \u2192 replace the flush valve. Confirm the refill tube clips ABOVE the waterline (not jammed down inside, which siphons).',
+   clear:{t:'Holds now',say:'Holding steady now \u2014 no more running.'},
+   found:{t:'Flush valve / siphon',say:'Even with a new flapper it kept dropping, so the flush-valve seat\u2019s shot \u2014 replacing that stops it. [Also re-clipped the refill tube so it can\u2019t siphon.]'}}
+ ],
+ flag:'Several worn parts or old tank hardware \u2192 rebuild all the internals at once rather than chasing one part. Pre-1994 3.5-gal toilet \u2192 HE replacement.',
+ option:'Full rebuild kit \u2022 HE toilet \u2022 bidet add-on \u2022 new shutoff & supply line'},
+
+{role:'plumb', title:'Weak / incomplete flush', specs:[['Flush volume','1.6 GPF modern \u00B7 3.5 GPF pre-1994 (replace)'],['Tank level','At the fill line for full flush power'],['Rim / siphon jets','Descale if mineral-clogged']], says:['have to flush twice','weak swirl','bowl doesn\u2019t clear'],
+ causes:['Mineral-clogged rim jets / siphon jet','Tank water level too low','Flapper closing too early (chain)','Partial trapway clog','Old low-flow design + hard-water scaling','Developing drain/main restriction'],
+ steps:[
+  {q:'Check the tank water level \u2014 at the fill line?',
+   clear:{t:'Level is good',say:'Tank\u2019s filling to the right level, so it\u2019s getting enough water \u2014 the weak flush is somewhere else.'},
+   found:{t:'Level low',say:'Tank was filling low, so each flush had less water behind it \u2014 raised the float to the line.'}},
+  {q:'Watch the flush \u2014 is the flapper dropping before the tank empties? Adjust the chain.',
+   clear:{t:'Flapper timing fine',say:'Flapper\u2019s staying open long enough, so that\u2019s not cutting the flush short.'},
+   found:{t:'Closing early',say:'The flapper was dropping early and cutting the flush off \u2014 adjusted the chain so it gives a full flush.'}},
+  {q:'Check the rim jets / siphon jet for mineral scale; clean. Closet-auger for a partial trapway clog.',
+   clear:{t:'Jets clear, trap clear',say:'Jets and trapway are clear \u2014 if it\u2019s still weak, it\u2019s an old low-flow design fighting hard water, and a newer HE toilet flushes far better.'},
+   found:{t:'Scaled jets / partial clog',say:'The rim jets were scaled over [/ there was a partial clog in the trap] \u2014 cleaned it out and you\u2019ve got a strong flush again.'}}
+ ],
+ flag:'If multiple fixtures are sluggish too, check the drain/main side. Old design + hard water \u2192 HE replacement.',
+ option:'HE toilet \u2022 descale service \u2022 drain check'},
+
+{role:'plumb', title:'Dripping / leaking faucet', specs:[['Moen','Pull the retainer clip; cartridge 1225 (sink) / 1222 Posi-Temp (shower) \u2014 often free under lifetime warranty'],['Delta','Ball-type: seats &amp; springs kit \u00B7 newer: ceramic cartridge'],['Kohler','Ceramic-disc cartridge (GP-series)'],['Compression (2-handle)','Replace washer + dress the seat'],['Base leak','Spout O-rings']], says:['faucet drips','won\u2019t shut off all the way','leaks at the base'],
+ causes:['Worn cartridge (most common on modern faucets)','Worn washer / damaged seat (compression faucets)','Worn O-rings (leaks at the spout base)','Old faucet, parts no longer available'],
+ steps:[
+  {q:'Where is it leaking \u2014 spout drip, base of the spout, or under the sink?',
+   clear:{t:'Spout drip',say:'It\u2019s dripping from the spout, so it\u2019s the internal seal \u2014 the cartridge or washer.'},
+   found:{t:'Base / under-sink',say:'It\u2019s leaking at [the base / under the sink], so it\u2019s the O-rings [/ the supply line or shutoff].',jump:'(under-sink \u2192 see Leaking / seized shutoff)'}},
+  {q:'Shut the angle stops, disassemble. Cartridge or compression?',
+   clear:{t:'Compression',say:'It\u2019s a compression faucet \u2014 the washer\u2019s worn and the seat needs dressing. I\u2019ll replace the washer and clean up the seat.'},
+   found:{t:'Cartridge',say:'It\u2019s the cartridge \u2014 the internal seal wore out. Swapping it with the matching part for your faucet stops the drip.'}},
+  {q:'Reassemble and test hot and cold.',
+   clear:{t:'No drip',say:'Tested both sides \u2014 no more drip.'},
+   found:{t:'Parts unavailable / very old',say:'This faucet\u2019s old enough that the parts aren\u2019t made anymore \u2014 at that point a new faucet is the better value than chasing pieces.'}}
+ ],
+ flag:'Corroded or seized angle stops while you\u2019re in there \u2192 recommend replacing them. Very old faucet with no parts \u2192 replace.',
+ option:'Faucet replacement \u2022 quarter-turn angle stops \u2022 braided supply lines'},
+
+{role:'plumb', title:'Low water pressure', specs:[['Normal static','45\u201380 PSI'],['Below 40 PSI','With valves open = real problem'],['PRV set point','\u2248 50\u201360 PSI'],['PRV life','7\u201312 yrs'],['Measure at','Hose bib, no other water running']], says:['weak pressure','barely a trickle','pressure dropped'],
+ causes:['One fixture: clogged aerator/showerhead, fixture cartridge, partly-closed stop','Whole house: partly-closed main shutoff, failing PRV, corroded galvanized pipe, softener fault, municipal','Hot-only: water-heater sediment, dip tube, or a partly-closed heater shutoff'],
+ steps:[
+  {q:'Scope it \u2014 one fixture or the whole house? Hot only or both?',
+   clear:{t:'One fixture',say:'It\u2019s just this fixture, so it\u2019s local \u2014 usually a clogged aerator or cartridge, the cheap fixes.'},
+   found:{t:'Whole house',say:'It\u2019s the whole house, so we\u2019re looking at the main shutoff, the pressure-reducing valve, or the pipe itself \u2014 let me measure first.'}},
+  {q:'One fixture \u2192 pull the aerator/showerhead and clean the scale.',
+   clear:{t:'Aerator clean',say:'Aerator\u2019s clean, so it\u2019s the cartridge or the stop at this fixture.'},
+   found:{t:'Scaled aerator',say:'Just the aerator clogged with mineral \u2014 cleaned it and flow\u2019s back. Cheapest fix there is.'}},
+  {q:'Whole house \u2192 measure static PSI at a hose bib (normal ~45\u201380; under 40 with valves open = a problem). Confirm the main shutoff is fully open.',
+   clear:{t:'Main open, PSI fine',say:'Main\u2019s wide open and pressure reads okay, so this is a flow restriction, not a pressure problem \u2014 likely the PRV or the pipe.'},
+   found:{t:'Main partly closed',say:'The main shutoff was only partly open \u2014 probably bumped during a repair. Opened it fully and you\u2019ve got your pressure back.'}},
+  {q:'Check the PRV (failing/stuck?), water softener (bypass test), and for corroded galvanized pipe. Hot-only \u2192 heater sediment/dip tube/shutoff.',
+   clear:{t:'PRV & pipe OK',say:'PRV and piping check out \u2014 so [the softener / the heater side] is where the restriction is.'},
+   found:{t:'Failing PRV / corroded pipe',say:'Your pressure-reducing valve is failing \u2014 they last about 7\u201312 years and yours is past that [/ the old galvanized pipe has corroded narrow inside]. That\u2019s why the whole house dropped, and here\u2019s the fix.'}}
+ ],
+ flag:'PRV replacement is licensed work. Corroded galvanized \u2192 re-pipe quote. Softener resin failure \u2192 service/replace.',
+ option:'PRV \u2022 re-pipe (PEX/copper) \u2022 aerator/cartridge \u2022 softener service \u2022 pressure gauge install'},
+
+{role:'plumb', title:'Banging pipes / high pressure', specs:[['Code limit','Over 80 PSI requires a PRV'],['Target','\u2248 60 PSI'],['Expansion tank','Pre-charge = static house PSI (closed system)'],['Water hammer','Arrestors on quick-closing valves']], says:['pipes bang','hammering when water shuts off','faucets blast too hard'],
+ causes:['High incoming pressure (over 80 PSI)','Failing or absent PRV','No / failed water-hammer arrestors','Thermal expansion with no expansion tank'],
+ steps:[
+  {q:'Measure static PSI. Over 80?',
+   clear:{t:'Under 80',say:'Pressure\u2019s in range, so it\u2019s not the supply pressure \u2014 it\u2019s the hammering itself we need to dampen.'},
+   found:{t:'Over 80',say:'Static\u2019s reading [X] \u2014 anything over 80 chews through fixtures, the water heater, and the pipes. We need to bring it down to around 60.'}},
+  {q:'PRV present and set right? Add/adjust as needed.',
+   clear:{t:'PRV good',say:'PRV\u2019s set right, so pressure\u2019s controlled \u2014 the banging is water hammer, which is a different fix.'},
+   found:{t:'No / bad PRV',say:'There\u2019s no working PRV holding the pressure down \u2014 installing/replacing one protects the whole house and stops the strain.'}},
+  {q:'Water hammer on quick-closing valves \u2192 arrestors. Closed system \u2192 confirm a charged expansion tank.',
+   clear:{t:'',say:''},
+   found:{t:'Hammer / no expansion',say:'Added [arrestors / an expansion tank] so the pressure spike has somewhere to go instead of slamming the pipes.'}}
+ ],
+ flag:'High pressure damages everything downstream and can void water-heater warranties. PRV + expansion tank is the real fix, not just quieting the bang.',
+ option:'PRV \u2022 expansion tank \u2022 hammer arrestors'},
+
+{role:'plumb', title:'Leaking / burst pipe', specs:[['First move','Operate main shutoff, then document for insurance'],['Copper pinholes','Often high pressure \u2014 check PSI'],['Repair','Coupling / push-fit / sweat / PEX, by material']], says:['water spraying','wet ceiling or wall','found a puddle','pipe burst'],
+ safety:'First move: find and operate the main shutoff to stop the water, then contain it. Photograph everything for the homeowner\u2019s insurance before you start.',
+ causes:['Pinhole corrosion (often a sign of high pressure or old copper)','Freeze split','Failed joint / solder / fitting','Nail or screw puncture'],
+ steps:[
+  {q:'Shut off (fixture stop or main) and contain. Then trace the source \u2014 supply or drain line?',
+   clear:{t:'',say:''},
+   found:{t:'Located',say:'Got the water off and traced it \u2014 the leak\u2019s in the [supply / drain] line at [location].'}},
+  {q:'Identify the material and failure \u2014 copper pinhole, PEX fitting, galvanized corrosion, freeze split.',
+   clear:{t:'Isolated failure',say:'It\u2019s a single failure point \u2014 I can cut that section out and repair it.'},
+   found:{t:'Widespread',say:'This isn\u2019t the only weak spot \u2014 [old copper with pinholes / corroded galvanized] tends to fail in more places. Worth talking about what\u2019s coming.'}},
+  {q:'Repair the section. Assess water damage and check house pressure (high pressure causes pinholes).',
+   clear:{t:'Clean repair',say:'Cut out the bad section and repaired it \u2014 solid and dry. I\u2019d check your pressure too, since that\u2019s often what causes pinholes.'},
+   found:{t:'Damage / mold',say:'There\u2019s water damage [and possible mold] back here \u2014 I\u2019ve documented it for your claim and can refer remediation.'}}
+ ],
+ flag:'Repeated pinholes on old copper or widespread galvanized corrosion \u2192 re-pipe conversation. Mold \u2192 remediation referral. Always document for the claim.',
+ option:'Repair vs. re-pipe \u2022 whole-home shutoff upgrade \u2022 leak detector \u2022 pressure check'},
+
+{role:'plumb', title:'Leaking / seized shutoff valve', says:['valve under the sink leaks','can\u2019t turn the water off','stop won\u2019t budge'],
+ causes:['Old multi-turn stop, corroded and seized','Packing-nut leak at the stem','Worn / kinked supply line'],
+ steps:[
+  {q:'Try to operate it gently. Seized, or leaking at the stem?',
+   clear:{t:'Turns & seals',say:'It turns and seals fine \u2014 so the leak\u2019s coming from somewhere else.'},
+   found:{t:'Leaks / seized',say:'[The packing\u2019s weeping / it\u2019s seized and won\u2019t seal]. I\u2019ll [snug the packing nut / replace it with a quarter-turn stop] so you can actually shut your water off when you need to.'}},
+  {q:'Check the supply line condition while you\u2019re there.',
+   clear:{t:'',say:''},
+   found:{t:'Old supply line',say:'The supply line\u2019s old too \u2014 cheap insurance to replace it now with a braided line while everything\u2019s apart.'}}
+ ],
+ flag:'Doing any fixture work and the stop won\u2019t hold? Always recommend replacing it \u2014 a stop that won\u2019t shut off is a flood waiting to happen.',
+ option:'Quarter-turn stops \u2022 braided supply lines'},
+
+{role:'plumb', title:'Garbage disposal \u2014 hums / jammed / leaking', specs:[['Jam tool','1/4 in hex / Allen wrench in the bottom socket'],['Reset','Red button on the underside'],['Hums = jam','Motor powered, impeller stuck'],['Body-bottom leak','Failed internal seal \u2192 replace']], says:['disposal just hums','dead, won\u2019t turn on','leaking under the sink'],
+ safety:'Power OFF and unplugged before anything. Never put your hand in the disposal \u2014 flashlight and tongs only.',
+ causes:['Jam \u2014 object/food blocking the impeller (humming)','Tripped internal reset / overload','Tripped GFCI outlet or breaker (completely dead)','Seized or failed motor','Leak at the mounting flange, drain connection, or body'],
+ steps:[
+  {q:'Hums but won\u2019t spin = jam. Power off, hex/Allen wrench in the bottom socket, work it back and forth. Remove the object with tongs. Press the reset button.',
+   clear:{t:'Frees up & runs',say:'It was jammed \u2014 freed the flywheel and pulled out the [object]. Running clean now. Keep [bones / pits / fibrous stuff] out of it and it\u2019ll stay happy.'},
+   found:{t:'Still won\u2019t turn / hot smell',say:'Even freed up it won\u2019t turn and there\u2019s a hot-motor smell \u2014 the motor\u2019s seized. That\u2019s a replacement, not a repair.'}},
+  {q:'Completely dead, no hum? Press the reset button, check the GFCI outlet, check the breaker and switch.',
+   clear:{t:'Power restored',say:'It had just tripped the [reset / GFCI] \u2014 reset it and it\u2019s back to life.'},
+   found:{t:'Dead with power confirmed',say:'Power\u2019s reaching it and it\u2019s still dead, so the unit\u2019s failed internally \u2014 time to replace it.'}},
+  {q:'Leaking? Locate it: top mounting flange, the drain/dishwasher connection, or the body bottom.',
+   clear:{t:'Connection leak',say:'It\u2019s leaking at the [flange / drain connection] \u2014 I can reseal that.'},
+   found:{t:'Body / bottom leak',say:'It\u2019s leaking from the body itself, which means the internal seal\u2019s gone \u2014 that one\u2019s a replacement.'}}
+ ],
+ flag:'Leak from the body bottom = replace. Repeat overload trips = unit on its way out.',
+ option:'Disposal replacement (HP upgrade) \u2022 connection reseal'},
+
+{role:'plumb', title:'Sump pump failure', specs:[['Most common','Float stuck against the pit wall'],['Check valve','Failing = water cycles back, short-cycles'],['Backup','Recommend battery backup \u2014 power fails in storms']], says:['pump won\u2019t run','runs constantly','pit\u2019s full','water in the basement'],
+ causes:['Stuck or obstructed float switch','Failed check valve \u2014 water cycles back into the pit','Clogged intake screen','Tripped power / GFCI, or unplugged','Seized / burned-out motor','Blocked or frozen discharge line outside'],
+ steps:[
+  {q:'Check power \u2014 plugged in? GFCI / breaker tripped?',
+   clear:{t:'Has power',say:'It\u2019s getting power, so it\u2019s mechanical \u2014 let me check the float and the rest.'},
+   found:{t:'No power',say:'It was [unplugged / tripped the GFCI] \u2014 restored power and it kicked on.'}},
+  {q:'Float switch \u2014 stuck or obstructed? Lift it to test.',
+   clear:{t:'Float works',say:'Float\u2019s moving freely and triggering, so the switch is fine.'},
+   found:{t:'Stuck float',say:'The float was hung up against the pit wall, so the pump never got the signal \u2014 freed and repositioned it.'}},
+  {q:'Check valve (short-cycling / water flowing back?), intake screen, and the discharge line outside.',
+   clear:{t:'All clear, motor dead',say:'Everything\u2019s clear but the motor won\u2019t run with power confirmed \u2014 the pump\u2019s failed and needs replacing.'},
+   found:{t:'Bad check valve / clog',say:'Found [a failed check valve cycling water back / a clogged intake / a blocked discharge] \u2014 fixing that gets it pumping right.'}}
+ ],
+ flag:'No battery backup \u2192 recommend one (failures happen during the storm that knocks out power). Old pump \u2192 replace before it fails. High water table \u2192 backup/second pump.',
+ option:'Battery backup \u2022 new / upsized pump \u2022 check valve \u2022 high-water alarm'},
+
+{role:'plumb', title:'Smell of gas / gas line', specs:[['Leak test','Always \u2014 electronic detector or soap solution'],['CSST','Requires bonding'],['Active leak','No switches, evacuate, call utility / 911'],['Scope','Permitted / licensed work \u2014 loop in the lead']], says:['I smell gas','rotten-egg smell near an appliance'],
+ safety:'This is the one to be most careful with. Active strong gas smell: do NOT switch anything electrical, get everyone out, shut the gas at the meter if it\u2019s safe to, and call the gas utility or 911. Don\u2019t troubleshoot a live leak. Much of gas work is licensed/permitted \u2014 if it\u2019s past your scope, secure it and bring in the licensed lead.',
+ causes:['Loose / failed appliance connection or flex connector','Line fitting leak','Missing CSST bonding','Failed valve'],
+ steps:[
+  {q:'Once safe \u2014 always leak-test (electronic detector or soap solution). Never skip this.',
+   clear:{t:'No leak detected',say:'Tested the connections and I\u2019m not finding an active leak \u2014 but let\u2019s figure out what you smelled.'},
+   found:{t:'Leak found',say:'Confirmed a leak at [location] \u2014 here\u2019s what it takes to repair and pressure-test it properly.'}},
+  {q:'Confirm the shutoff, identify line material (black iron / CSST \u2014 needs bonding / copper), pressure-test and document, inspect appliance connections, flex connectors, drip legs, and CO detectors.',
+   clear:{t:'',say:''},
+   found:{t:'Issue identified',say:'Found [the connector / bonding / valve] needs attention \u2014 and this is permitted work, so we\u2019ll do it to code.'}}
+ ],
+ flag:'Any confirmed leak \u2192 repair + pressure test + permit as required. CSST needs bonding. Treat gas conservatively and within your licensed scope.',
+ option:'Full gas inspection \u2022 ball-valve shutoff upgrade \u2022 CO detectors \u2022 flex-connector replacement \u2022 seismic shutoff'},
+
+{role:'plumb', title:'Discolored / smelly water', specs:[['Rotten-egg (hot side)','Anode reaction \u2192 aluminum/zinc or powered anode'],['Rusty hot only','Heater sediment / rust \u2192 flush'],['Both sides + old pipe','Galvanized corrosion \u2192 re-pipe'],['Cloudy / milky','Air \u2014 harmless, clears bottom-up']], says:['brown or rusty water','rotten-egg smell from the hot water','milky / cloudy water'],
+ causes:['Brown/rusty: sediment or rust \u2014 from a main flush, corroding galvanized pipe, or the water heater','Rotten egg (hot side): anode-rod reaction / bacteria in the heater','Milky/cloudy: harmless air, clears from the bottom up'],
+ steps:[
+  {q:'Hot only, cold only, or both? Run it briefly \u2014 does it clear?',
+   clear:{t:'Clears quickly / cloudy clears',say:'It clears right up, so that\u2019s just [stirred sediment after work on the line / air in the water] \u2014 nothing to worry about.'},
+   found:{t:'Hot-side rust or smell',say:'It\u2019s on the hot side, so it\u2019s the water heater \u2014 [sediment/rust needs a flush / the rotten-egg smell is the anode rod reacting, and swapping that rod fixes it].'}},
+  {q:'Both sides + old galvanized pipe \u2192 corrosion. After municipal work \u2192 flush the lines.',
+   clear:{t:'',say:''},
+   found:{t:'Galvanized corrosion',say:'The rust is coming from the old galvanized pipe corroding from the inside \u2014 that\u2019s the long-term re-pipe conversation, and here\u2019s the near-term option.'}}
+ ],
+ flag:'Galvanized corrosion \u2192 re-pipe. Persistent bacterial (rotten-egg) smell \u2192 anode rod + sanitize the tank.',
+ option:'Anode rod \u2022 heater flush \u2022 filtration / softener \u2022 re-pipe'},
+
+/* ===== ADDED CATEGORIES: SOFTENER / RO / TANKLESS / OUTDOOR / SEPTIC ===== */
+
+{role:'plumb', title:'Water softener \u2014 hard water returning',
+ specs:[['Resin life','10\u201315 yrs'],['Salt level','Keep above the water line; do not overfill past half'],['Brine tank water','High / standing after a regen = flow or valve issue'],['Regen stages','Backwash \u2192 brine draw \u2192 slow rinse \u2192 fast rinse'],['After power loss','Reset time-of-day or it regenerates at the wrong hour'],['Bypass test','On bypass, pressure jumps = restriction is inside the unit']],
+ says:['water feels hard again','spots on dishes','no lather','scale on the faucets','salty taste'],
+ causes:['Salt bridge \u2014 hard crust above the water blocking salt from dissolving (most common)','Salt mushing \u2014 recrystallized sludge at the tank bottom','Clogged injector / venturi starving the brine draw','Timer or control-valve fault (not regenerating, or stuck running)','Resin fouled by iron / chlorine or simply aged out','Salt level too low'],
+ steps:[
+  {q:'Check the salt level and look for a salt bridge \u2014 press the top crust gently with a broom handle; hollow underneath means a bridge.',
+   clear:{t:'Salt fine, no bridge',say:'Salt level\u2019s good and there\u2019s no crust bridging over the water, so the salt\u2019s feeding fine \u2014 we look deeper.'},
+   found:{t:'Salt bridge / low salt',say:'There was a salt bridge \u2014 a hard crust holding the salt up off the water so it couldn\u2019t make brine. Broke it up and topped off with good salt. We\u2019ll run a manual regen and you should be soft again.'}},
+  {q:'Confirm it\u2019s actually regenerating \u2014 check the time-of-day (resets after a power outage) and run a manual regeneration.',
+   clear:{t:'Cycles on schedule',say:'It\u2019s cycling on schedule, so the program\u2019s fine \u2014 the issue is the brine draw or the resin.'},
+   found:{t:'Not cycling / wrong time',say:'The clock got reset after a power blip, so it was trying to regenerate at the wrong time and never when you needed it. Reset the time-of-day and it\u2019s back on track.'}},
+  {q:'During the brine draw, check for suction. Weak draw or a brine tank that won\u2019t empty points to a clogged injector / venturi or brine line.',
+   clear:{t:'Draws brine fine',say:'It\u2019s pulling brine fine and the tank empties, so the injector and brine line are clear.'},
+   found:{t:'Weak draw / clogged injector',say:'The injector that pulls brine into the resin was clogged \u2014 cleaned it so the system can actually recharge.'}},
+  {q:'Bypass test for flow loss, and check resin age / condition.',
+   clear:{t:'Flow good, resin aged',say:'Flow\u2019s fine either way, so if it still won\u2019t soften, the resin\u2019s worn out \u2014 that\u2019s a re-bed or a newer unit.'},
+   found:{t:'Restriction inside / mushing',say:'Putting it on bypass jumped your pressure back up, so the restriction is inside the softener \u2014 [salt mushing / fouled resin]. Here\u2019s the fix.'}}
+ ],
+ flag:'Resin past 10\u201315 yrs, mushing, or a failed control valve \u2192 re-bed or replace. Iron fouling \u2192 pre-treatment / resin cleaner.',
+ option:'Resin re-bed \u2022 new high-efficiency softener \u2022 iron pre-filter \u2022 salt / maintenance plan'},
+
+{role:'plumb', title:'Reverse osmosis \u2014 slow, no water, or leaking',
+ specs:[['Feed pressure','40 PSI minimum \u00B7 \u2248 60 PSI ideal'],['Tank pre-charge','7\u20138 PSI with the tank empty'],['Membrane life','\u2248 24 months'],['Pre / post filters','Every 6\u201312 months'],['Normal output','\u2248 1 quart per 40 sec at the faucet'],['Ruptured bladder','\u2248 1 cup then trickle = replace the tank'],['Constant drain','Failed ASO or check valve']],
+ says:['barely a trickle from the RO faucet','takes forever to fill','no water','leaking under the sink','water tastes off'],
+ causes:['Clogged pre-filters or a fouled membrane (slow fill / low output)','Low feed pressure (under 40 PSI)','Lost tank air charge or a ruptured bladder (a cup then trickle)','Failed auto-shutoff (ASO) or check valve (constant drain)','Leaks at quick-connect fittings or housing O-rings, often after a filter change'],
+ steps:[
+  {q:'Is the tank full? Open the RO faucet and check the output.',
+   clear:{t:'Tank fills, faucet weak',say:'Tank\u2019s holding water but the faucet\u2019s weak \u2014 that\u2019s almost always the tank air charge or the post-filter.'},
+   found:{t:'Tank won\u2019t fill / slow',say:'The tank\u2019s barely filling, so we start at the filters and feed pressure.'}},
+  {q:'Filters and membrane \u2014 when were they last changed? Replace clogged pre-filters; membrane about every 24 months.',
+   clear:{t:'Filters current',say:'Filters are current, so it\u2019s pressure or a valve, not a clog.'},
+   found:{t:'Overdue filters / membrane',say:'Your filters were overdue and the membrane\u2019s past its two years \u2014 that\u2019s why production crawled. Fresh filters and a new membrane bring the flow back.'}},
+  {q:'Feed pressure (40 PSI min) and tank air charge (7\u20138 PSI empty). A cup then trickle = ruptured bladder.',
+   clear:{t:'Pressure & charge good',say:'Feed pressure and tank charge are both good, so the system can push water \u2014 we look at the shutoff valve.'},
+   found:{t:'Low charge / ruptured bladder',say:'The tank lost its air charge [/ the bladder ruptured] \u2014 that\u2019s why you get a cup and then nothing. [Re-charged it / the tank needs replacing].'}},
+  {q:'Constant draining? Shut the tank valve \u2014 if the drain keeps running, replace the ASO / check valve. Inspect fittings and O-rings for leaks (often right after a filter change).',
+   clear:{t:'No constant drain, sealed',say:'No constant drain and everything\u2019s sealed up \u2014 you\u2019re back to full production.'},
+   found:{t:'ASO failed / leak',say:'[The auto-shutoff valve failed so it kept sending water to drain / a fitting was leaking after the last filter change]. Fixed it \u2014 no more waste.'}}
+ ],
+ flag:'Ruptured bladder \u2192 new tank. Repeated membrane fouling \u2192 pair it with a softener to protect the membrane.',
+ option:'Filter / membrane service plan \u2022 new storage tank \u2022 pair with softener \u2022 remineralization / annual sanitize'},
+
+{role:'plumb', title:'Tankless \u2014 cold water, codes, or scale',
+ specs:[['Min flow to fire','\u2248 0.5 GPM \u2014 low-flow fixtures can stop ignition'],['Descale','Every 6\u201312 months (6 mo on hard water); citric / vinegar 45\u201360 min'],['Inlet filter','Clean every 3\u20136 months'],['Lifespan','\u2248 20 yrs maintained'],['Cold-water sandwich','Normal \u2014 a cold slug in the line, not a fault'],['Ignition codes','Rinnai 11 / 12 \u00B7 Navien E003 / E012'],['Flow codes','Navien E011 / E039 \u00B7 Rinnai 10 / 31 \u00B7 Takagi 721 / 731'],['Scale / temp codes','Navien E016 \u00B7 Rinnai LC \u2014 needs a descale']],
+ says:['cold water from the tankless','error code on the display','clicks but won\u2019t fire','cold burst mid-shower','kettling / popping noise'],
+ causes:['Mineral scale in the heat exchanger \u2014 reduced flow, temp swings, kettling (the #1 enemy on hard water)','Flow below the activation threshold \u2014 clogged inlet filter or aerators, so it never fires','Ignition fault \u2014 gas supply / valve, dirty flame sensor, venting','Sensor or control-board fault','Plumbing crossover (hot and cold tied together somewhere) mimicking lukewarm','Cold-water sandwich \u2014 not a malfunction'],
+ steps:[
+  {q:'Read the display \u2014 is there an error code? Match the family: ignition, flow, scale, or sensor.',
+   clear:{t:'No code',say:'No code showing, so the unit isn\u2019t faulting \u2014 let\u2019s chase the symptom directly.'},
+   found:{t:'Code present',say:'It\u2019s throwing a [flow / ignition / scale] code, which tells us exactly where to look \u2014 here\u2019s what that one means.'}},
+  {q:'Clean the cold inlet filter and the fixture aerators \u2014 low flow keeps the unit from firing (it needs about 0.5 GPM).',
+   clear:{t:'Flow is adequate',say:'Flow\u2019s strong enough to trigger it, so it\u2019s not a flow problem.'},
+   found:{t:'Restricted flow',say:'The inlet filter [and aerators] were clogged, dropping flow below what the unit needs to even turn on \u2014 cleaned them and it fires now.'}},
+  {q:'Kettling, temp swings, or a scale code \u2192 descale the heat exchanger (citric or vinegar, 45\u201360 min).',
+   clear:{t:'No scale symptoms',say:'No scaling signs, so the heat exchanger\u2019s clean \u2014 we look at ignition or sensors.'},
+   found:{t:'Scaled exchanger',say:'Hard water scaled up the heat exchanger \u2014 that\u2019s the popping and the temp swings. Flushed it with a descale; a yearly flush keeps it healthy, and a softener protects it long-term.'}},
+  {q:'Ignition fault \u2192 gas on, flame sensor, venting clear. Lukewarm everywhere \u2192 crossover test: shut the cold to the unit and open a hot tap; if water still flows, there\u2019s a crossover.',
+   clear:{t:'Fires, no crossover',say:'It\u2019s igniting and there\u2019s no crossover, so the unit\u2019s doing its job.'},
+   found:{t:'Ignition / crossover',say:'[Ignition was failing on a dirty flame sensor / there\u2019s a hot-cold crossover in the plumbing letting cold mix in]. Here\u2019s the fix.'}}
+ ],
+ flag:'Repeat scale codes after a flush = heat-exchanger damage \u2192 replace. Gas, venting, or board work past your scope \u2192 licensed lead.',
+ option:'Annual descale plan \u2022 softener to protect the exchanger \u2022 recirculation pump for wait time \u2022 unit replacement'},
+
+{role:'plumb', title:'Hose bib / outdoor faucet',
+ specs:[['Frost-free sillcock','Seat sits inside the heated wall; pitch it down to drain'],['Freeze split','Often leaks inside the wall \u2014 shows only when the bib is opened'],['Vacuum breaker','Anti-siphon cap on top; common drip point \u2014 rebuild kit'],['Packing nut','Stem leak \u2192 snug or repack'],['Winter','Leave hoses off so the bib can drain']],
+ says:['outdoor faucet leaks','sprays when I turn it on','dripping from the handle','no water outside','burst after winter'],
+ causes:['Worn washer / seat (drips from the spout)','Failed vacuum breaker / anti-siphon cap (drips from the top)','Packing-nut / stem leak (leaks at the handle)','Freeze-split pipe behind the wall (sprays inside the wall when opened, often after winter)','Old standard sillcock that should be a frost-free'],
+ steps:[
+  {q:'Where is it leaking \u2014 the spout, the cap on top, the handle, or inside the wall when you open it?',
+   clear:{t:'Spout / handle only',say:'It\u2019s leaking at the [spout / handle], so it\u2019s a washer or packing \u2014 a straightforward rebuild.'},
+   found:{t:'Sprays inside the wall',say:'When you open it, it\u2019s spraying back inside the wall \u2014 that\u2019s a freeze-split behind the faucet. That section has to be replaced, ideally with a frost-free sillcock.'}},
+  {q:'Top-cap leak \u2192 rebuild / replace the vacuum breaker. Handle leak \u2192 snug or repack the packing nut. Spout drip \u2192 replace the washer / seat.',
+   clear:{t:'',say:''},
+   found:{t:'Rebuilt it',say:'It was the [vacuum breaker / packing / washer] \u2014 rebuilt it and it shuts off clean.'}},
+  {q:'Old standard bib in a cold climate \u2192 recommend a frost-free sillcock, pitched to drain.',
+   clear:{t:'',say:''},
+   found:{t:'Upgrade to frost-free',say:'This is an old standard hose bib that can freeze and burst \u2014 swapping it for a frost-free one pitched to drain keeps that from happening again.'}}
+ ],
+ flag:'Freeze damage behind the wall \u2192 open the wall, replace with frost-free. Missing vacuum breaker \u2192 add one for backflow protection.',
+ option:'Frost-free sillcock \u2022 vacuum breaker \u2022 winterizing / hose-bib covers'},
+
+{role:'drain', title:'Septic backup / warning signs',
+ safety:'Treat sewage as a biohazard \u2014 keep people and pets clear, and stop water use to relieve the system. Never use chemical drain cleaners on a septic system; they kill the bacteria the tank depends on. Do not enter a tank.',
+ specs:[['Pump interval','Every 3\u20135 yrs (or when solids \u2248 2/3 of the tank)'],['Effluent filter','Clean at every pump-out'],['House-to-tank line','Snakes like any drain if the clog is before the tank'],['Never','Chemical cleaners \u2014 they kill the tank\u2019s bacteria'],['Drainfield failure','Soggy / bright-green grass or surfacing = major repair'],['Specialty','Pumping & drainfield \u2014 coordinate with a septic service']],
+ says:['everything\u2019s draining slow','sewage smell in the yard','gurgling','grass greener over the tank','backup in the lowest drain'],
+ causes:['Tank full / overdue pumping \u2014 solids backing up','Clogged inlet baffle or effluent filter','Clog in the house-to-tank line (snakeable like a normal drain)','Drainfield saturated or failed (soggy ground, surfacing, lush grass)','Crushed or root-damaged line to the tank'],
+ steps:[
+  {q:'Confirm it\u2019s septic, not city \u2014 then read the pattern: multiple slow drains, gurgling, lowest fixtures first, odor or soggy / green grass over the tank or field.',
+   clear:{t:'Single fixture',say:'Just one fixture\u2019s affected, so this is a local clog, not the whole system \u2014 the better case.'},
+   found:{t:'System-wide signs',say:'Slow everywhere, gurgling, and [soggy ground / odor] over the tank \u2014 that\u2019s the septic system as a whole, not one drain.'}},
+  {q:'When was the tank last pumped? Past 3\u20135 yrs is overdue. Reduce water use now.',
+   clear:{t:'Recently pumped',say:'It was pumped recently, so a full tank isn\u2019t the cause \u2014 we look at the filter, the line, or the field.'},
+   found:{t:'Overdue',say:'It\u2019s well past the 3-to-5-year mark, so the tank is likely full and backing up. First step is a pump-out, and we\u2019ll coordinate that.'}},
+  {q:'Check the inlet baffle / effluent filter (clean it) and snake the house-to-tank line if the clog is before the tank.',
+   clear:{t:'Filter clean, line clear',say:'Filter\u2019s clean and the line to the tank is clear, so the trouble is the tank or the drainfield.'},
+   found:{t:'Clogged filter / line',say:'The [effluent filter was clogged / the line to the tank was blocked] \u2014 cleared it, which gets you flowing again.'}},
+  {q:'Drainfield \u2014 soggy ground, surfacing effluent, or lush grass means the field is saturated or failing.',
+   clear:{t:'Field looks dry',say:'The field looks dry and normal, so it\u2019s holding up.'},
+   found:{t:'Field failing',say:'The ground over the field is [soggy / surfacing], which means the drainfield is saturated \u2014 that\u2019s a bigger repair, and I\u2019ll get the right people involved.'}}
+ ],
+ flag:'Drainfield failure, biomat saturation, or a crushed / collapsed line \u2192 specialty septic repair. Coordinate pumping with a septic service.',
+ option:'Pump-out & inspection \u2022 effluent filter \u2022 camera the line \u2022 septic-safe usage plan \u2022 drainfield evaluation'}
+];
+
+const UPSELL={
+'Kitchen sink \u2014 slow or won\u2019t drain':[
+ {c:'Hydro-jet the line vs. one more snake',r:'a snake bores a hole through the grease but leaves the coating \u2192 it narrows again \u2192 you\u2019re calling us back in a few months',p:'Snaking opens a hole, but the grease ring is still on the pipe walls. A jet scours it back to bare pipe so this is the last time we\u2019re out here for it.'},
+ {c:'Under-sink shutoffs & supply lines',r:'old multi-turn stops seize \u2192 the next leak can\u2019t be shut off fast \u2192 a small drip becomes a flooded cabinet',p:'While I\u2019m under here \u2014 these shutoffs are the old style and corroding. If you ever get a leak you won\u2019t be able to stop it fast. Quarter-turn valves take me ten minutes now.'},
+ {c:'Disposal & dishwasher drain connection',r:'the same grease clogs the shared dishwasher drain \u2192 the dishwasher backs up into the sink \u2192 a second call',p:'Your dishwasher drains through this same line. Since we\u2019re clearing it, I\u2019ll make sure that connection and the loop are right so the dishwasher doesn\u2019t start backing up next.'}
+],
+'Bathroom sink \u2014 slow drain':[
+ {c:'Pop-up assembly & drain seal',r:'a corroded pop-up pivot weeps into the cabinet \u2192 the base swells and rots \u2192 cabinet replacement',p:'The drain assembly is corroding at the seal \u2014 that slow weep rots the cabinet floor before you\u2019d ever notice. Easy to replace while it\u2019s apart.'},
+ {c:'Clean the shared branch, not just this trap',r:'the matching sink on this wall is coating up the same way \u2192 it\u2019s the next slow drain \u2192 another visit',p:'Both sinks on this wall share a line and it\u2019s building up. I can clear the branch now so the other one isn\u2019t your next call.'},
+ {c:'Shutoffs & supply lines',r:'old stops seize \u2192 you can\u2019t isolate the fixture \u2192 a leak turns into water damage',p:'These shutoffs are old enough I\u2019d swap them while I\u2019m here \u2014 cheap insurance so a future leak can actually be shut off.'}
+],
+'Tub / shower \u2014 standing water':[
+ {c:'Overflow gasket & drain shoe',r:'a dried overflow gasket leaks behind the tub \u2192 water runs into the ceiling below \u2192 stained drywall and a bigger repair',p:'The overflow gasket behind the tub is the classic hidden leak \u2014 if it\u2019s gone it drips into the ceiling under here. Since the drain\u2019s open, worth replacing now.'},
+ {c:'Caulk & grout seal at the surround',r:'failed caulk lets water into the wall \u2192 the subfloor and studs rot \u2192 mold and structural work',p:'Your seal around the surround is failing \u2014 that lets water into the wall and rots the subfloor quietly. Re-sealing now saves a much bigger job later.'},
+ {c:'Hair catcher + drain treatment plan',r:'no screen \u2192 hair and soap rebuild \u2192 the same standing water in a few months',p:'A good hair catcher and a periodic treatment keep this from coming right back \u2014 that\u2019s the whole point, not seeing us again for it.'}
+],
+'Toilet \u2014 clogged (single)':[
+ {c:'Wax ring & flange (while it\u2019s pulled)',r:'a tired wax ring leaks at the base \u2192 sewer gas and slow subfloor rot \u2192 the floor under the toilet fails',p:'Since I have the toilet up, the wax ring and flange are right there \u2014 if that seal is going it leaks under the floor where you can\u2019t see it. A fresh ring now is the smart move.'},
+ {c:'Supply line & shutoff',r:'an old stop seizes and the supply line gets brittle \u2192 a burst behind the toilet \u2192 a flooded bathroom',p:'The shutoff and supply line are original \u2014 a common burst point. I\u2019ll put a quarter-turn stop and a braided line on while we\u2019re here.'},
+ {c:'Upgrade an old 3.5-gallon toilet',r:'a weak old trapway keeps catching \u2192 repeat clogs \u2192 us back out again',p:'This is an older high-volume toilet with a narrow trapway, which is why it keeps catching. A modern bowl clears better and uses less water \u2014 ends the repeat clogs.'}
+],
+'Main sewer line backup':[
+ {c:'Camera & locate the line now',r:'clearing it blind leaves the real cause \u2014 roots or a belly \u2014 in place \u2192 it backs up again \u2192 next time it\u2019s in your living space',p:'I can get flow back, but without a camera we\u2019re guessing at why. For a little more I\u2019ll show you exactly what\u2019s down there so we fix the cause, not just buy a few months.'},
+ {c:'Install a cleanout (if there\u2019s none)',r:'no access point \u2192 every future service is harder and pricier \u2192 emergencies cost the most',p:'There\u2019s no proper cleanout here, which is why this was a fight to access. Adding one to code makes every future visit faster and cheaper \u2014 it pays for itself the next time.'},
+ {c:'Backwater valve',r:'a storm or city surcharge pushes the sewer back \u2192 raw sewage comes up your lowest drains \u2192 a biohazard cleanup',p:'A backwater valve stops the city\u2019s line from pushing sewage back into your house during a surcharge \u2014 the difference between a non-event and a flooded basement.'},
+ {c:'Annual root / jet plan',r:'roots regrow into the joints \u2192 the next backup hits at the worst time \u2192 emergency rates',p:'Roots come back every season. A scheduled jet keeps the line open on your terms instead of waiting for it to back up on a holiday weekend.'}
+],
+'Basement / floor drain backup':[
+ {c:'Backwater valve',r:'the main surcharges \u2192 sewage comes up the floor drain \u2192 a finished basement and belongings ruined',p:'This floor drain is your home\u2019s lowest point, so it\u2019s where a backup shows first. A backwater valve keeps that water out of your basement for good.'},
+ {c:'Test the nearby sump pump',r:'a dead sump during the same storm \u2192 groundwater floods alongside the backup \u2192 two problems at once',p:'While I\u2019m down here I\u2019ll test your sump \u2014 if it fails during the same storm that causes a backup, you\u2019ve got water from both directions.'},
+ {c:'Camera the main',r:'unknown cause \u2192 repeat backups \u2192 recurring cleanups',p:'A quick camera tells us if this is a one-time clog or a line problem feeding it \u2014 so we solve it once.'}
+],
+'Recurring clogs \u2014 \u201Cit keeps coming back\u201D':[
+ {c:'Camera instead of re-snaking',r:'snaking the same spot blind \u2192 the defect stays \u2192 endless callbacks spent on nothing',p:'We could snake it again, but it\u2019ll be back \u2014 that\u2019s the pattern. Let\u2019s camera it once and actually see why, so you stop paying for the same problem.'},
+ {c:'Hydro-jet to bare pipe',r:'leftover grease and scale coat the walls \u2192 it closes back up \u2192 the cycle continues',p:'A jet scours the pipe back to full diameter instead of poking a hole \u2014 that\u2019s what breaks the cycle of us coming back.'},
+ {c:'Repair the defect (belly / offset / roots)',r:'a sag or break keeps catching debris \u2192 no cleaning lasts \u2192 the problem only grows',p:'If the camera shows a belly or break, no amount of cleaning fixes that \u2014 repairing the spot is the only thing that ends it. I\u2019ll show you the footage.'}
+],
+'Sewer / drain odor (no backup)':[
+ {c:'Reset the toilet on a new wax ring',r:'a failed wax ring leaks gas and water at the base \u2192 the subfloor rots \u2192 the toilet loosens and fails',p:'If the smell\u2019s at the toilet, the wax ring\u2019s likely gone \u2014 that leaks gas now and rots the floor over time. Resetting it on a fresh ring handles both.'},
+ {c:'Inspect the vents',r:'a cracked or blocked vent keeps pulling traps dry \u2192 the smell keeps returning \u2192 repeat trips',p:'If traps keep losing their seal, the vent\u2019s the culprit. Worth checking so the odor doesn\u2019t just come back after we leave.'},
+ {c:'Whole-house drain treatment',r:'biofilm rebuilds in the lines \u2192 the smell returns \u2192 another call',p:'A periodic treatment keeps the biofilm down so the smell stays gone \u2014 that\u2019s the goal, not a repeat visit.'}
+],
+'Gurgling drains':[
+ {c:'Camera the main now',r:'gurgling is the early warning \u2192 ignored, the partial blockage becomes a full backup \u2192 sewage in the house',p:'Gurgling means a partial blockage is already there. Catching it now with a camera is a fraction of the cost of cleaning up a full backup later.'},
+ {c:'Check / clear the vent',r:'a blocked vent keeps pulling air through traps \u2192 ongoing gurgle and odor \u2192 repeat issues',p:'If it\u2019s a vent, clearing it stops the gurgle for good instead of it nagging at you.'},
+ {c:'Maintenance plan',r:'the restriction rebuilds \u2192 back to gurgling \u2192 then backing up',p:'A scheduled check keeps the line ahead of the next backup \u2014 on your schedule, not an emergency.'}
+],
+'Garbage disposal \u2014 won\u2019t drain':[
+ {c:'Dishwasher drain loop & connection',r:'the shared drain stays greasy \u2192 the dishwasher backs up into the sink \u2192 a second call',p:'Your dishwasher shares this drain \u2014 while it\u2019s open I\u2019ll make sure the loop and connection are right so it doesn\u2019t back up next.'},
+ {c:'Check the disposal age / for a leak',r:'a leaking or limping disposal \u2192 quiet cabinet rot or a dead unit soon \u2192 another trip',p:'Your disposal\u2019s showing some age and seepage \u2014 if it\u2019s leaking it rots the cabinet, and a tired motor is a near-future call. Worth deciding now while I\u2019m here.'},
+ {c:'Jet + a what-not-to-grind talk',r:'grease and fibrous waste keep going down \u2192 it re-clogs \u2192 us back out',p:'A jet plus a quick rundown of what not to put down it keeps this from coming back \u2014 that\u2019s the whole idea.'}
+],
+'No hot water at all':[
+ {c:'Expansion tank & T&P relief',r:'no expansion tank on a closed system \u2192 pressure spikes with nowhere to go \u2192 the tank and relief valve fail early',p:'While I\u2019m at the heater \u2014 there\u2019s no expansion tank, so every heat cycle spikes the pressure and stresses the tank. Adding one protects the heater you\u2019re paying me to fix.'},
+ {c:'Shutoff valve & flex connectors',r:'a corroded heater shutoff \u2192 you can\u2019t isolate it for the next service \u2192 a leak runs unchecked',p:'The shutoff and connectors up top are corroding \u2014 if this ever leaks you want to kill the water fast. Quick to replace while I\u2019m here.'},
+ {c:'Drain pan + leak sensor',r:'the tank fails someday with no pan \u2192 it dumps onto the floor or the ceiling below \u2192 a water-damage claim',p:'There\u2019s no pan or sensor under this. When a tank goes, it goes all at once \u2014 a pan and a cheap sensor are the difference between an alert and a flooded floor.'},
+ {c:'Proactive replacement if 10\u201312+ yrs',r:'an aging tank fails cold and at the worst time \u2192 an emergency replacement at premium rates',p:'This tank\u2019s near the end of its life. Replacing it on a planned day beats an emergency cold-water call \u2014 and we can right-size it while we\u2019re at it.'}
+],
+'Not enough hot water / runs out fast':[
+ {c:'Flush + anode rod',r:'sediment and a spent anode \u2192 the tank corrodes from the inside \u2192 it fails years early',p:'While I\u2019m here, flushing it and checking the anode rod is what keeps a tank alive \u2014 a spent anode means it\u2019s eating itself. Cheap now, expensive to ignore.'},
+ {c:'Mixing valve / dip tube check',r:'a bad dip tube mixes cold in \u2192 you keep running short \u2192 you call again thinking the heater\u2019s dying',p:'If the dip tube\u2019s letting cold sneak in, you\u2019ll keep running short no matter what \u2014 worth confirming so you\u2019re not chasing it twice.'},
+ {c:'Right-size or go tankless',r:'a genuinely undersized tank \u2192 you never have enough \u2192 endless frustration and service calls',p:'If the tank\u2019s just too small for the house, no repair fixes that \u2014 upsizing or a tankless solves it for good.'}
+],
+'Water heater leaking':[
+ {c:'PRV + expansion tank (root cause)',r:'if the relief valve is dumping, the pressure problem is still there \u2192 it keeps discharging and stressing everything \u2192 the new heater fails too',p:'If the relief valve\u2019s leaking, the real issue is pressure \u2014 replacing the heater without a PRV and expansion tank just sets up the next failure. Let\u2019s solve the cause.'},
+ {c:'Drain pan + leak sensor',r:'next failure with no pan \u2192 water across the floor or through the ceiling \u2192 a damage claim',p:'A pan and sensor under the new unit mean the next surprise is a beep, not a flood.'},
+ {c:'Right-size replacement + register warranty',r:'a like-for-like swap may repeat the same undersizing \u2192 ongoing shortfalls \u2192 dissatisfaction',p:'Since we\u2019re replacing it, let\u2019s size it right for the household and register it for full warranty \u2014 one and done.'}
+],
+'Water heater noises':[
+ {c:'Establish an annual flush',r:'sediment keeps building \u2192 efficiency drops and the bottom overheats \u2192 the tank fails early',p:'That rumble is sediment cooking at the bottom. A yearly flush keeps it quiet and adds years \u2014 cheaper than a replacement you\u2019d need sooner.'},
+ {c:'Anode rod inspection',r:'a spent anode \u2192 the tank corrodes through \u2192 a leak and full replacement',p:'While I\u2019m here I\u2019ll check the anode \u2014 it\u2019s the sacrificial part that keeps the tank from rusting out. Replacing it is a fraction of a new heater.'},
+ {c:'Plan the replacement if it\u2019s aged',r:'noise plus age plus less hot water \u2192 imminent failure \u2192 an emergency call',p:'Between the noise, the age, and the shorter hot-water runs, this tank\u2019s near the end. Planning the swap now beats waking up to a cold, leaking tank.'}
+],
+'Running toilet':[
+ {c:'Rebuild both flapper and fill valve',r:'replacing just one \u2192 the other part is the same age and fails next \u2192 you call us back in a month',p:'I\u2019m in the tank already \u2014 the fill valve\u2019s the same age as this flapper and it\u2019ll be your next call. Doing both now is one trip instead of two.'},
+ {c:'Supply line & shutoff',r:'an old stop and brittle supply \u2192 a burst at the toilet \u2192 a flooded bathroom',p:'The shutoff and supply here are original \u2014 a common burst spot. A quarter-turn stop and braided line while I\u2019m here is cheap peace of mind.'},
+ {c:'Check house pressure',r:'high pressure chews up new toilet parts \u2192 it runs again \u2192 a repeat repair',p:'If your house pressure\u2019s high, it\u2019ll wear out these new parts fast. Worth a quick gauge check so the fix actually lasts.'},
+ {c:'Upgrade a pre-1994 toilet',r:'old guts and a wasteful flush \u2192 ongoing repairs and high water bills \u2192 money down the drain',p:'On a toilet this old you\u2019ll keep rebuilding it. A modern one ends the repairs and cuts the water bill \u2014 often pays for itself.'}
+],
+'Weak / incomplete flush':[
+ {c:'Full tank rebuild + descale the jets',r:'fixing one thing \u2192 the next worn part keeps the flush weak \u2192 another visit',p:'Rather than chase one part, let\u2019s rebuild the guts and clear the scaled jets at once \u2014 a strong flush that stays strong.'},
+ {c:'Supply line & shutoff',r:'old stop seizes \u2192 no shutoff in a leak \u2192 water damage',p:'While I\u2019m here, the shutoff\u2019s the old style \u2014 worth swapping so you can stop the water if it ever leaks.'},
+ {c:'Upgrade if it\u2019s an old design',r:'an old low-flow bowl never flushes well \u2192 double-flushing and repeat calls \u2192 wasted water',p:'Some older bowls just never flush right. A modern one clears in one flush and uses less water \u2014 ends the frustration.'}
+],
+'Dripping / leaking faucet':[
+ {c:'Replace both hot and cold cartridges',r:'doing one side \u2192 the other is the same age and drips next \u2192 a return trip',p:'Both cartridges are the same age \u2014 if I only do the dripping side, the other\u2019s your next call. Doing the pair now is one trip.'},
+ {c:'Angle stops & supply lines',r:'corroded stops won\u2019t shut off \u2192 a future leak can\u2019t be isolated \u2192 a cabinet flood',p:'The shutoffs under here are corroding. While I\u2019m in the cabinet, quarter-turn stops mean you can actually shut the water off next time.'},
+ {c:'Aerator + pressure check',r:'high pressure and grit wear seals fast \u2192 it drips again \u2192 a repeat repair',p:'I\u2019ll clean the aerator and check your pressure \u2014 if it\u2019s running high, that\u2019s what kills cartridges early, and the fix won\u2019t last without addressing it.'}
+],
+'Low water pressure':[
+ {c:'PRV service / replacement',r:'a worn PRV drifts \u2192 pressure swings or climbs too high \u2192 fixtures and the water heater take damage',p:'Your PRV\u2019s the age where they start to drift \u2014 today it\u2019s low, tomorrow it can spike high and damage everything downstream. Replacing it protects the whole house.'},
+ {c:'Re-pipe quote on old galvanized',r:'corroded galvanized keeps narrowing \u2192 pressure keeps dropping and pinholes start \u2192 leaks in the walls',p:'If these are old galvanized lines, they\u2019re closing up from the inside and pinholes come next. Worth a re-pipe plan before they start leaking behind drywall.'},
+ {c:'Clean aerators house-wide + add a gauge',r:'scale rebuilds at every fixture \u2192 weak flow returns \u2192 more calls',p:'I\u2019ll clear the aerators house-wide and can leave a pressure gauge so we\u2019re tracking it \u2014 keeps small restrictions from becoming a service call.'}
+],
+'Banging pipes / high pressure':[
+ {c:'PRV + expansion tank together',r:'high pressure with no relief \u2192 it hammers fixtures, the heater, and joints \u2192 leaks and a failed water heater',p:'High pressure is quietly destroying every fixture and your water heater. A PRV to bring it down plus an expansion tank to absorb it is the real fix \u2014 it protects everything.'},
+ {c:'Hammer arrestors at the washer / dishwasher',r:'fast-closing valves slam \u2192 the banging stresses joints \u2192 a connection eventually splits',p:'Those quick-shutting appliance valves are what slam the pipes. Arrestors there stop the banging and the strain that eventually cracks a fitting.'},
+ {c:'Check water-heater warranty exposure',r:'high pressure voids many WH warranties \u2192 a future failure isn\u2019t covered \u2192 a full out-of-pocket replacement',p:'Worth knowing \u2014 running this high can void your water-heater warranty. Getting pressure in range keeps that coverage intact.'}
+],
+'Leaking / burst pipe':[
+ {c:'Pressure check (find the cause)',r:'if high pressure caused the pinhole, it\u2019s still there \u2192 the next pinhole pops elsewhere \u2192 repeat leaks',p:'A pinhole like this is often high pressure talking. Let\u2019s check it \u2014 otherwise the next one shows up down the line and we\u2019re back out.'},
+ {c:'Whole-home shutoff + leak detector',r:'the next leak happens while you\u2019re away \u2192 it runs for hours \u2192 catastrophic damage',p:'A main shutoff you can reach and a leak detector mean the next surprise gets caught fast instead of running all weekend.'},
+ {c:'Re-pipe plan on old copper / galvanized',r:'one failure on old pipe \u2192 more are coming \u2192 a series of emergency repairs',p:'If this is old copper or galvanized, one pinhole usually means more on the way. A re-pipe plan beats paying for the same emergency over and over.'}
+],
+'Leaking / seized shutoff valve':[
+ {c:'Replace the other stops in that room',r:'they\u2019re all the same age \u2192 the next one seizes when you need it \u2192 a leak you can\u2019t stop',p:'These stops are all the same vintage \u2014 if this one seized, the others will too. Swapping them now means every fixture can actually be shut off.'},
+ {c:'Supply lines',r:'old rubber or braided lines burst \u2192 a flood at the fixture \u2192 water damage',p:'While I\u2019m here, the supply lines are old too \u2014 cheap to replace and a common burst point.'},
+ {c:'Locate & service the main shutoff',r:'a seized main \u2192 in a real emergency you can\u2019t kill the water \u2192 the whole house floods',p:'Let\u2019s make sure your main shutoff actually works \u2014 in a burst, that\u2019s the valve that saves the house, and they seize from never being turned.'}
+],
+'Garbage disposal \u2014 hums / jammed / leaking':[
+ {c:'Replace a tired unit (HP upgrade)',r:'a limping motor or seal \u2192 it dies or leaks soon \u2192 another service call and cabinet rot',p:'This unit\u2019s on its way out \u2014 if I free it today, the motor or seal is still near the end. A new one now is one trip instead of two, and we can step up the horsepower.'},
+ {c:'Drain connection & dishwasher loop',r:'a worn connection leaks under the sink \u2192 the cabinet base rots \u2192 a bigger repair',p:'While I\u2019m under here I\u2019ll check the connections and the dishwasher loop so nothing\u2019s seeping into the cabinet.'},
+ {c:'Add an air switch / fix the outlet',r:'a marginal switch or outlet \u2192 an intermittently dead disposal \u2192 repeat troubleshooting',p:'If the switch or outlet\u2019s marginal you\u2019ll get random dead spells. Worth sorting now so it\u2019s reliable.'}
+],
+'Sump pump failure':[
+ {c:'Battery backup',r:'power fails in the storm that causes the water \u2192 the pump can\u2019t run \u2192 the basement floods exactly when it matters',p:'The storms that flood basements are the same ones that knock out power \u2014 right when your pump can\u2019t run. A battery backup is the whole point of not seeing us after a flood.'},
+ {c:'Check valve & discharge line',r:'a failed check valve cycles water back \u2192 the pump burns out short \u2192 you\u2019re replacing it again',p:'While I\u2019m here I\u2019ll confirm the check valve and discharge \u2014 a bad one makes the pump work double and die early.'},
+ {c:'High-water alarm / second pump',r:'a single pump fails silently \u2192 you find out when it\u2019s already flooded \u2192 a ruined basement',p:'An alarm tells you before the water does, and a backup pump covers you if the primary quits. For a finished basement that\u2019s cheap insurance.'}
+],
+'Smell of gas / gas line':[
+ {c:'Full leak survey of every connection',r:'one leak found often means others \u2192 an undetected leak elsewhere \u2192 a serious safety risk',p:'When I find one leak I survey them all \u2014 they rarely come alone, and a missed one is a safety issue I won\u2019t leave behind.'},
+ {c:'CO detectors',r:'a combustion problem with no detector \u2192 carbon monoxide goes unnoticed \u2192 a life-safety emergency',p:'While we\u2019re on gas \u2014 let\u2019s make sure you have working CO detectors. That\u2019s a life-safety thing, not an upsell I take lightly.'},
+ {c:'Ball-valve shutoff & flex-connector upgrades',r:'old connectors and a stiff shutoff \u2192 you can\u2019t kill the gas fast \u2192 a small leak becomes dangerous',p:'Upgrading to a proper ball-valve shutoff and fresh connectors means you can shut the gas off instantly if you ever need to.'}
+],
+'Discolored / smelly water':[
+ {c:'Anode rod',r:'a spent anode \u2192 the tank corrodes through and the smell worsens \u2192 a leak and replacement',p:'That hot-side smell is usually the anode rod reacting. Swapping it kills the smell and is the part that keeps the tank from rusting out \u2014 two birds.'},
+ {c:'Flush + sanitize the tank',r:'sediment and bacteria stay \u2192 rusty, smelly water continues \u2192 repeat complaints',p:'While I\u2019m here, flushing and sanitizing clears the sediment and bacteria so it doesn\u2019t come right back.'},
+ {c:'Filtration / softener at the cause',r:'hard or sediment-heavy water keeps fouling everything \u2192 heater, fixtures, and appliances wear early \u2192 ongoing problems',p:'If the water itself is the problem, treating it at the source protects the heater, the fixtures, and your appliances all at once \u2014 that\u2019s the real fix.'},
+ {c:'Re-pipe plan if galvanized',r:'old galvanized keeps shedding rust \u2192 brown water and pinholes \u2192 leaks in the walls',p:'If the rust is from old galvanized pipe, it won\u2019t stop until the pipe\u2019s replaced \u2014 worth a plan before the pinholes start.'}
+],
+'Water softener \u2014 hard water returning':[
+ {c:'Sediment / iron pre-filter',r:'grit and iron keep fouling the resin \u2192 the softener fails early \u2192 hard water and a rebuild',p:'A pre-filter ahead of the softener protects the resin from the grit and iron that kills it early \u2014 makes the unit last.'},
+ {c:'Pair with / service the RO',r:'hard water hammers the RO membrane \u2192 the membrane fails fast \u2192 more service',p:'If you\u2019ve got an RO, soft water makes its membrane last much longer \u2014 they work together. Worth checking that side while I\u2019m here.'},
+ {c:'Protect the water heater',r:'hard water scales the heater \u2192 efficiency drops and it fails early \u2192 a premature replacement',p:'The whole reason for soft water is protecting your heater and fixtures from scale \u2014 let\u2019s make sure it\u2019s actually doing that job so the heater you own lasts.'}
+],
+'Reverse osmosis \u2014 slow, no water, or leaking':[
+ {c:'Filter & membrane service plan',r:'skipped changes \u2192 the membrane fouls and production dies \u2192 no water and a forced replacement',p:'Staying on a simple filter-and-membrane schedule keeps it producing and protects the membrane \u2014 cheaper than letting it fail and replacing it.'},
+ {c:'Pair with a softener',r:'hard feed water destroys the membrane \u2192 frequent membrane failures \u2192 ongoing cost',p:'If your feed water\u2019s hard, it\u2019s shortening the membrane life. A softener upstream makes the whole RO last far longer.'},
+ {c:'Replace old fittings + add a leak sensor',r:'a quick-connect lets go under the sink \u2192 it drips unseen \u2192 cabinet rot or a slow flood',p:'These fittings are the usual leak point. While I\u2019m under here I\u2019ll refresh them, and a leak sensor means you\u2019d know before the cabinet\u2019s ruined.'}
+],
+'Tankless \u2014 cold water, codes, or scale':[
+ {c:'Annual descale plan + isolation valves',r:'scale keeps building \u2192 the heat exchanger overheats and fails \u2192 a costly exchanger or full unit',p:'Scale is what kills a tankless. A yearly descale keeps it healthy, and if it doesn\u2019t have isolation valves I\u2019ll add them so the flush is quick every time.'},
+ {c:'Water softener',r:'hard water re-scales it fast \u2192 repeat codes and lost efficiency \u2192 a shortened life',p:'On hard water it\u2019ll scale right back up. A softener protects the exchanger so we\u2019re not fighting this every year.'},
+ {c:'Recirculation pump',r:'long waits for hot water and cold-water sandwiches \u2192 ongoing comfort complaints',p:'If you\u2019re waiting forever for hot water or getting cold bursts, a recirc pump fixes the comfort side \u2014 worth pairing while we\u2019re set up here.'}
+],
+'Hose bib / outdoor faucet':[
+ {c:'Replace the other old bibs with frost-free',r:'the other hose bibs are the same age \u2192 one freezes and bursts behind the wall \u2192 hidden flooding',p:'Your other outdoor faucets are the same vintage \u2014 if this one was at risk, they are too. Frost-free replacements now prevent a burst inside the wall later.'},
+ {c:'Vacuum breakers for backflow',r:'no backflow protection \u2192 a hose siphons contaminated water back \u2192 a health and code issue',p:'Adding a vacuum breaker protects your drinking water from backflow through the hose \u2014 a code item worth handling.'},
+ {c:'Main shutoff & winterization check',r:'a hidden freeze risk remains \u2192 a burst over winter \u2192 water damage while you\u2019re unaware',p:'Let\u2019s make sure these can be isolated and drained for winter so you\u2019re not chasing a freeze-burst come spring.'}
+],
+'Septic backup / warning signs':[
+ {c:'Clean / add an effluent filter',r:'solids carry into the drainfield \u2192 the field clogs with biomat \u2192 a five-figure field replacement',p:'An effluent filter is what keeps solids out of your drainfield \u2014 and the drainfield is the expensive part. Cleaning or adding one now protects the whole system.'},
+ {c:'Install risers / lid access',r:'no easy access \u2192 every pump-out means digging \u2192 a higher cost on every service',p:'If the lid\u2019s buried, every service means digging it up. Risers to the surface make every future pump-out faster and cheaper.'},
+ {c:'Camera the house-to-tank line',r:'a clog there gets mistaken for a full tank \u2192 you pay to pump when the line was the issue \u2192 the backup returns',p:'Before assuming the tank, a quick camera on the line to it tells us if it\u2019s a simple clog or the system \u2014 so you\u2019re not paying to pump for nothing.'}
+]
+};
+
+DATA.forEach(d=>{ if(UPSELL[d.title]) d.upsell=UPSELL[d.title]; });
+
+let gRole='all', gSearch='', built=false;
+function cardHtml(d,idx){
+  const says=d.says.map(s=>`<span class="g-say-chip">&ldquo;${s}&rdquo;</span>`).join('');
+  const causes=d.causes.map((c,i)=>`<div class="g-cause"><span class="g-rank">${i+1}</span><span>${c}</span></div>`).join('');
+  const specs=(d.specs&&d.specs.length)?`<div class="g-blab">Specs &amp; numbers</div><div class="g-specs">${d.specs.map(s=>`<div class="g-spec"><span class="g-spec-k">${s[0]}</span><span class="g-spec-v">${s[1]}</span></div>`).join('')}</div>`:'';
+  const safety=d.safety?`<div class="g-safety">\u26A0\uFE0F <b>Safety first.</b> ${d.safety}</div>`:'';
+  const steps=d.steps.map((s,i)=>{
+    let b='';
+    if(s.clear.t||s.clear.say) b+=`<div class="g-branch g-clear"><span class="g-bico">\u2713</span><div><span class="g-btag">Clear \u2014 ${s.clear.t||'rule it out'}</span>${s.clear.jump?` <em class="g-jump">${s.clear.jump}</em>`:''}${s.clear.say?`<span class="g-say">${s.clear.say}</span>`:''}</div></div>`;
+    if(s.found.t||s.found.say) b+=`<div class="g-branch g-found"><span class="g-bico">\u25B2</span><div><span class="g-btag">Found it \u2014 ${s.found.t||'the fix'}</span>${s.found.jump?` <em class="g-jump">${s.found.jump}</em>`:''}${s.found.say?`<span class="g-say">${s.found.say}</span>`:''}</div></div>`;
+    return `<div class="g-step"><div class="g-step-q"><span class="g-sidx">${i+1}</span><span>${s.q}</span></div>${b}</div>`;
+  }).join('');
+  const upsell=(d.upsell&&d.upsell.length)?`<div class="g-upsell"><div class="g-up-eyebrow">One-trip upsell</div><div class="g-up-motto">\u201CWe don\u2019t want to see you again\u201D \u2014 handle what\u2019s tied to the problem.</div>${d.upsell.map((u,i)=>`<div class="g-up-item"><span class="g-up-letter">${String.fromCharCode(65+i)}</span><div><div class="g-up-check">${u.c}</div><div class="g-up-risk"><b>If it\u2019s left:</b> ${u.r}</div><div class="g-up-pitch">${u.p}</div></div></div>`).join('')}</div>`:'';
+  return `<div class="g-card" data-grole="${d.role}" data-text="${(d.title+' '+d.says.join(' ')+' '+d.causes.join(' ')).toLowerCase().replace(/"/g,'')}"><div class="g-chead" onclick="this.parentElement.classList.toggle('open')"><div class="g-cnum">${idx}</div><div class="g-ctw"><div class="g-ctitle">${d.title}</div><div class="g-says">${says}</div></div><div class="g-chev">\u25B6</div></div><div class="g-cbody">${safety}<div class="g-blab">Most likely causes</div>${causes}${specs}<div class="g-blab">What to check \u2014 in order</div>${steps}${upsell}<div class="g-foot g-flag"><span class="g-ftag">\u2691 When to flag / escalate</span><div>${d.flag}</div></div><div class="g-foot g-option"><span class="g-ftag">\u2192 Natural option</span><div>${d.option}</div></div></div></div>`;
+}
+function build(){
+  document.getElementById('gc-all').textContent=DATA.length;
+  document.getElementById('gc-drain').textContent=DATA.filter(d=>d.role==='drain').length;
+  document.getElementById('gc-plumb').textContent=DATA.filter(d=>d.role==='plumb').length;
+  const groups=[['drain','Drain Tech','The clog, backup, and drainage calls.'],['plumb','Plumbing Tech','Repairs, fixtures, water heaters, supply, and gas.']];
+  let html='';
+  groups.forEach(g=>{
+    const role=g[0];
+    html+=`<div class="g-sec"><div class="g-sec-eyebrow">Section</div><div class="g-sec-title">${g[1]}</div><div class="g-sec-note">${g[2]}</div></div><div class="g-list">`;
+    DATA.filter(d=>d.role===role).forEach((d,i)=>{ html+=cardHtml(d,(role==='drain'?'D':'P')+(i+1)); });
+    html+='</div>';
+  });
+  document.getElementById('guide-render').innerHTML=html;
+  built=true;
+}
+function applyFilter(){
+  let vis=0;
+  document.querySelectorAll('#s-guide .g-card').forEach(c=>{
+    const roleOk=gRole==='all'||c.dataset.grole===gRole;
+    const textOk=!gSearch||c.dataset.text.indexOf(gSearch)>=0;
+    const show=roleOk&&textOk; c.style.display=show?'':'none'; if(show)vis++;
+  });
+  document.querySelectorAll('#s-guide .g-list').forEach(l=>{
+    const any=Array.prototype.some.call(l.querySelectorAll('.g-card'),c=>c.style.display!=='none');
+    l.style.display=any?'':'none'; if(l.previousElementSibling) l.previousElementSibling.style.display=any?'':'none';
+  });
+  document.getElementById('guide-empty').style.display=vis?'none':'block';
+}
+window.renderGuide=function(){ if(!built) build(); applyFilter(); };
+window.guideSetRole=function(r){ gRole=r; document.querySelectorAll('#s-guide .g-fbtn').forEach(b=>b.classList.toggle('active',b.dataset.grole===r)); applyFilter(); };
+window.guideFilter=function(){ gSearch=(document.getElementById('guide-search').value||'').toLowerCase().trim(); applyFilter(); };
+})();
 
 init();
 </script>
