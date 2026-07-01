@@ -627,6 +627,20 @@
   #login-err{background:var(--danger-pale);color:var(--danger);font-size:13px;font-weight:600;padding:10px 12px;border-radius:9px;margin-bottom:14px;border:1px solid rgba(217,64,64,.25);}
 
 
+  /* ── TRADE PICKER PILLS ── */
+  .trrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+  .tropt{display:inline-flex;align-items:center;gap:4px;padding:9px 13px;border-radius:20px;border:1.5px solid var(--border-mid);background:var(--slate-50);font-size:12px;font-weight:700;color:var(--slate-700);cursor:pointer;transition:all .15s;}
+  .tropt.sel{background:var(--copper);border-color:var(--copper);color:#fff;}
+  /* ── CALL TYPE GROUP LABELS ── */
+  .ct-glab{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--slate-400);margin:16px 2px 8px;}
+  .ct-glab:first-child{margin-top:0;}
+  /* ── GUIDE TRADE ACCENTS ── */
+  #s-guide .g-card[data-grole="plumb"]{border-left:3px solid var(--copper);}
+  #s-guide .g-card[data-grole="drain"]{border-left:3px solid var(--up);}
+  #s-guide .g-card[data-grole="hvac"]{border-left:3px solid var(--info);}
+  #s-guide .g-card[data-grole="elec"]{border-left:3px solid var(--gold);}
+  body.night .co-card{box-shadow:none;}
+  body.night .ql,body.night .pscard{box-shadow:none;}
   /* ── COACH DASHBOARD ── */
   .co-sec{padding:0 18px;margin-bottom:22px;}
   .co-h{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--slate-400);margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--copper);}
@@ -673,6 +687,13 @@
       <input class="fi" type="text" id="su-company" placeholder="e.g. All Star Plumbing" value="Action Plumbing" />
       <div class="fl">Role / Title</div>
       <input class="fi" type="text" id="su-role" placeholder="e.g. Lead Technician" value="Drain &amp; Plumbing Tech" />
+      <div class="fl">Your Trade</div>
+      <div class="trrow" id="tr-setup">
+        <div class="tropt sel" data-tr="plumb" onclick="pickTrade(this,'plumb','setup')">🔧 Plumbing</div>
+        <div class="tropt" data-tr="drain" onclick="pickTrade(this,'drain','setup')">🌀 Drain</div>
+        <div class="tropt" data-tr="hvac" onclick="pickTrade(this,'hvac','setup')">❄️ HVAC</div>
+        <div class="tropt" data-tr="elec" onclick="pickTrade(this,'elec','setup')">⚡ Electrical</div>
+      </div>
       <div class="fl">Pick Your Avatar</div>
       <div class="avrow" id="av-setup">
         <div class="avopt sel" onclick="pickAv(this,'🔧','setup')">🔧</div>
@@ -755,6 +776,13 @@
         <div class="fl">Your Name</div><input class="fi" type="text" id="ed-name" style="margin-bottom:14px;" />
         <div class="fl">Company</div><input class="fi" type="text" id="ed-company" style="margin-bottom:14px;" />
         <div class="fl">Role / Title</div><input class="fi" type="text" id="ed-role" style="margin-bottom:14px;" />
+        <div class="fl">Your Trade</div>
+        <div class="trrow" id="tr-edit">
+          <div class="tropt" data-tr="plumb" onclick="pickTrade(this,'plumb','edit')">🔧 Plumbing</div>
+          <div class="tropt" data-tr="drain" onclick="pickTrade(this,'drain','edit')">🌀 Drain</div>
+          <div class="tropt" data-tr="hvac" onclick="pickTrade(this,'hvac','edit')">❄️ HVAC</div>
+          <div class="tropt" data-tr="elec" onclick="pickTrade(this,'elec','edit')">⚡ Electrical</div>
+        </div>
         <div class="fl">Google Review Link</div><input class="fi" type="url" id="ed-review" style="margin-bottom:14px;" placeholder="https://g.page/your-business/review" />
         <div class="fl">Avatar</div>
         <div class="avrow" id="av-edit">
@@ -784,22 +812,37 @@
       <div class="scrt">What's the call type?</div>
       <div class="scrs">Loads the right inspection checklist.</div>
       <div class="cgrid" id="ct-grid">
+        <div class="ct-glab">Plumbing</div>
+        <div class="cgrid">
         <div class="ctb" onclick="selCT(this,'Water Heater')"><div class="cti">🔥</div><div class="ctl">Water Heater</div></div>
-        <div class="ctb" onclick="selCT(this,'Drain')"><div class="cti">🌀</div><div class="ctl">Drain</div></div>
         <div class="ctb" onclick="selCT(this,'Leak')"><div class="cti">💧</div><div class="ctl">Leak</div></div>
         <div class="ctb" onclick="selCT(this,'Toilet')"><div class="cti">🚽</div><div class="ctl">Toilet</div></div>
         <div class="ctb" onclick="selCT(this,'Faucet')"><div class="cti">🚰</div><div class="ctl">Faucet</div></div>
-        <div class="ctb" onclick="selCT(this,'Sewer')"><div class="cti">⚙️</div><div class="ctl">Sewer</div></div>
         <div class="ctb" onclick="selCT(this,'Repipe')"><div class="cti">🔧</div><div class="ctl">Repipe</div></div>
         <div class="ctb" onclick="selCT(this,'Filtration')"><div class="cti">💎</div><div class="ctl">Filtration</div></div>
         <div class="ctb" onclick="selCT(this,'Pressure')"><div class="cti">📊</div><div class="ctl">Pressure</div></div>
         <div class="ctb" onclick="selCT(this,'Gas Line')"><div class="cti">⚠️</div><div class="ctl">Gas Line</div></div>
+        </div>
+        <div class="ct-glab">Drain</div>
+        <div class="cgrid">
+        <div class="ctb" onclick="selCT(this,'Drain')"><div class="cti">🌀</div><div class="ctl">Drain</div></div>
+        <div class="ctb" onclick="selCT(this,'Sewer')"><div class="cti">⚙️</div><div class="ctl">Sewer</div></div>
         <div class="ctb" onclick="selCT(this,'Sump Pump')"><div class="cti">⛽</div><div class="ctl">Sump Pump</div></div>
+        </div>
+        <div class="ct-glab">HVAC</div>
+        <div class="cgrid">
         <div class="ctb" onclick="selCT(this,'AC / Cooling')"><div class="cti">❄️</div><div class="ctl">AC / Cooling</div></div>
         <div class="ctb" onclick="selCT(this,'Heating')"><div class="cti">🌡️</div><div class="ctl">Heating</div></div>
+        </div>
+        <div class="ct-glab">Electrical</div>
+        <div class="cgrid">
         <div class="ctb" onclick="selCT(this,'Electrical')"><div class="cti">⚡</div><div class="ctl">Electrical</div></div>
         <div class="ctb" onclick="selCT(this,'Panel / Breaker')"><div class="cti">🔌</div><div class="ctl">Panel / Breaker</div></div>
+        </div>
+        <div class="ct-glab">Other</div>
+        <div class="cgrid">
         <div class="ctb" onclick="selCT(this,'Emergency')"><div class="cti">🚨</div><div class="ctl">Emergency</div></div>
+        </div>
       </div>
       <div style="margin-top:20px;">
         <div class="fl" style="margin-bottom:7px;">Customer Name</div>
@@ -1108,6 +1151,19 @@
           <div class="nosale-btn cb-btn" onclick="setCBR('finance',this)">💳 Finance Approval</div>
           <div class="nosale-btn cb-btn" onclick="setCBR('schedule',this)">📅 Schedule Later</div>
         </div>
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--copper);margin:14px 0 8px;">Your read: what’s <u>really</u> behind the callback? (required)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;" id="realobj-cb-grid">
+          <div class="nosale-btn cb-btn" onclick="setRealObj('same',this)">🎯 Same As Stated</div>
+          <div class="nosale-btn cb-btn" onclick="setRealObj('price',this)">💰 Truly Price</div>
+          <div class="nosale-btn cb-btn" onclick="setRealObj('trust',this)">🤝 Didn't Trust Us</div>
+          <div class="nosale-btn cb-btn" onclick="setRealObj('spouse',this)">👫 Spouse Approval</div>
+          <div class="nosale-btn cb-btn" onclick="setRealObj('afford',this)">💳 Truly Can't Afford</div>
+          <div class="nosale-btn cb-btn" onclick="setRealObj('diagnosis',this)">🔍 Doubted Diagnosis</div>
+          <div class="nosale-btn cb-btn" onclick="setRealObj('fear',this)">😨 Fear of Deciding</div>
+          <div class="nosale-btn cb-btn" onclick="setRealObj('ripoff',this)">🚩 Feared Being Ripped Off</div>
+          <div class="nosale-btn cb-btn" onclick="setRealObj('wait',this)">😐 No Real Urgency</div>
+          <div class="nosale-btn cb-btn" onclick="setRealObj('unsure',this)">❓ Not Sure</div>
+        </div>
         <input class="fi" type="text" id="callback-date" style="margin-top:10px;margin-bottom:0;font-size:13px;" placeholder="Best callback date/time..." />
       </div>
 
@@ -1415,7 +1471,7 @@ const SHOP_ID='action-plumbing';      // stamped on every job — lets the coach
 const PILOT_START='2026-07-13';       // jobs before this date = baseline, on/after = pilot period
 const COACH_PIN='8248';               // coach dashboard passcode — change before deploying
 
-let profile=null, jobId=null, jobData={}, curStep=0, photos=0, outcome=null, callType=null, kpiPer='today', setupAv='🔧', editAv='🔧', nosaleReason=null, realObjection=null, callbackReason=null, membershipResult=null, reviewResult=null, finTerm=12, timerInterval=null, timerSeconds=0, timerRunning=false, returningCheckTimeout=null, scorecardPeriod='this';
+let profile=null, jobId=null, jobData={}, curStep=0, photos=0, outcome=null, callType=null, kpiPer='today', setupTrade='plumb', editTrade='plumb', setupAv='🔧', editAv='🔧', nosaleReason=null, realObjection=null, callbackReason=null, membershipResult=null, reviewResult=null, finTerm=12, timerInterval=null, timerSeconds=0, timerRunning=false, returningCheckTimeout=null, scorecardPeriod='this';
 
 function devId(){let id=localStorage.getItem(DK);if(!id){id='dev_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);localStorage.setItem(DK,id);}return id;}
 
@@ -1522,13 +1578,15 @@ window.saveSetup=async function(){
   const r=document.getElementById('su-role').value.trim();
   const rv=document.getElementById('su-review').value.trim();
   if(!n)return alert('Please enter your name.');
-  profile={name:n,company:c,role:r,reviewUrl:rv,avatar:setupAv,createdAt:Date.now()};
+  profile={name:n,company:c,role:r,trade:setupTrade,reviewUrl:rv,avatar:setupAv,createdAt:Date.now()};
   localStorage.setItem(PK,JSON.stringify(profile));
   try{await setDoc(doc(db,'profiles',devId()),{...profile,deviceId:devId(),updatedAt:serverTimestamp()});}catch(e){}
   applyProfile();go('s-home');
 };
 
 window.openEditProfile=function(){
+  editTrade=(profile&&profile.trade)||'plumb';
+  setTimeout(function(){document.querySelectorAll('#tr-edit .tropt').forEach(b=>b.classList.toggle('sel',b.dataset.tr===editTrade));},0);
   if(!profile)return;
   document.getElementById('ed-name').value=profile.name||'';
   document.getElementById('ed-company').value=profile.company||'';
@@ -1543,7 +1601,7 @@ window.closeEditProfile=function(){document.getElementById('p-editform').classLi
 window.saveEditProfile=async function(){
   const n=document.getElementById('ed-name').value.trim();
   if(!n)return alert('Name required.');
-  profile={...profile,name:n,company:document.getElementById('ed-company').value.trim(),role:document.getElementById('ed-role').value.trim(),reviewUrl:document.getElementById('ed-review').value.trim(),avatar:editAv};
+  profile={...profile,name:n,company:document.getElementById('ed-company').value.trim(),role:document.getElementById('ed-role').value.trim(),reviewUrl:document.getElementById('ed-review').value.trim(),avatar:editAv,trade:editTrade};
   localStorage.setItem(PK,JSON.stringify(profile));
   try{await setDoc(doc(db,'profiles',devId()),{...profile,deviceId:devId(),updatedAt:serverTimestamp()},{merge:true});}catch(e){}
   applyProfile();loadProfileScreen();closeEditProfile();
@@ -1817,10 +1875,15 @@ window.setOC=function(oc,btn){
   if(nsp)nsp.style.display=oc==='nosale'?'block':'none';
   if(cbp)cbp.style.display=oc==='callback'?'block':'none';
   if(oc==='nosale'){nosaleReason=null;realObjection=null;document.querySelectorAll('#nosale-grid .nosale-btn, #realobj-grid .nosale-btn').forEach(b=>b.classList.remove('sel'));}
-  if(oc==='callback'){callbackReason=null;document.querySelectorAll('#callback-grid .nosale-btn').forEach(b=>b.classList.remove('sel'));}
+  if(oc==='callback'){callbackReason=null;realObjection=null;document.querySelectorAll('#callback-grid .nosale-btn, #realobj-cb-grid .nosale-btn').forEach(b=>b.classList.remove('sel'));}
 };
 window.setNSR=function(reason,btn){nosaleReason=reason;document.querySelectorAll('#nosale-grid .nosale-btn').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');};
-window.setRealObj=function(reason,btn){realObjection=reason;document.querySelectorAll('#realobj-grid .nosale-btn').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');};
+window.setRealObj=function(reason,btn){realObjection=reason;btn.parentElement.querySelectorAll('.nosale-btn').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');};
+window.pickTrade=function(btn,t,ctx){
+  if(ctx==='setup')setupTrade=t;else editTrade=t;
+  btn.parentElement.querySelectorAll('.tropt').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+};
 window.setCBR=function(reason,btn){callbackReason=reason;document.querySelectorAll('#callback-grid .nosale-btn').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');};
 
 // ── RETURNING CUSTOMER ──
@@ -1854,15 +1917,16 @@ window.finishJob=async function(){
   if(!outcome)return alert('Please select a job outcome.');
   if(outcome==='nosale'&&!nosaleReason)return alert("Please select why they didn't buy — this helps improve your close rate.");
   if(outcome==='nosale'&&!realObjection)return alert("One more — what do you think was REALLY stopping them? Your read on the room is the most valuable data in this app.");
+  if(outcome==='callback'&&!realObjection)return alert("Quick read before you go — what’s really behind the callback? ‘Needs spouse’ usually has a reason underneath it.");
   const t=Number(document.getElementById('ticket')?.value)||0;
   const notes=document.getElementById('job-notes')?.value||'';
   const nsNotes=document.getElementById('nosale-notes')?.value||'';
   const cbDate=document.getElementById('callback-date')?.value||'';
   const flagged=jobData.flaggedItems||0;
   if(!jobId)return;
-  const payload={status:'completed',outcome,ticketAmount:t,jobNotes:notes,completedAt:serverTimestamp(),stepsCompleted:[0,1,2,3,4,5,6,7,8,9,10],shopId:SHOP_ID,objectionsHit:jobData.objectionsHit||[]};
+  const payload={status:'completed',outcome,ticketAmount:t,jobNotes:notes,completedAt:serverTimestamp(),stepsCompleted:[0,1,2,3,4,5,6,7,8,9,10],shopId:SHOP_ID,objectionsHit:jobData.objectionsHit||[],durationSec:timerSeconds||0};
   if(outcome==='nosale'){payload.nosaleReason=nosaleReason;payload.nosaleNotes=nsNotes;payload.realObjection=realObjection;}
-  if(outcome==='callback'){payload.callbackReason=callbackReason||'';payload.callbackDate=cbDate;}
+  if(outcome==='callback'){payload.callbackReason=callbackReason||'';payload.callbackDate=cbDate;payload.realObjection=realObjection;}
   try{
     setSyncStatus('saving');
     await updateDoc(doc(db,'jobs',jobId),payload);
@@ -1890,6 +1954,34 @@ window.openCoach=function(){
   const pin=prompt('Coach PIN:');
   if(pin!==COACH_PIN){if(pin!==null)alert('Incorrect PIN.');return;}
   go('s-coach');renderCoach();
+};
+
+window.exportCoachCSV=function(){
+  const jobs=window.__coachJobs||[];
+  if(!jobs.length)return alert('No data loaded yet — open the dashboard first.');
+  const esc=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  const rows=[['date','tech','callType','outcome','ticket','statedObjection','realObjection','objectionsHit','durationMin','callbackResolved']];
+  jobs.forEach(j=>rows.push([j.date||'',(j.techName||'').trim(),j.callType||'',j.outcome||'',j.ticketAmount||0,j.nosaleReason||'',j.realObjection||'',(j.objectionsHit||[]).map(o=>o.key).join('|'),j.durationSec?Math.round(j.durationSec/60):'',j.callbackResolved?'yes':'']));
+  const csv=rows.map(r=>r.map(esc).join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='elev8-pilot-data-'+new Date().toISOString().split('T')[0]+'.csv';a.click();
+};
+
+window.resolveCB=async function(id,oc){
+  if(oc==='sold'){
+    const t=Number(prompt('They bought! Final ticket amount ($)?','0'));
+    if(isNaN(t))return;
+    try{await updateDoc(doc(db,'jobs',id),{outcome:'sold',ticketAmount:t||0,callbackResolved:true,resolvedAt:serverTimestamp()});}catch(e){return alert('Error: '+e.message);}
+  }else{
+    const NS=['price','trust','notowner','competitor','timing','nourgency','callback','other'];
+    const s=prompt('Why didn’t they buy?\n1 Price Too High\n2 Trust Issue\n3 Not Decision Maker\n4 Going Competitor\n5 Bad Timing\n6 No Urgency Felt\n7 Needed Another Callback\n8 Other\n\nEnter 1–8:');
+    const si=parseInt(s,10);if(!si||si<1||si>8)return;
+    const RO=['same','price','trust','spouse','afford','diagnosis','fear','ripoff','wait','unsure'];
+    const r=prompt('Your read — what was REALLY stopping them?\n1 Same As Stated\n2 Truly Price\n3 Didn’t Trust Us\n4 Spouse Approval\n5 Truly Can’t Afford\n6 Doubted Diagnosis\n7 Fear of Deciding\n8 Feared Rip-Off\n9 No Real Urgency\n10 Not Sure\n\nEnter 1–10:');
+    const ri=parseInt(r,10);if(!ri||ri<1||ri>10)return;
+    try{await updateDoc(doc(db,'jobs',id),{outcome:'nosale',nosaleReason:NS[si-1],realObjection:RO[ri-1],callbackResolved:true,resolvedAt:serverTimestamp()});}catch(e){return alert('Error: '+e.message);}
+  }
+  loadJobs();loadStats();
 };
 
 const NSR_LABELS={price:'💰 Price Too High',trust:'🤝 Trust Issue',notowner:'🏠 Not Decision Maker',competitor:'⚔️ Going Competitor',timing:'📅 Bad Timing',nourgency:'😐 No Urgency Felt',callback:'📞 Needs Callback',other:'❓ Other'};
@@ -1923,11 +2015,14 @@ window.renderCoach=async function(){
   // ── Per-tech: baseline vs pilot ──
   const techs={};
   jobs.forEach(j=>{
-    const t=j.techName||'Unknown';
-    techs[t]=techs[t]||{b:{sold:0,tot:0,rev:0},p:{sold:0,tot:0,rev:0}};
+    const disp=(j.techName||'Unknown').trim()||'Unknown';
+    const t=disp.toLowerCase();
+    techs[t]=techs[t]||{disp,b:{sold:0,tot:0,rev:0,cb:0},p:{sold:0,tot:0,rev:0,cb:0,durSum:0,durN:0}};
     const side=isPilot(j)?techs[t].p:techs[t].b;
     side.tot++;
     if(j.outcome==='sold'){side.sold++;side.rev+=Number(j.ticketAmount)||0;}
+    if(j.outcome==='callback')side.cb++;
+    if(isPilot(j)&&j.durationSec>0){techs[t].p.durSum+=j.durationSec;techs[t].p.durN++;}
   });
   let techHtml='';
   Object.keys(techs).sort().forEach(t=>{
@@ -1937,7 +2032,9 @@ window.renderCoach=async function(){
     const cls=d.p.tot===0?'flat':(delta>0?'up':(delta<0?'down':'flat'));
     const deltaTxt=d.p.tot===0?'— pilot not started':(delta>0?'+':'')+delta+' pts';
     const avgT=d.p.sold?Math.round(d.p.rev/d.p.sold):0;
-    techHtml+=`<div class="co-card"><div class="co-tech"><span class="co-tname">${t}</span><span class="co-delta ${cls}">${deltaTxt}</span></div><div class="co-sub">Baseline: <b>${bR}%</b> close (${d.b.sold}/${d.b.tot}) &nbsp;→&nbsp; Pilot: <b>${pR}%</b> close (${d.p.sold}/${d.p.tot})${avgT?` &nbsp;·&nbsp; Avg pilot ticket <b>$${avgT.toLocaleString()}</b>`:''}</div></div>`;
+    const cbR=pct(d.p.cb,d.p.tot);
+    const avgM=d.p.durN?Math.round(d.p.durSum/d.p.durN/60):0;
+    techHtml+=`<div class="co-card"><div class="co-tech"><span class="co-tname">${d.disp}</span><span class="co-delta ${cls}">${deltaTxt}</span></div><div class="co-sub">Baseline: <b>${bR}%</b> close (${d.b.sold}/${d.b.tot}) &nbsp;→&nbsp; Pilot: <b>${pR}%</b> close (${d.p.sold}/${d.p.tot})${avgT?` &nbsp;·&nbsp; Avg ticket <b>$${avgT.toLocaleString()}</b>`:''}${d.p.tot?` &nbsp;·&nbsp; CB rate <b style="${cbR>25?'color:var(--danger);':''}">${cbR}%</b>`:''}${avgM?` &nbsp;·&nbsp; Avg <b>${avgM} min</b> in home`:''}</div></div>`;
   });
 
   // ── Weekly close rate, last 6 weeks ──
@@ -1995,7 +2092,24 @@ window.renderCoach=async function(){
   if(!hitHtml)hitHtml='<div class="co-sub">No mid-presentation objections logged yet. These record automatically when a tech taps an objection in Step 10.</div>';
 
   const pilotJobs=jobs.filter(isPilot).length, baseJobs=jobs.length-pilotJobs;
-  body.innerHTML=`
+  window.__coachJobs=jobs;
+  const pAll=jobs.filter(isPilot), bAll=jobs.filter(j=>!isPilot(j));
+  const pSold=pAll.filter(j=>j.outcome==='sold').length, bSold=bAll.filter(j=>j.outcome==='sold').length;
+  const pRate=pct(pSold,pAll.length), bRate=pct(bSold,bAll.length);
+  const heroDelta=pAll.length?((pRate-bRate>0?'+':'')+(pRate-bRate)):'–';
+  const pRev=pAll.filter(j=>j.outcome==='sold').reduce((s,j)=>s+(Number(j.ticketAmount)||0),0);
+  const openCB=jobs.filter(j=>j.outcome==='callback').length;
+  const heroHtml=`<div style="background:#1A1D23;padding:20px 18px 18px;margin:-18px 0 16px;">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;"><span style="font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#E8A85C;">Elev8 Pilot Scorecard</span><span style="font-size:10px;color:rgba(255,255,255,.35);">${SHOP_ID}</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid rgba(255,255,255,.08);margin-top:12px;">
+      <div style="padding:16px 6px 14px;text-align:center;border-right:1px solid rgba(255,255,255,.08);"><div style="font-size:25px;font-weight:800;color:#E8A85C;letter-spacing:-.02em;line-height:1;">${pAll.length?pRate+'%':'–'}</div><div style="font-size:8.5px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.08em;margin-top:5px;font-weight:700;">Pilot Close</div></div>
+      <div style="padding:16px 6px 14px;text-align:center;border-right:1px solid rgba(255,255,255,.08);"><div style="font-size:25px;font-weight:800;color:${pAll.length&&pRate-bRate>0?'#4ECFA0':pAll.length&&pRate-bRate<0?'#E8716A':'#E8A85C'};letter-spacing:-.02em;line-height:1;">${heroDelta}</div><div style="font-size:8.5px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.08em;margin-top:5px;font-weight:700;">Pts vs Baseline</div></div>
+      <div style="padding:16px 6px 14px;text-align:center;"><div style="font-size:25px;font-weight:800;color:#E8A85C;letter-spacing:-.02em;line-height:1;">$${pRev>=10000?Math.round(pRev/1000)+'K':pRev.toLocaleString()}</div><div style="font-size:8.5px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.08em;margin-top:5px;font-weight:700;">Pilot Revenue</div></div>
+    </div>
+    <button onclick="exportCoachCSV()" style="width:100%;margin-top:14px;background:transparent;color:#E8A85C;border:1.5px solid rgba(232,168,92,.4);border-radius:10px;padding:11px;font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;letter-spacing:.03em;">⬇ EXPORT PILOT DATA (CSV)</button>
+  </div>
+  ${openCB?`<div class="co-note" style="color:var(--copper-dim);margin-bottom:10px;">☎ ${openCB} open callback${openCB>1?'s':''} — pending money and unresolved outcomes. Resolve them from each tech’s Jobs tab.</div>`:''}`;
+  body.innerHTML=`${heroHtml}
     ${abandoned?`<div class="co-note" style="color:var(--danger);margin-bottom:10px;">\u26A0 ${abandoned} job${abandoned>1?'s':''} started but never closed out (24h+). Abandoned jobs hide losses and inflate close rate \u2014 have techs finish or discard them.</div>`:''}
     ${scope==='device'?'<div class="co-note" style="color:var(--danger);margin-bottom:10px;">⚠ Showing this device only — crew-wide query returned nothing. Older jobs may pre-date shopId, or Firestore rules need a read rule for shopId queries.</div>':''}
     <div class="co-sec"><div class="co-h">Close Rate by Tech <span class="co-pill">Baseline vs Pilot</span></div>${techHtml}
@@ -2207,7 +2321,7 @@ async function loadJobs(){
     jobs.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     const ocColor={sold:'var(--success)',nosale:'var(--danger)',callback:'var(--copper)'};
     const ocLabel={sold:'Sold',nosale:'No Sale',callback:'Callback',in_progress:'Active'};
-    c.innerHTML=jobs.map(j=>`<div style="background:var(--white);border-radius:10px;padding:14px 16px;margin-bottom:10px;border:1px solid var(--border);box-shadow:0 1px 3px rgba(26,29,35,.04);"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;"><div style="font-size:15px;font-weight:700;color:var(--slate-900);">${j.customer||'–'}</div><div style="font-size:10px;font-weight:800;color:${ocColor[j.outcome]||'var(--slate-400)'};text-transform:uppercase;">${ocLabel[j.outcome]||'In Progress'}</div></div><div style="font-size:12px;color:var(--slate-400);margin-bottom:6px;">${j.address||''}</div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;"><span style="font-size:11px;font-weight:700;color:var(--copper-dim);">${j.callType||''}</span>${j.ticketAmount?`<span style="font-size:12px;font-weight:800;color:var(--success);">$${Number(j.ticketAmount).toLocaleString()}</span>`:''}<span style="font-size:11px;color:var(--slate-400);">${j.date||''}</span></div></div>`).join('');
+    c.innerHTML=jobs.map(j=>`<div style="background:var(--white);border-radius:10px;padding:14px 16px;margin-bottom:10px;border:1px solid var(--border);box-shadow:0 1px 3px rgba(26,29,35,.04);"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;"><div style="font-size:15px;font-weight:700;color:var(--slate-900);">${j.customer||'–'}</div><div style="font-size:10px;font-weight:800;color:${ocColor[j.outcome]||'var(--slate-400)'};text-transform:uppercase;">${ocLabel[j.outcome]||'In Progress'}</div></div><div style="font-size:12px;color:var(--slate-400);margin-bottom:6px;">${j.address||''}</div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;"><span style="font-size:11px;font-weight:700;color:var(--copper-dim);">${j.callType||''}</span>${j.ticketAmount?`<span style="font-size:12px;font-weight:800;color:var(--success);">$${Number(j.ticketAmount).toLocaleString()}</span>`:''}<span style="font-size:11px;color:var(--slate-400);">${j.date||''}</span></div>${j.outcome==='callback'?`<div style="display:flex;gap:8px;margin-top:10px;"><button onclick="resolveCB('${j.id}','sold')" style="flex:1;background:var(--success);color:#fff;border:none;border-radius:8px;padding:9px;font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;">✓ Resolve — Sold</button><button onclick="resolveCB('${j.id}','nosale')" style="flex:1;background:transparent;color:var(--danger);border:1.5px solid var(--danger);border-radius:8px;padding:9px;font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;">✕ Resolve — Lost</button></div>`:''}</div>`).join('');
   }catch(e){if(c)c.innerHTML=`<div style="padding:20px;color:var(--danger);">Error: ${e.message}</div>`;}
 }
 
@@ -3513,7 +3627,13 @@ function applyFilter(){
   });
   document.getElementById('guide-empty').style.display=vis?'none':'block';
 }
-window.renderGuide=function(){ if(!built) build(); applyFilter(); };
+window.renderGuide=function(){
+  if(!built){
+    build();
+    if(profile&&profile.trade){gRole=profile.trade;document.querySelectorAll('#s-guide .g-fbtn').forEach(b=>b.classList.toggle('active',b.dataset.grole===gRole));}
+  }
+  applyFilter();
+};
 window.guideSetRole=function(r){ gRole=r; document.querySelectorAll('#s-guide .g-fbtn').forEach(b=>b.classList.toggle('active',b.dataset.grole===r)); applyFilter(); };
 window.guideFilter=function(){ gSearch=(document.getElementById('guide-search').value||'').toLowerCase().trim(); applyFilter(); };
 })();
