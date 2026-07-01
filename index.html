@@ -795,6 +795,10 @@
         <div class="ctb" onclick="selCT(this,'Pressure')"><div class="cti">📊</div><div class="ctl">Pressure</div></div>
         <div class="ctb" onclick="selCT(this,'Gas Line')"><div class="cti">⚠️</div><div class="ctl">Gas Line</div></div>
         <div class="ctb" onclick="selCT(this,'Sump Pump')"><div class="cti">⛽</div><div class="ctl">Sump Pump</div></div>
+        <div class="ctb" onclick="selCT(this,'AC / Cooling')"><div class="cti">❄️</div><div class="ctl">AC / Cooling</div></div>
+        <div class="ctb" onclick="selCT(this,'Heating')"><div class="cti">🌡️</div><div class="ctl">Heating</div></div>
+        <div class="ctb" onclick="selCT(this,'Electrical')"><div class="cti">⚡</div><div class="ctl">Electrical</div></div>
+        <div class="ctb" onclick="selCT(this,'Panel / Breaker')"><div class="cti">🔌</div><div class="ctl">Panel / Breaker</div></div>
         <div class="ctb" onclick="selCT(this,'Emergency')"><div class="cti">🚨</div><div class="ctl">Emergency</div></div>
       </div>
       <div style="margin-top:20px;">
@@ -1329,6 +1333,8 @@
         <button class="g-fbtn active" data-grole="all" onclick="guideSetRole('all')">All <span id="gc-all"></span></button>
         <button class="g-fbtn" data-grole="drain" onclick="guideSetRole('drain')">Drain <span id="gc-drain"></span></button>
         <button class="g-fbtn" data-grole="plumb" onclick="guideSetRole('plumb')">Plumbing <span id="gc-plumb"></span></button>
+        <button class="g-fbtn" data-grole="hvac" onclick="guideSetRole('hvac')">HVAC <span id="gc-hvac"></span></button>
+        <button class="g-fbtn" data-grole="elec" onclick="guideSetRole('elec')">Electric <span id="gc-elec"></span></button>
       </div>
     </div>
     <div class="sbody"><div id="guide-render"></div><div class="g-empty" id="guide-empty">No matching calls. Try a different word.</div></div>
@@ -1413,7 +1419,17 @@ let profile=null, jobId=null, jobData={}, curStep=0, photos=0, outcome=null, cal
 
 function devId(){let id=localStorage.getItem(DK);if(!id){id='dev_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);localStorage.setItem(DK,id);}return id;}
 
+async function backfillShopId(){
+  if(localStorage.getItem('psos_backfilled'))return;
+  try{
+    const snap=await getDocs(query(collection(db,'jobs'),where('deviceId','==',devId())));
+    const missing=snap.docs.filter(d=>!d.data().shopId);
+    for(const d of missing){await updateDoc(doc(db,'jobs',d.id),{shopId:SHOP_ID});}
+    localStorage.setItem('psos_backfilled','1');
+  }catch(e){}
+}
 function boot(){
+  backfillShopId();
   const s=localStorage.getItem(PK);
   if(s){profile=JSON.parse(s);applyProfile();go('s-home');}
   else go('s-setup');
@@ -1897,6 +1913,8 @@ window.renderCoach=async function(){
     }catch(e){}
   }
   const jobs=docs.filter(j=>j.status==='completed');
+  const dayMs=86400000;
+  const abandoned=docs.filter(j=>j.status==='in_progress'&&j.date&&(Date.now()-new Date(j.date+'T00:00:00').getTime())>dayMs).length;
   if(!jobs.length){body.innerHTML='<div class="co-empty">No completed jobs yet.<br>Data appears here as the crew closes out calls.</div>';return;}
 
   const isPilot=j=>(j.date||'')>=PILOT_START;
@@ -1978,6 +1996,7 @@ window.renderCoach=async function(){
 
   const pilotJobs=jobs.filter(isPilot).length, baseJobs=jobs.length-pilotJobs;
   body.innerHTML=`
+    ${abandoned?`<div class="co-note" style="color:var(--danger);margin-bottom:10px;">\u26A0 ${abandoned} job${abandoned>1?'s':''} started but never closed out (24h+). Abandoned jobs hide losses and inflate close rate \u2014 have techs finish or discard them.</div>`:''}
     ${scope==='device'?'<div class="co-note" style="color:var(--danger);margin-bottom:10px;">⚠ Showing this device only — crew-wide query returned nothing. Older jobs may pre-date shopId, or Firestore rules need a read rule for shopId queries.</div>':''}
     <div class="co-sec"><div class="co-h">Close Rate by Tech <span class="co-pill">Baseline vs Pilot</span></div>${techHtml}
       <div class="co-sub" style="padding:0 2px;">Pilot start: ${PILOT_START} · ${baseJobs} baseline jobs · ${pilotJobs} pilot jobs</div></div>
@@ -2888,8 +2907,405 @@ const DATA = [
    found:{t:'Field failing',say:'The ground over the field is [soggy / surfacing], which means the drainfield is saturated \u2014 that\u2019s a bigger repair, and I\u2019ll get the right people involved.'}}
  ],
  flag:'Drainfield failure, biomat saturation, or a crushed / collapsed line \u2192 specialty septic repair. Coordinate pumping with a septic service.',
- option:'Pump-out & inspection \u2022 effluent filter \u2022 camera the line \u2022 septic-safe usage plan \u2022 drainfield evaluation'}
+ option:'Pump-out & inspection \u2022 effluent filter \u2022 camera the line \u2022 septic-safe usage plan \u2022 drainfield evaluation'},
+
+/* ── HVAC TECH ── */
+{role:'hvac', title:'AC blowing warm / not cooling', specs:[['Healthy delta-T','16\u201322\u00B0F between return and supply air'],['Run capacitor','Replace if reading is more than 6% under rating'],['Filter rule','1-in filters: monthly \u00B7 4\u20135-in media: every 6\u201312 months']], says:['blowing warm air','AC runs but the house won\u2019t cool','it\u2019s 85 in here'],
+ causes:[
+  'Dirty filter or blocked return choking airflow (most common, cheapest)',
+  'Failed run capacitor \u2014 outdoor fan or compressor not starting',
+  'Dirty condenser coil \u2014 unit can\u2019t reject heat',
+  'Low refrigerant charge from a leak',
+  'Thermostat set wrong, dead batteries, or miswired',
+  'Tripped breaker or float switch cutting the system off'
+ ],
+ steps:[
+  {q:'Thermostat first \u2014 set to COOL, setpoint below room temp, fan AUTO. Fresh batteries?',
+   clear:{t:'Thermostat is calling',say:'Your thermostat\u2019s calling for cooling like it should \u2014 so the problem is downstream in the equipment. Let\u2019s go look at it.'},
+   found:{t:'Settings / batteries',say:'Found it at the thermostat \u2014 it wasn\u2019t actually calling for cooling. Easy fix, no charge for honesty. While I\u2019m here, let me give the system a quick once-over so this visit still earns its keep.'}},
+  {q:'Pull the filter and check the indoor coil. Filter loaded? Coil matted with dust?',
+   clear:{t:'Airflow path is clean',say:'Filter and coil look good, so the system\u2019s breathing fine. The issue is on the refrigeration or electrical side.'},
+   found:{t:'Choked airflow',say:'This filter\u2019s the problem \u2014 the system\u2019s suffocating. A choked filter makes the coil run cold, then ice, then you get warm air. Let\u2019s swap it and talk about a filter schedule so this never strands you in July again.'}},
+  {q:'Outside: is the condenser fan spinning and the compressor humming? Coil packed with cottonwood or dirt?',
+   clear:{t:'Condenser running and clean',say:'Outdoor unit\u2019s running and the coil\u2019s clean \u2014 good. That points me at the charge, so I\u2019ll put gauges on it.'},
+   found:{t:'Capacitor or dirty coil',say:'Your fan\u2019s not starting \u2014 nine times out of ten that\u2019s the capacitor, and I can test it right here in front of you. If the coil\u2019s packed, the unit can\u2019t dump heat and it\u2019s cooking itself. Both are fixable today.'}},
+  {q:'Check delta-T across the coil and put gauges on the system. In range?',
+   clear:{t:'16\u201322\u00B0F split, charge good',say:'The system\u2019s actually cooling within spec \u2014 which tells me the issue is airflow distribution or the house load, not the equipment. Let\u2019s look at ducts and returns.'},
+   found:{t:'Low charge = leak',say:'You\u2019re low on refrigerant \u2014 and here\u2019s the honest part: refrigerant doesn\u2019t get used up. If it\u2019s low, it leaked. I can top it off, but without finding the leak you\u2019re renting cold air by the season. Let me show you the options.'}}
+ ],
+ flag:'Compressor grounded / not starting on a system 12+ years old, or an R-22 system with a leak \u2014 stop and have the repair-vs-replace conversation before putting money into it.',
+ option:'Capacitor + condenser coil cleaning \u2022 leak search + repair vs. seasonal top-off \u2022 maintenance plan \u2022 replacement quote on aging R-22 systems',
+ upsell:[
+  {c:'Condenser coil deep clean',r:'a dirty coil makes the compressor run hot \u2192 head pressure climbs \u2192 the most expensive part in the system dies early',p:'A clean coil is cheap insurance on the compressor \u2014 that\u2019s the part you never want to buy.'},
+  {c:'Filter subscription / media upgrade',r:'the filter gets forgotten \u2192 the coil ices again \u2192 same no-cool call next summer',p:'Most no-cool calls I run trace back to a forgotten filter. Let\u2019s put that on autopilot.'},
+  {c:'Surge protection at the condenser',r:'a summer storm spikes the line \u2192 board and capacitor fail \u2192 another service call',p:'One small surge protector guards the board, capacitor, and compressor windings from storm spikes.'}
+ ]},
+
+{role:'hvac', title:'Furnace \u2014 no heat', safety:'Gas appliance. If you smell gas, stop, get the homeowner out, and follow gas-leak protocol. Never bypass safety switches to \u201Cmake it run.\u201D',
+ specs:[['Flame sensor','Clean with fine emery \u2014 microamp reading should be steady'],['Limit switch','Tripping = overheating \u2014 find the airflow cause, don\u2019t jumper it'],['Heat exchanger','Cracks = red-tag \u2014 CO risk, no exceptions']],
+ says:['no heat','furnace clicks but won\u2019t fire','blows cold air','it starts then shuts right back off'],
+ causes:[
+  'Dirty flame sensor \u2014 fires then drops out in seconds (most common)',
+  'Ignitor failed \u2014 clicks or glows but no light-off',
+  'Clogged filter overheating the furnace and tripping the limit',
+  'Condensate blocked on a high-efficiency unit \u2014 pressure switch won\u2019t close',
+  'Thermostat, door switch, or a tripped breaker \u2014 the simple stuff',
+  'Inducer motor not proving draft'
+ ],
+ steps:[
+  {q:'Basics: thermostat calling for heat, furnace switch on, door panel seated, breaker on?',
+   clear:{t:'Power and call confirmed',say:'Power\u2019s good and the thermostat\u2019s calling \u2014 so the furnace itself is refusing. Let\u2019s watch it try to start and it\u2019ll tell us where it fails.'},
+   found:{t:'Simple switch / breaker',say:'Found it \u2014 the furnace was switched off at the unit. It happens more than you\u2019d think. Since I\u2019m here, let me run a full ignition cycle and check the safety chain so you\u2019re covered for the season.'}},
+  {q:'Watch the ignition sequence. Does it light and then shut down within seconds?',
+   clear:{t:'Never attempts light-off',say:'It\u2019s not even trying to light \u2014 that points upstream at the ignitor, pressure switch, or board, not the flame side.'},
+   found:{t:'Flame sensor dropout',say:'It lights and dies in about four seconds \u2014 textbook dirty flame sensor. The furnace can\u2019t \u201Csee\u201D its own flame so it shuts the gas off to protect you. I\u2019ll clean and test it right now.'}},
+  {q:'Check the filter and supply registers. Is it overheating and tripping the high limit?',
+   clear:{t:'Airflow fine, limit closed',say:'Airflow\u2019s good and the limit\u2019s happy \u2014 ruling out overheating.'},
+   found:{t:'Limit tripping on airflow',say:'Your furnace is overheating and shutting itself down \u2014 the filter\u2019s so loaded the heat has nowhere to go. That limit switch just saved your heat exchanger. New filter, and let\u2019s verify the blower.'}},
+  {q:'Inspect the heat exchanger with a scope where accessible. Any cracks, rust-through, or flame disturbance when the blower kicks on?',
+   clear:{t:'Exchanger sound',say:'Heat exchanger looks solid \u2014 that\u2019s the big-ticket item, and yours passed.'},
+   found:{t:'Cracked exchanger \u2014 red-tag',say:'I need to be straight with you \u2014 there\u2019s a crack in the heat exchanger, and that\u2019s the wall between your air and the combustion gases. I can\u2019t leave it running. Let me show you the photos and walk through your options, because this is a safety call, not a sales call.'}}
+ ],
+ flag:'Cracked heat exchanger, repeated limit trips with no airflow cause, or CO reading at registers \u2192 shut it down, red-tag, document with photos, and escalate to a comfort advisor same-day.',
+ option:'Flame sensor / ignitor service \u2022 filter plan \u2022 CO detector check \u2022 safety inspection \u2022 replacement conversation on cracked exchangers',
+ upsell:[
+  {c:'CO detectors \u2014 test or install',r:'a furnace fault has no smell \u2192 the family sleeps through it \u2192 the worst outcome in this trade',p:'Every home with gas heat needs working CO detection on every level. Two minutes to test, cheap to add.'},
+  {c:'Ignitor replacement on age',r:'ignitors fail from thermal cycling \u2192 always on the coldest night \u2192 an emergency call at emergency rates',p:'Yours is original and they\u2019re a wear item. Swapping it during a planned visit beats an emergency no-heat at 11pm in January.'},
+  {c:'Fall tune-up plan',r:'small issues compound all winter \u2192 efficiency drops and parts strain \u2192 shorter furnace life',p:'A yearly tune-up is how a 15-year furnace becomes a 20-year furnace.'}
+ ]},
+
+{role:'hvac', title:'System short cycling \u2014 starts and stops constantly', says:['it turns on and off every few minutes','never runs long enough to cool','clicks on, runs a minute, clicks off'],
+ causes:[
+  'Clogged filter or iced coil tripping protections',
+  'Dirty flame sensor (heat) \u2014 lights, drops out, retries',
+  'Low charge \u2014 pressure cutout cycling the compressor',
+  'Thermostat mounted over a register or in direct sun \u2014 false satisfied',
+  'Oversized equipment \u2014 satisfies the stat before the house is comfortable',
+  'Failing board relay or contactor chattering'
+ ],
+ steps:[
+  {q:'Time a full cycle. How long does it actually run, and what shuts it off \u2014 thermostat satisfied or a safety?',
+   clear:{t:'Runs 10+ min, stat satisfied',say:'It\u2019s completing real cycles \u2014 the \u201Cconstant on-off\u201D is actually the thermostat being satisfied fast. That points at sizing or thermostat placement, not a fault.'},
+   found:{t:'Safety cutting it off',say:'It\u2019s dying after about ninety seconds \u2014 something\u2019s tripping a protection, and the unit\u2019s fault light will tell us which one. Let\u2019s read the code.'}},
+  {q:'Check the thermostat location. Near a supply register, sunlight, lamp, or kitchen?',
+   clear:{t:'Location fine',say:'Thermostat\u2019s in a fair spot, so it\u2019s reading the house honestly \u2014 not the problem.'},
+   found:{t:'False reading at the stat',say:'Your thermostat is sitting right in the airflow of that register \u2014 it cools off before the house does, so it keeps shutting the system down early. Relocating it fixes the comfort problem without touching the equipment.'}},
+  {q:'Check filter, coil, and charge \u2014 the airflow/refrigeration causes of protective cycling.',
+   clear:{t:'System healthy under load',say:'Airflow and charge check out under a full run \u2014 the equipment\u2019s protecting itself correctly when it does trip, so we keep hunting.'},
+   found:{t:'Airflow / charge fault',say:'Here\u2019s the chain: weak airflow makes the coil freeze, the pressure switch trips, it thaws, restarts, and repeats \u2014 that\u2019s your on-off pattern. Fix the cause and the cycling stops.'}}
+ ],
+ flag:'Short cycling murders compressors and blower motors \u2014 every start is the hardest moment of the cycle. Unresolved cycling on older equipment \u2192 replacement conversation with the math on runtime stress.',
+ option:'Thermostat relocation or smart stat \u2022 airflow correction \u2022 charge repair \u2022 right-sizing assessment on oversized systems'},
+
+{role:'hvac', title:'AC iced up \u2014 frozen coil or lines', says:['there\u2019s ice on the pipes','the big copper line is frozen solid','it was cooling, now nothing, and I see frost'],
+ causes:[
+  'Airflow starvation \u2014 filthy filter, matted coil, or dead blower',
+  'Low refrigerant \u2014 the coil runs below freezing and ice snowballs',
+  'Running the AC with returns blocked or too many vents closed',
+  'Thermostat left running cool in mild weather overnight'
+ ],
+ steps:[
+  {q:'First move: system to OFF, fan to ON. The coil must thaw before anything can be diagnosed \u2014 set that expectation now.',
+   clear:{t:'',say:''},
+   found:{t:'Thaw protocol',say:'First thing \u2014 I\u2019m switching it to fan-only so that ice melts. Running it frozen can slug liquid into the compressor, and that\u2019s the one part we never want to hurt. While it thaws, I\u2019ll inspect everything else, so no time\u2019s wasted.'}},
+  {q:'While thawing: pull the filter, inspect the blower wheel and coil face.',
+   clear:{t:'Airflow path clean',say:'Filter, blower, and coil are clean \u2014 so airflow isn\u2019t what froze it. That leaves the charge, and the gauges will confirm it once it\u2019s thawed.'},
+   found:{t:'Airflow starvation',say:'There\u2019s the culprit \u2014 the coil can\u2019t breathe. When airflow drops, the coil temperature falls below freezing, condensation turns to ice, and ice blocks even more air. It\u2019s a snowball. Restore the airflow and it stays fixed.'}},
+  {q:'After thaw: gauges on. Charge in spec under a full run?',
+   clear:{t:'Charge good \u2014 airflow was the cause',say:'Charge is right on spec, which confirms airflow was the whole story. Let\u2019s make sure it can\u2019t happen again.'},
+   found:{t:'Low charge \u2014 leak',say:'It\u2019s low \u2014 so the ice was a symptom of a leak. I can find it with a detector or dye. Topping off without fixing the leak means we do this dance again in August.'}}
+ ],
+ flag:'Melted ice overflows the condensate pan \u2014 check for water damage under the air handler and disclose it before the homeowner finds it later. Repeat freeze-ups after an airflow fix \u2192 leak search, not another top-off.',
+ option:'Blower and coil cleaning \u2022 leak search and repair \u2022 float switch install \u2022 filter plan'},
+
+{role:'hvac', title:'Weak airflow / rooms that never get comfortable', says:['barely anything comes out of the vents','the back bedroom is always hot','upstairs is 10 degrees warmer'],
+ causes:[
+  'Leaky or crushed ducts \u2014 flex runs pinched, joints blowing into the attic',
+  'Undersized or blocked return air',
+  'Blower on the wrong speed tap or a weak ECM motor',
+  'Closed / broken dampers, furniture over registers',
+  'Long duct runs to far rooms with no balancing'
+ ],
+ steps:[
+  {q:'Feel airflow at the closest register vs. the complaint room. Big difference?',
+   clear:{t:'Even but weak everywhere',say:'It\u2019s weak everywhere equally \u2014 that\u2019s a blower or return problem at the equipment, not the ductwork to one room.'},
+   found:{t:'One branch starving',say:'Strong here, nothing back there \u2014 so the trunk is fine and something\u2019s wrong on that one branch. Let\u2019s trace it.'}},
+  {q:'Walk the accessible ductwork. Crushed flex, disconnected joints, ducts blowing into the attic or crawlspace?',
+   clear:{t:'Ducts intact',say:'Ductwork\u2019s connected and open \u2014 moving on to the blower and returns.'},
+   found:{t:'Duct leak / crush',say:'Come look at this \u2014 you\u2019ve been paying to air-condition the attic. This joint\u2019s been blowing cold air into unconditioned space, probably for years. Sealing it puts that air \u2014 and that money \u2014 back into the bedroom.'}},
+  {q:'Check return sizing and the blower \u2014 filter slot whistling? Door hard to open against suction?',
+   clear:{t:'Return breathing fine',say:'Returns are adequate \u2014 the system can pull what it needs to push.'},
+   found:{t:'Return starved',say:'Your system is trying to breathe through a straw \u2014 the return is undersized, so no matter how strong the blower is, it can\u2019t move what it can\u2019t pull in. Adding return capacity fixes the whole house, not one room.'}}
+ ],
+ flag:'Duct leakage of 20\u201330% is normal in older homes \u2014 that\u2019s a third of the paid-for air gone. Comfort complaints in 2+ rooms \u2192 duct evaluation as its own line item, not a freebie.',
+ option:'Duct sealing \u2022 return air upgrade \u2022 balancing dampers \u2022 blower speed correction \u2022 zoning conversation for two-story homes'},
+
+{role:'hvac', title:'Water around the indoor unit \u2014 condensate', says:['water around the furnace','ceiling stain under the attic unit','the drain pan is full'],
+ causes:[
+  'Clogged condensate drain line \u2014 algae plug (most common)',
+  'Rusted-through primary pan',
+  'Failed condensate pump',
+  'Missing or dead float switch letting it overflow instead of shutting off',
+  'Iced coil melting off faster than the drain can take'
+ ],
+ steps:[
+  {q:'Primary pan and drain line \u2014 standing water? Blow-out or vac the line at the exit. Plugged?',
+   clear:{t:'Line flows',say:'Drain\u2019s flowing, so the water took another path \u2014 let\u2019s check the pan and the coil.'},
+   found:{t:'Algae plug',say:'There\u2019s the plug \u2014 algae builds up in that line every cooling season. Cleared it and it\u2019s draining. Now let\u2019s make sure a clog can never flood this space again, because next time you might not catch it early.'}},
+  {q:'Inspect the pan \u2014 rust-through on metal pans, cracks on plastic?',
+   clear:{t:'Pan sound',say:'Pan\u2019s in good shape \u2014 water was coming over the top, not through it.'},
+   found:{t:'Pan failed',say:'The pan itself has rusted through \u2014 water\u2019s been seeping under the unit. Pan replacement, and given what\u2019s below this unit, a float switch is non-negotiable.'}},
+  {q:'Is there a float / wet switch on the primary and the secondary pan? Test them.',
+   clear:{t:'Protection in place and working',say:'Your safety switches test good \u2014 if this ever clogs again, the system shuts off instead of flooding. That\u2019s exactly how it should be.'},
+   found:{t:'No overflow protection',say:'Here\u2019s what concerns me most \u2014 there\u2019s nothing to stop this when it happens again. A float switch costs less than one drywall patch, and this unit is sitting above your ceiling.'}}
+ ],
+ flag:'Attic units without a working float switch above finished space are a claim waiting to happen \u2014 document it if declined. Ceiling stains \u2192 photograph before and after so the scope of pre-existing damage is on record.',
+ option:'Drain line clean + treatment tabs \u2022 float switch install \u2022 pan replacement \u2022 condensate pump \u2022 seasonal maintenance'},
+
+{role:'hvac', title:'Strange noises \u2014 squeal, rattle, boom, hum', safety:'A boom or bang at furnace light-off is delayed ignition \u2014 gas pooling before it lights. Treat as a safety call, not a noise complaint.',
+ says:['it squeals when it starts','loud bang when the heat kicks on','rattles the whole hallway','buzzing outside'],
+ causes:[
+  'Squeal \u2014 blower bearing or motor on its way out',
+  'Boom at light-off \u2014 delayed ignition from dirty burners (safety)',
+  'Rattle \u2014 loose panel, debris in the blower, unsecured duct',
+  'Buzz / hum outside \u2014 failing contactor or capacitor',
+  'Metal-on-metal chirp \u2014 blower wheel contacting housing'
+ ],
+ steps:[
+  {q:'Get the noise to happen. Startup, steady-state, or shutdown? Indoor or outdoor?',
+   clear:{t:'',say:''},
+   found:{t:'Noise located',say:'Good \u2014 I heard it. The timing and location tell us what it is; noises at startup are ignition or motor starts, steady-state is bearings or airflow, and I\u2019d rather diagnose it while it\u2019s talking to us.'}},
+  {q:'Boom or bang when the furnace lights?',
+   clear:{t:'Clean light-off',say:'Ignition\u2019s clean and immediate \u2014 that rules out the one noise that\u2019s a genuine safety issue.'},
+   found:{t:'Delayed ignition',say:'That bang is gas pooling for a second before it lights \u2014 a small explosion in the burner box, every single cycle. It cracks heat exchangers and burns out components. Cleaning the burners fixes it, and it shouldn\u2019t wait.'}},
+  {q:'Squeal or grind from the blower compartment?',
+   clear:{t:'Blower quiet',say:'Blower\u2019s running smooth and quiet \u2014 bearings sound healthy.'},
+   found:{t:'Bearing / motor wear',say:'That squeal is the blower motor telling us it\u2019s dying \u2014 they always finish the job on the hottest or coldest week of the year. Replacing it on our schedule beats replacing it on the motor\u2019s schedule.'}}
+ ],
+ flag:'Delayed ignition, burning-electrical smell, or metal-on-metal contact \u2192 do not leave it running. Everything else \u2192 diagnose, but never dismiss a noise a homeowner can reproduce.',
+ option:'Burner cleaning \u2022 blower motor / bearing replacement \u2022 contactor + capacitor refresh \u2022 panel securing and vibration isolation'},
+
+{role:'hvac', title:'High bills / system never stops running', says:['our bill doubled','the AC runs all day and never catches up','it\u2019s always on'],
+ causes:[
+  'Dirty coils \u2014 the system moves heat badly so it runs longer',
+  'Duct leakage dumping paid air into attic or crawl',
+  'Low charge \u2014 cooling at half strength for full-price electricity',
+  'Aging low-SEER equipment doing its best',
+  'Attic insulation / envelope losses the system can\u2019t win against',
+  'Fan set to ON instead of AUTO running the blower 24/7'
+ ],
+ steps:[
+  {q:'Thermostat check \u2014 fan on AUTO? Schedule sane? Any \u201Cemergency heat\u201D running on a heat pump?',
+   clear:{t:'Settings clean',say:'Settings are right \u2014 so the runtime is real demand, and something is making the system work harder than it should.'},
+   found:{t:'Settings burning money',say:'Found part of your bill right here \u2014 the fan\u2019s been set to run around the clock. That alone is a meaningful chunk of the increase, and it\u2019s free to fix.'}},
+  {q:'Measure delta-T and inspect both coils. Is the system actually moving the heat it should?',
+   clear:{t:'Performing in spec',say:'The equipment is doing its job \u2014 which means the house is losing the battle somewhere: ducts, insulation, or the system\u2019s just aged into inefficiency.'},
+   found:{t:'Degraded performance',say:'Your system is cooling at about two-thirds strength while drinking full-strength power \u2014 dirty coils and a marginal charge. A proper service brings the output back up and the runtime back down.'}},
+  {q:'Age and SEER check. What is this equipment, honestly?',
+   clear:{t:'Modern and efficient',say:'The equipment is modern and efficient \u2014 so the money is leaking through ducts or the envelope, and that\u2019s where I\u2019d spend next, not on the system.'},
+   found:{t:'Old low-SEER unit',say:'This is a 20-year-old 10-SEER system \u2014 today\u2019s equipment moves the same cooling on roughly half the electricity. I\u2019m not telling you to replace it today. I\u2019m telling you the math so the decision is yours before it makes itself.'}}
+ ],
+ flag:'Never sell replacement on bills alone without showing measured performance \u2014 credibility is the product. Runtime + measured delta-T + age is the honest case; write all three on the invoice.',
+ option:'Full service + coil cleaning \u2022 duct sealing \u2022 smart thermostat \u2022 high-efficiency replacement with the utility math shown side-by-side'},
+
+/* ── ELECTRICIAN ── */
+{role:'elec', title:'Breaker keeps tripping', safety:'A breaker that trips is doing its job. Never upsize a breaker to \u201Cfix\u201D tripping \u2014 the wire gauge sets the limit, and oversizing turns a nuisance into a fire.',
+ specs:[['Continuous load rule','80% \u2014 15A circuit \u2248 1,440W \u00B7 20A \u2248 1,920W'],['Trip types','Overload = too much on it \u00B7 Short = instant trip on reset \u00B7 Ground fault / arc = GFCI-AFCI protection acting'],['Space heaters','1,500W each \u2014 two on one 15A circuit trips it every time']],
+ says:['the breaker keeps flipping','we reset it and it pops again','it trips every time the microwave and toaster run together'],
+ causes:[
+  'Genuine overload \u2014 too many amps on one circuit (space heaters, kitchen counters)',
+  'Short circuit \u2014 damaged cord, failed device, nicked cable',
+  'Ground fault \u2014 moisture or a failing appliance leaking current',
+  'AFCI nuisance-tripping on certain electronics or shared neutrals',
+  'A worn breaker tripping below its rating'
+ ],
+ steps:[
+  {q:'Interview: what\u2019s running when it trips? Same time of day, same appliances?',
+   clear:{t:'Random \u2014 no load pattern',say:'It\u2019s not tied to what you\u2019re running \u2014 which moves us from \u201Ctoo much stuff\u201D to a fault somewhere on the circuit. That\u2019s a different hunt.'},
+   found:{t:'Overload pattern',say:'There\u2019s our answer forming \u2014 the microwave and the toaster share this circuit, and together they\u2019re past what it can carry. Nothing\u2019s broken; the circuit\u2019s just outmatched. Let\u2019s talk about a dedicated line.'}},
+  {q:'Reset with everything on the circuit unplugged. Does it hold?',
+   clear:{t:'Holds empty',say:'It holds with nothing connected \u2014 the wiring itself is okay, and one of the things we unplugged is the offender. We\u2019ll add them back one at a time and it\u2019ll confess.'},
+   found:{t:'Trips instantly, empty',say:'It trips instantly with nothing plugged in \u2014 that\u2019s a short in the wiring or a device box, not an appliance. I need to open this circuit up and find it before it stays energized.'}},
+  {q:'Measure actual load with a clamp meter at the panel while the usual appliances run.',
+   clear:{t:'Load within rating',say:'You\u2019re within what this circuit can carry \u2014 so the breaker itself may be worn and tripping early. They do age. I\u2019ll test and replace just the breaker.'},
+   found:{t:'Load over the 80% line',say:'You\u2019re pulling 18 amps sustained on a 15-amp circuit \u2014 the breaker is protecting the wire in your walls, exactly as designed. The fix isn\u2019t a bigger breaker; it\u2019s spreading this load onto a dedicated circuit.'}}
+ ],
+ flag:'Any request to \u201Cjust put in a bigger breaker\u201D gets a respectful hard no with the why. Melted insulation, warm breakers, or a burnt smell at the panel \u2192 panel inspection immediately.',
+ option:'Dedicated circuit for the offending load \u2022 breaker replacement \u2022 kitchen / laundry circuit additions \u2022 panel load calculation',
+ upsell:[
+  {c:'Panel health check while it\u2019s open',r:'a worn breaker rarely travels alone \u2192 the next nuisance trip is a month away \u2192 another service call',p:'The panel\u2019s already open \u2014 ten minutes to torque-check and scan every breaker means we catch the next failure before it strands you.'},
+  {c:'Whole-home surge protector',r:'one utility spike or lightning event \u2192 every board in the house eats it \u2192 furnace, fridge, and TV boards in one shot',p:'Everything in a modern house is a computer now. One panel-mounted surge protector shields all of it.'}
+ ]},
+
+{role:'elec', title:'Dead outlet(s) \u2014 no power at receptacle', says:['this outlet just stopped working','half the bedroom plugs are dead','it works sometimes if we wiggle the plug'],
+ causes:[
+  'A tripped GFCI upstream \u2014 often in a garage or bathroom feeding others (most common)',
+  'Backstabbed connections that let go \u2014 kills everything downstream',
+  'A half-hot outlet controlled by a wall switch nobody knows about',
+  'Tripped breaker that doesn\u2019t look tripped (reset fully off, then on)',
+  'A burned or failed receptacle'
+ ],
+ steps:[
+  {q:'Hunt every GFCI in the house \u2014 bathrooms, garage, exterior, basement \u2014 and reset them all.',
+   clear:{t:'GFCIs all fine',say:'No tripped GFCIs \u2014 that\u2019s the easy answer eliminated, so we go to the panel and then the circuit itself.'},
+   found:{t:'Upstream GFCI',say:'There it is \u2014 the GFCI in the garage protects this outlet too, and it had tripped. Everything\u2019s back. Now the better question: what tripped it? If it happens again this week, something on this circuit is leaking current and I want to know what.'}},
+  {q:'Panel check \u2014 cycle the breaker fully OFF, then ON. Any breaker that feels soft or sits mid-position?',
+   clear:{t:'Breakers firm and on',say:'Panel\u2019s clean \u2014 so power is leaving the panel and dying somewhere between here and that outlet. That means a connection has let go.'},
+   found:{t:'Half-tripped breaker',say:'This one was tripped but sitting almost normal \u2014 they hide like that. Full off, then on, and you\u2019re live again. If it re-trips, we hunt the cause rather than keep resetting it.'}},
+  {q:'Open the dead outlet and the last working one upstream. Backstabbed wires? Scorching? Loose terminations?',
+   clear:{t:'Connections sound',say:'Connections here are solid \u2014 the break is further up the chain, and I\u2019ll walk it box by box until I find the open.'},
+   found:{t:'Failed backstab',say:'Found it \u2014 the wire was just pushed into the back of this outlet, and those spring connections loosen with every heat-and-cool cycle. When it let go, it killed everything past it. I\u2019ll move these to the screw terminals, which is how it should have been done.'}}
+ ],
+ flag:'One failed backstab means the whole run was wired that way \u2014 quote pigtailing the circuit, not just the one device. Scorched insulation \u2192 the arcing already started; treat it as urgent.',
+ option:'Receptacle replacement on screws \u2022 circuit-wide backstab correction \u2022 GFCI updates where code now requires them',
+ upsell:[
+  {c:'Correct the backstabs on the whole circuit',r:'the other outlets were wired the same day by the same hand \u2192 the next one lets go behind a bed \u2192 arcing where no one sees it',p:'This outlet just told us how the whole circuit was built. Correcting them all in one visit is the honest fix.'},
+  {c:'GFCI / tamper-resistant upgrades',r:'older receptacles predate today\u2019s protection \u2192 kitchens, baths, and kids\u2019 rooms miss modern safeguards \u2192 preventable shock risk',p:'While we\u2019re in these boxes anyway, bringing them to current protection standards is the cheapest it will ever be.'}
+ ]},
+
+{role:'elec', title:'Lights flickering or dimming', safety:'Whole-house flicker with bright/dim swings across rooms can be a failing service neutral \u2014 a genuine emergency. Do not leave until it\u2019s ruled out or the utility is called.',
+ says:['the lights flicker at night','they dim when the AC kicks on','sometimes some rooms get really bright'],
+ causes:[
+  'One fixture / one circuit \u2014 loose connection or a failing dimmer-bulb pairing',
+  'Brief dim when big motors start (AC, well pump) \u2014 often normal inrush',
+  'Loose neutral at the panel or meter \u2014 serious',
+  'Failing service connections outside \u2014 utility side',
+  'LED bulbs on old dimmers \u2014 compatibility flicker'
+ ],
+ steps:[
+  {q:'Scope it: one light, one room, or the whole house? Do some lights ever get BRIGHTER while others dim?',
+   clear:{t:'Localized to one circuit',say:'It\u2019s contained to this circuit \u2014 that\u2019s a loose connection or a fixture issue, annoying but not dangerous. We\u2019ll trace it.'},
+   found:{t:'Whole-house / bright-dim swing',say:'I have to be direct \u2014 lights getting brighter is the red flag in our trade. It points at the neutral connection for the whole house, and when that fails, 120-volt devices can see nearly 240. I\u2019m checking the panel and service right now, and if it\u2019s on the utility side we call them before I leave.'}},
+  {q:'Does the dim coincide with the AC, well pump, or another big motor starting?',
+   clear:{t:'No load correlation',say:'It\u2019s not tied to motor starts \u2014 so it\u2019s a connection somewhere, not normal inrush.'},
+   found:{t:'Motor inrush',say:'That half-second dim when the AC starts is the compressor\u2019s inrush current \u2014 common and mostly cosmetic. If it\u2019s gotten worse over time, a hard-start kit on the AC smooths it out and eases wear on the compressor too.'}},
+  {q:'Panel inspection \u2014 torque check the neutrals and hots, look for discoloration at lugs.',
+   clear:{t:'Panel connections tight',say:'Every connection in the panel is tight and clean \u2014 which pushes the suspicion to the fixture, the dimmer, or the bulbs themselves.'},
+   found:{t:'Loose / burned lug',say:'Here\u2019s your flicker \u2014 this neutral lug was loose and you can see the heat discoloration where it\u2019s been arcing. Every flicker you saw was a small arc event. It\u2019s repaired now, and this is exactly why flickering is worth a service call.'}}
+ ],
+ flag:'Bright-dim swings, buzzing at the panel, or heat marks on service conductors \u2192 treat as emergency; involve the utility for line-side faults. Never write off whole-house flicker as \u201Cjust bulbs.\u201D',
+ option:'Panel connection service \u2022 dimmer / LED compatibility fixes \u2022 hard-start kit referral for motor dim \u2022 service upgrade on aging equipment'},
+
+{role:'elec', title:'GFCI won\u2019t reset', says:['the reset button won\u2019t click','bathroom plugs all dead and the button does nothing','it resets then pops right back out'],
+ causes:[
+  'No power reaching the GFCI \u2014 breaker or upstream break (button can\u2019t latch without power)',
+  'A real ground fault downstream \u2014 moisture in an exterior box, failing appliance',
+  'The GFCI itself worn out \u2014 they\u2019re a 10\u201315 year device',
+  'Miswired line/load from a past DIY replacement'
+ ],
+ steps:[
+  {q:'Confirm power is reaching the GFCI \u2014 breaker on, test at the line terminals.',
+   clear:{t:'Power present',say:'It has power and still won\u2019t hold \u2014 so it\u2019s either protecting you from a real fault downstream, or the device itself is done. Both are findable.'},
+   found:{t:'No power to the device',say:'The button won\u2019t latch because there\u2019s nothing to latch onto \u2014 no power is arriving. The problem is upstream: the breaker or a connection between here and the panel. The GFCI is innocent.'}},
+  {q:'Disconnect the load side and reset. Does it hold with nothing downstream?',
+   clear:{t:'Still trips with no load',say:'It trips with nothing connected \u2014 the device itself has failed internally. They wear out; yours is done. Straight replacement.'},
+   found:{t:'Holds \u2014 fault is downstream',say:'It holds the moment I take the downstream circuit off \u2014 so something past this point is leaking current to ground. Exterior outlets and anything that\u2019s seen moisture are the usual suspects. Let\u2019s walk the chain.'}},
+  {q:'Walk the downstream chain \u2014 exterior boxes, garage, anything with weather exposure. Moisture, corrosion, insect nests?',
+   clear:{t:'Chain clean',say:'The circuit checks clean now \u2014 sometimes it\u2019s a transient like a wet extension cord that\u2019s since been removed. It\u2019s holding, and you know what to suspect if it recurs.'},
+   found:{t:'Wet / corroded box',say:'Found it \u2014 this outside box has been taking on water and the corrosion is leaking current. The GFCI caught it every time, exactly like it\u2019s supposed to. In-use cover and a fresh device, and you\u2019re protected properly.'}}
+ ],
+ flag:'GFCIs protecting bathrooms, kitchens, exterior, and garage aren\u2019t optional \u2014 a failed one gets replaced same-visit, never bypassed. Check date codes; pre-2006 devices lack self-test and are due on age alone.',
+ option:'GFCI replacement \u2022 weather-resistant devices + in-use covers outside \u2022 whole-home GFCI compliance walk-through'},
+
+{role:'elec', title:'Burning smell / warm outlet or switch', safety:'This is the call you never downplay. A warm device or fish-like burning smell is active overheating \u2014 kill the circuit at the panel before opening anything.',
+ says:['it smells like burning plastic','the outlet is warm','I saw a spark when I plugged in','fishy smell near the switch'],
+ causes:[
+  'Loose termination arcing inside the device box',
+  'Overloaded receptacle \u2014 heaters and power strips',
+  'Failing device \u2014 worn contacts arcing under load',
+  'Undersized extension cords feeding heavy loads',
+  'Damaged conductor insulation behind the wall'
+ ],
+ steps:[
+  {q:'Circuit OFF at the panel first. Then open the device. Scorching, melted insulation, discolored terminals?',
+   clear:{t:'Device clean \u2014 hunt continues',say:'This device is clean \u2014 but the smell was real, so we keep going. Smells travel along studs and wire runs; I\u2019ll check every box on this circuit until we find the source. This isn\u2019t a call where \u201Cprobably fine\u201D is acceptable.'},
+   found:{t:'Arcing found',say:'There\u2019s your smell \u2014 see the browning on this terminal? That connection\u2019s been arcing, and arcing is how house fires start inside walls. The breaker never trips for this because the current never spikes. You did exactly right calling it in.'}},
+  {q:'What was plugged in? Space heater, AC unit, power strip chains?',
+   clear:{t:'Light load',say:'Nothing heavy on it \u2014 so this wasn\u2019t overload, it was a connection failing on its own. That\u2019s a workmanship or age issue, and worth checking the rest of the circuit for.'},
+   found:{t:'Overload cooking the device',say:'A 1,500-watt heater through a power strip is more than this old receptacle can carry continuously \u2014 the heat you felt is the device cooking. Heaters get a wall outlet, ideally their own circuit, never a strip.'}},
+  {q:'Check the same circuit\u2019s other devices and the breaker \u2014 heat travels.',
+   clear:{t:'Damage contained',say:'The rest of the circuit checks healthy \u2014 the damage stopped at this one device, and it\u2019s replaced with proper terminations.'},
+   found:{t:'Heat damage spread',say:'The overheating traveled \u2014 the insulation on this run is compromised beyond just the one box. This section needs to be replaced, not patched, and I\u2019ll show you exactly why on the wire itself.'}}
+ ],
+ flag:'Any evidence of arcing \u2192 inspect the entire circuit before re-energizing. Melted conductor insulation \u2192 that cable section is done. Document with photos; this is the category insurers ask about later.',
+ option:'Device replacement with proper terminations \u2022 circuit inspection \u2022 dedicated circuit for heavy loads \u2022 AFCI breaker upgrade \u2014 built to catch exactly this'},
+
+{role:'elec', title:'Panel red flags \u2014 the ones that change the conversation', specs:[['Recall-era brands','Federal Pacific (Stab-Lok), Zinsco / Sylvania \u2014 documented failure-to-trip history'],['Double-tap','Two wires under one breaker lug \u2014 violation unless the breaker is rated for it'],['Panel life','40+ years, rust, or no spare capacity \u2192 upgrade conversation']],
+ says:['we need another circuit but the panel is full','the inspector flagged our panel','breakers feel hot','the panel buzzes'],
+ causes:[
+  'Federal Pacific / Zinsco panels \u2014 breakers with a documented history of not tripping on faults',
+  'Double-tapped breakers from decades of add-ons',
+  'Rust or water intrusion at the panel or meter',
+  'No spare slots \u2014 the reason every project stalls',
+  'Warm breakers or buzzing \u2014 connections degrading under load'
+ ],
+ steps:[
+  {q:'Identify the panel \u2014 brand, era, amperage. Is it on the known-problem list?',
+   clear:{t:'Reputable panel, serviceable',say:'Good news \u2014 this is a solid panel with a clean history. Whatever we do today, the foundation is worth building on.'},
+   found:{t:'FPE / Zinsco',say:'I want to show you something rather than just tell you \u2014 this is a Federal Pacific panel, and these breakers have a documented history of failing to trip during faults. The breaker is the only safety device between a fault and a fire. I\u2019m not saying your house is burning down; I\u2019m saying the safety net has known holes, and you deserve to know that.'}},
+  {q:'Cover off \u2014 double-taps, aluminum branch circuits, scorching at bus stabs, rust?',
+   clear:{t:'Interior clean',say:'Inside is clean \u2014 tight connections, healthy bus, no corrosion. This panel\u2019s been treated well.'},
+   found:{t:'Violations / damage inside',say:'See these two wires under one lug? Every one of these is a connection under stress that the breaker wasn\u2019t designed to hold. It\u2019s fixable \u2014 some get pigtailed, some need a slot \u2014 and that\u2019s part of why the panel feels \u201Cfull.\u201D'}},
+  {q:'Load calculation \u2014 does the service actually support this home as it\u2019s lived in today (EV, hot tub, additions)?',
+   clear:{t:'Capacity adequate',say:'The math works \u2014 your service can carry the house as you actually use it, with headroom. No upgrade needed on capacity alone.'},
+   found:{t:'Service outgrown',say:'This 100-amp service was sized for a 1978 version of this house \u2014 before the EV charger, the second AC, and the kitchen remodel. You\u2019re living at the ceiling. Here\u2019s the load math on paper, and here\u2019s what a right-sized service opens up.'}}
+ ],
+ flag:'FPE / Zinsco identification is a documented safety disclosure \u2014 photograph, note it on the invoice, and make the recommendation in writing whether they act or not. That paper trail protects them and you.',
+ option:'Panel replacement \u2022 service upgrade with load calc \u2022 double-tap corrections \u2022 whole-home surge protection at the new panel',
+ upsell:[
+  {c:'Whole-home surge protection with the new panel',r:'a new panel with unprotected sensitive loads \u2192 the next surge takes out boards the panel can\u2019t save \u2192 out-of-pocket electronics losses',p:'If we\u2019re doing the panel, the surge protector installs in the same visit for a fraction of its standalone cost.'},
+  {c:'Label every circuit while it\u2019s open',r:'an unlabeled panel \u2192 every future emergency means flipping breakers blind \u2192 slower response when seconds matter',p:'A fully mapped panel is twenty minutes now and pays off during every outage and every project after.'}
+ ]},
+
+{role:'elec', title:'Partial power \u2014 half the house dead or acting strange', safety:'A lost service leg or neutral can put near-240V on 120V circuits. If lights are unusually bright anywhere, treat it as an emergency and involve the utility.',
+ says:['half the house has no power','the oven clock is on but it won\u2019t heat','some rooms work, some don\u2019t','the dryer runs but doesn\u2019t get hot'],
+ causes:[
+  'One leg of the 240V service lost \u2014 utility connection, meter, or main',
+  '240V appliances half-working (dryer spins cold) \u2014 the classic one-leg symptom',
+  'Lost neutral \u2014 voltages swing, bright and dim lights (dangerous)',
+  'A failed main breaker on one pole'
+ ],
+ steps:[
+  {q:'Map it \u2014 which circuits are dead? Are 240V appliances (dryer, range, AC) doing anything odd like half-working?',
+   clear:{t:'Random circuits, 240V fine',say:'Your big appliances are getting full power \u2014 so both service legs are alive, and these dead circuits have individual problems. Different hunt, less scary.'},
+   found:{t:'One-leg pattern',say:'A dryer that spins cold is the tell \u2014 it\u2019s getting one of its two legs. Half your panel is dead because half your service is missing. This is at the main, the meter, or the utility connection \u2014 and I\u2019ll pinpoint which before anyone touches anything.'}},
+  {q:'Voltage at the main lugs \u2014 both legs to neutral, leg to leg. What are we actually receiving?',
+   clear:{t:'240 arriving at the main',say:'Full service is arriving \u2014 so the loss is inside: the main breaker or the panel itself. That\u2019s our repair, and it\u2019s a today repair.'},
+   found:{t:'A leg missing at the lugs',say:'One leg is dead where the service lands \u2014 this is on the utility side of the meter. That\u2019s their repair and their emergency line, and I\u2019ll stay while you call so I can talk to their dispatcher directly. No one should be billing you for the utility\u2019s splice.'}},
+  {q:'Any bright-dim swinging while loads switch? Neutral integrity check.',
+   clear:{t:'Neutral solid',say:'Voltages are staying rock steady as loads change \u2014 the neutral is healthy, which was the dangerous possibility. Good.'},
+   found:{t:'Floating neutral',say:'Everything unplugged that matters, now \u2014 sensitive electronics first. Your neutral is compromised and voltages are swinging past what 120V devices can survive. This is the one genuine electrical emergency, and we handle it before I leave this driveway.'}}
+ ],
+ flag:'Utility-side faults \u2192 stay until the utility is engaged; document voltages measured. Floating neutral \u2192 protect loads first, repair second, and put the readings in writing on the invoice.',
+ option:'Main breaker replacement \u2022 meter-base repair coordination \u2022 panel service \u2022 whole-home surge protection after any neutral event'},
+
+{role:'elec', title:'Old wiring \u2014 two-prong outlets, aluminum, knob & tube', specs:[['Aluminum era','Branch circuits roughly 1965\u20131973 \u2014 needs CO/ALR devices or proper copper transitions'],['Two-prong','No equipment ground \u2014 GFCI protection is the code-recognized retrofit'],['Knob & tube','Pre-1950 \u2014 insurance carriers increasingly refuse it']],
+ says:['our outlets only take two prongs','the house is from the 60s and nothing\u2019s grounded','insurance is asking about the wiring'],
+ causes:[
+  'Ungrounded two-wire circuits \u2014 no fault path for modern electronics',
+  'Aluminum branch wiring \u2014 expands/contracts, loosens at every device',
+  'Knob & tube \u2014 aged insulation, no ground, often buried in attic insulation',
+  'Decades of DIY splices layered on top of all of it'
+ ],
+ steps:[
+  {q:'Sample outlets across eras of the house \u2014 grounded? Copper or aluminum at the terminals?',
+   clear:{t:'Grounded copper throughout',say:'You\u2019re in better shape than the two-prong faceplates suggested \u2014 the wiring behind them is grounded copper. Some of this is just device upgrades, not rewiring.'},
+   found:{t:'Aluminum branch circuits',say:'This is aluminum branch wiring \u2014 mid-60s to early-70s, and here\u2019s the issue: aluminum expands and contracts more than copper, so every connection slowly works itself loose. The failures happen at the devices, and there\u2019s a right way to address every single one.'}},
+  {q:'Attic and basement look \u2014 knob & tube runs? Are they buried under insulation?',
+   clear:{t:'No K&T active',say:'No knob and tube in service \u2014 what\u2019s visible up there is abandoned, which is exactly where it belongs.'},
+   found:{t:'Live K&T under insulation',say:'There\u2019s live knob and tube up here, buried under the insulation \u2014 and that combination is the problem, because this wiring was designed to cool in open air. Your insurance carrier will care about this, and honestly, so do I.'}},
+  {q:'What does the homeowner actually need \u2014 full rewire, or a staged safety plan?',
+   clear:{t:'Staged plan fits',say:'You don\u2019t have to do everything at once. GFCI protection on the ungrounded circuits now, proper connectors at every aluminum termination next, and we stage the bigger work by priority. Safety first, budget respected.'},
+   found:{t:'Rewire conversation',say:'With what we found together today \u2014 and you saw it with me \u2014 patching isn\u2019t honest advice. Let me put together a room-by-room rewire plan with real numbers, staged so it\u2019s livable. This is a decision you make once and stop worrying about.'}}
+ ],
+ flag:'Aluminum terminations and buried K&T are insurance and safety disclosures \u2014 document and put recommendations in writing regardless of what they choose today. Never quote a rewire from the doorway; walk it and count.',
+ option:'GFCI retrofit on ungrounded circuits \u2022 AlumiConn / CO-ALR corrections at every aluminum device \u2022 staged rewire plan \u2022 insurance-ready inspection letter',
+ upsell:[
+  {c:'GFCI protection on every ungrounded circuit',r:'two-prong circuits stay fault-blind \u2192 a fault energizes a lamp or tool chassis \u2192 shock with no breaker response',p:'GFCIs are the code-recognized way to make ungrounded circuits safe without opening walls \u2014 the biggest safety gain per dollar in this house.'},
+  {c:'Smoke / CO detector circuit check',r:'old wiring and old detectors travel together \u2192 detectors past their 10-year life \u2192 no warning when it matters',p:'While we\u2019re assessing the wiring, let\u2019s verify the detectors \u2014 they\u2019re a ten-year device and these look original.'}
+ ]}
 ];
+
 
 const UPSELL={
 'Kitchen sink \u2014 slow or won\u2019t drain':[
@@ -3070,12 +3486,15 @@ function build(){
   document.getElementById('gc-all').textContent=DATA.length;
   document.getElementById('gc-drain').textContent=DATA.filter(d=>d.role==='drain').length;
   document.getElementById('gc-plumb').textContent=DATA.filter(d=>d.role==='plumb').length;
-  const groups=[['drain','Drain Tech','The clog, backup, and drainage calls.'],['plumb','Plumbing Tech','Repairs, fixtures, water heaters, supply, and gas.']];
+  document.getElementById('gc-hvac').textContent=DATA.filter(d=>d.role==='hvac').length;
+  document.getElementById('gc-elec').textContent=DATA.filter(d=>d.role==='elec').length;
+  const groups=[['drain','Drain Tech','The clog, backup, and drainage calls.'],['plumb','Plumbing Tech','Repairs, fixtures, water heaters, supply, and gas.'],['hvac','HVAC Tech','Cooling, heating, airflow, and comfort calls.'],['elec','Electrician','Power, panels, circuits, and safety calls.']];
   let html='';
   groups.forEach(g=>{
     const role=g[0];
     html+=`<div class="g-sec"><div class="g-sec-eyebrow">Section</div><div class="g-sec-title">${g[1]}</div><div class="g-sec-note">${g[2]}</div></div><div class="g-list">`;
-    DATA.filter(d=>d.role===role).forEach((d,i)=>{ html+=cardHtml(d,(role==='drain'?'D':'P')+(i+1)); });
+    const pfx={drain:'D',plumb:'P',hvac:'H',elec:'E'}[role]||'X';
+    DATA.filter(d=>d.role===role).forEach((d,i)=>{ html+=cardHtml(d,pfx+(i+1)); });
     html+='</div>';
   });
   document.getElementById('guide-render').innerHTML=html;
