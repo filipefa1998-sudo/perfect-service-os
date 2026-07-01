@@ -626,6 +626,28 @@
   /* ===== LOGIN ===== */
   #login-err{background:var(--danger-pale);color:var(--danger);font-size:13px;font-weight:600;padding:10px 12px;border-radius:9px;margin-bottom:14px;border:1px solid rgba(217,64,64,.25);}
 
+
+  /* ── COACH DASHBOARD ── */
+  .co-sec{padding:0 18px;margin-bottom:22px;}
+  .co-h{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--slate-400);margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--copper);}
+  .co-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(26,29,35,.04);}
+  .co-tech{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px;}
+  .co-tname{font-size:14px;font-weight:800;color:var(--slate-900);}
+  .co-delta{font-size:13px;font-weight:800;}
+  .co-delta.up{color:var(--success);} .co-delta.down{color:var(--danger);} .co-delta.flat{color:var(--slate-400);}
+  .co-sub{font-size:11px;color:var(--slate-400);line-height:1.5;}
+  .co-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+  .co-bar-lbl{font-size:11px;font-weight:700;color:var(--slate-700);width:118px;flex-shrink:0;}
+  .co-bar-track{flex:1;height:16px;background:var(--slate-100);border-radius:8px;overflow:hidden;}
+  .co-bar-fill{height:100%;background:var(--copper);border-radius:8px;transition:width .5s;}
+  .co-bar-val{font-size:11px;font-weight:800;color:var(--slate-900);width:34px;text-align:right;flex-shrink:0;}
+  .co-mm{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;color:var(--slate-800);}
+  .co-mm:last-child{border-bottom:none;}
+  .co-mm-arrow{color:var(--copper);font-weight:800;}
+  .co-mm-count{margin-left:auto;font-size:12px;font-weight:800;color:var(--slate-400);}
+  .co-note{font-size:11px;color:var(--slate-400);line-height:1.6;padding:10px 18px 0;}
+  .co-empty{text-align:center;padding:36px 24px;color:var(--slate-400);font-size:13px;line-height:1.6;}
+  .co-pill{display:inline-block;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;padding:3px 8px;border-radius:10px;background:var(--copper-pale);color:var(--copper-dim);margin-left:6px;}
 </style>
   <link rel="manifest" href="./manifest.json" />
   <meta name="theme-color" content="#1A1D23" />
@@ -746,7 +768,7 @@
         <button class="btn-navy" onclick="saveEditProfile()" style="margin-top:16px;">Save Changes</button>
         <button class="btn-ghost" onclick="closeEditProfile()">Cancel</button>
       </div>
-      <div style="margin-top:24px;padding-top:18px;border-top:1px solid var(--border);"><div class="sdiv">Display &amp; Account</div><div class="set-row"><div><div class="set-l">Field mode</div><div class="set-s">High-contrast, large tap targets</div></div><button class="set-toggle" id="set-field" onclick="toggleField();syncSettingToggles();">Off</button></div><div class="set-row"><div><div class="set-l">Night mode</div><div class="set-s">Dark theme for low light</div></div><button class="set-toggle" id="set-night" onclick="toggleNight();syncSettingToggles();">Off</button></div><button class="btn-ghost" onclick="authSignOut()" style="margin-top:14px;">Sign Out</button></div>
+      <div style="margin-top:24px;padding-top:18px;border-top:1px solid var(--border);"><div class="sdiv">Display &amp; Account</div><div class="set-row"><div><div class="set-l">Field mode</div><div class="set-s">High-contrast, large tap targets</div></div><button class="set-toggle" id="set-field" onclick="toggleField();syncSettingToggles();">Off</button></div><div class="set-row"><div><div class="set-l">Night mode</div><div class="set-s">Dark theme for low light</div></div><button class="set-toggle" id="set-night" onclick="toggleNight();syncSettingToggles();">Off</button></div><button class="btn-ghost" onclick="authSignOut()" style="margin-top:14px;">Sign Out</button><button class="btn-ghost" onclick="openCoach()" style="margin-top:8px;">🔒 Coach Access</button></div>
       <div id="p-danger" style="margin-top:32px;padding-top:20px;border-top:1px solid var(--border);">
         <div style="font-size:12px;color:var(--slate-400);text-align:center;margin-bottom:8px;">Danger Zone</div>
         <button class="dangerbtn" onclick="resetAll()">Reset All Data</button>
@@ -1057,6 +1079,19 @@
           <div class="nosale-btn" onclick="setNSR('callback',this)">📞 Needs Callback</div>
           <div class="nosale-btn" onclick="setNSR('other',this)">❓ Other</div>
         </div>
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--danger);margin:14px 0 10px;">Your read: what was <u>really</u> stopping them? (required)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;" id="realobj-grid">
+          <div class="nosale-btn" onclick="setRealObj('same',this)">🎯 Same As Stated</div>
+          <div class="nosale-btn" onclick="setRealObj('price',this)">💰 Truly Price</div>
+          <div class="nosale-btn" onclick="setRealObj('trust',this)">🤝 Didn't Trust Us</div>
+          <div class="nosale-btn" onclick="setRealObj('spouse',this)">👫 Spouse Approval</div>
+          <div class="nosale-btn" onclick="setRealObj('afford',this)">💳 Truly Can't Afford</div>
+          <div class="nosale-btn" onclick="setRealObj('diagnosis',this)">🔍 Doubted Diagnosis</div>
+          <div class="nosale-btn" onclick="setRealObj('fear',this)">😨 Fear of Deciding</div>
+          <div class="nosale-btn" onclick="setRealObj('ripoff',this)">🚩 Feared Being Ripped Off</div>
+          <div class="nosale-btn" onclick="setRealObj('wait',this)">😐 No Real Urgency</div>
+          <div class="nosale-btn" onclick="setRealObj('unsure',this)">❓ Not Sure</div>
+        </div>
         <textarea class="fi" id="nosale-notes" style="margin-top:10px;margin-bottom:0;min-height:52px;resize:none;font-size:13px;" placeholder="Any extra context on why they didn't buy..."></textarea>
       </div>
 
@@ -1310,6 +1345,13 @@
 
 
   <!-- LOGIN -->
+  <!-- COACH DASHBOARD (Elev8 pilot — PIN gated) -->
+  <div id="s-coach" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="tb-back" onclick="go('s-profile')">← Profile</span><span class="tb-title">Coach Dashboard</span><span class="tb-action" onclick="renderCoach()">↻</span></div>
+    <div class="pbar"><div class="pfill" style="width:100%"></div></div>
+    <div class="sbody"><div id="coach-body" style="padding:18px 0 28px;"><div class="co-empty">Loading crew data…</div></div></div>
+  </div>
+
   <div id="s-login" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
     <div class="sh"><div class="sl">Perfect Service OS</div><div class="st" id="login-title">Sign in to<br>your account.</div><div class="ss" id="login-sub">Your jobs and numbers stay private to you.</div></div>
     <div class="sbody"><div class="sb">
@@ -1362,7 +1404,12 @@ try{enableIndexedDbPersistence(db).catch(function(){});}catch(e){}
 try{setPersistence(auth,browserLocalPersistence);}catch(e){}
 
 const PK='psos_profile', DK='psos_device';
-let profile=null, jobId=null, jobData={}, curStep=0, photos=0, outcome=null, callType=null, kpiPer='today', setupAv='🔧', editAv='🔧', nosaleReason=null, callbackReason=null, membershipResult=null, reviewResult=null, finTerm=12, timerInterval=null, timerSeconds=0, timerRunning=false, returningCheckTimeout=null, scorecardPeriod='this';
+// ── ELEV8 PILOT CONFIG ──
+const SHOP_ID='action-plumbing';      // stamped on every job — lets the coach view see the whole crew
+const PILOT_START='2026-07-13';       // jobs before this date = baseline, on/after = pilot period
+const COACH_PIN='8248';               // coach dashboard passcode — change before deploying
+
+let profile=null, jobId=null, jobData={}, curStep=0, photos=0, outcome=null, callType=null, kpiPer='today', setupAv='🔧', editAv='🔧', nosaleReason=null, realObjection=null, callbackReason=null, membershipResult=null, reviewResult=null, finTerm=12, timerInterval=null, timerSeconds=0, timerRunning=false, returningCheckTimeout=null, scorecardPeriod='this';
 
 function devId(){let id=localStorage.getItem(DK);if(!id){id='dev_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);localStorage.setItem(DK,id);}return id;}
 
@@ -1520,7 +1567,7 @@ async function loadStats(){
 // ── JOB FLOW ──
 window.startJob=function(){
   jobId=null;jobData={};curStep=0;photos=0;outcome=null;callType=null;
-  nosaleReason=null;callbackReason=null;
+  nosaleReason=null;realObjection=null;callbackReason=null;
   document.querySelectorAll('.ctb').forEach(b=>b.classList.remove('sel'));
   const cust=document.getElementById('j-cust');
   const addr=document.getElementById('j-addr');
@@ -1545,7 +1592,7 @@ window.createJob=async function(){
   if(!c)return alert('Enter customer name.');
   const a=document.getElementById('j-addr').value.trim();
   const today=new Date().toISOString().split('T')[0];
-  const jd={deviceId:devId(),techName:profile?.name||'',customer:c,address:a,callType,date:today,status:'in_progress',currentStep:0,stepsCompleted:[],createdAt:serverTimestamp()};
+  const jd={deviceId:devId(),shopId:SHOP_ID,techName:profile?.name||'',customer:c,address:a,callType,date:today,status:'in_progress',currentStep:0,stepsCompleted:[],createdAt:serverTimestamp()};
   try{
     const ref=await addDoc(collection(db,'jobs'),jd);
     jobId=ref.id;jobData={...jd,id:ref.id};curStep=0;
@@ -1753,10 +1800,11 @@ window.setOC=function(oc,btn){
   const cbp=document.getElementById('callback-reason-panel');
   if(nsp)nsp.style.display=oc==='nosale'?'block':'none';
   if(cbp)cbp.style.display=oc==='callback'?'block':'none';
-  if(oc==='nosale'){nosaleReason=null;document.querySelectorAll('#nosale-grid .nosale-btn').forEach(b=>b.classList.remove('sel'));}
+  if(oc==='nosale'){nosaleReason=null;realObjection=null;document.querySelectorAll('#nosale-grid .nosale-btn, #realobj-grid .nosale-btn').forEach(b=>b.classList.remove('sel'));}
   if(oc==='callback'){callbackReason=null;document.querySelectorAll('#callback-grid .nosale-btn').forEach(b=>b.classList.remove('sel'));}
 };
 window.setNSR=function(reason,btn){nosaleReason=reason;document.querySelectorAll('#nosale-grid .nosale-btn').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');};
+window.setRealObj=function(reason,btn){realObjection=reason;document.querySelectorAll('#realobj-grid .nosale-btn').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');};
 window.setCBR=function(reason,btn){callbackReason=reason;document.querySelectorAll('#callback-grid .nosale-btn').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');};
 
 // ── RETURNING CUSTOMER ──
@@ -1789,14 +1837,15 @@ window.checkReturning=function(){
 window.finishJob=async function(){
   if(!outcome)return alert('Please select a job outcome.');
   if(outcome==='nosale'&&!nosaleReason)return alert("Please select why they didn't buy — this helps improve your close rate.");
+  if(outcome==='nosale'&&!realObjection)return alert("One more — what do you think was REALLY stopping them? Your read on the room is the most valuable data in this app.");
   const t=Number(document.getElementById('ticket')?.value)||0;
   const notes=document.getElementById('job-notes')?.value||'';
   const nsNotes=document.getElementById('nosale-notes')?.value||'';
   const cbDate=document.getElementById('callback-date')?.value||'';
   const flagged=jobData.flaggedItems||0;
   if(!jobId)return;
-  const payload={status:'completed',outcome,ticketAmount:t,jobNotes:notes,completedAt:serverTimestamp(),stepsCompleted:[0,1,2,3,4,5,6,7,8,9,10]};
-  if(outcome==='nosale'){payload.nosaleReason=nosaleReason;payload.nosaleNotes=nsNotes;}
+  const payload={status:'completed',outcome,ticketAmount:t,jobNotes:notes,completedAt:serverTimestamp(),stepsCompleted:[0,1,2,3,4,5,6,7,8,9,10],shopId:SHOP_ID,objectionsHit:jobData.objectionsHit||[]};
+  if(outcome==='nosale'){payload.nosaleReason=nosaleReason;payload.nosaleNotes=nsNotes;payload.realObjection=realObjection;}
   if(outcome==='callback'){payload.callbackReason=callbackReason||'';payload.callbackDate=cbDate;}
   try{
     setSyncStatus('saving');
@@ -1813,10 +1862,130 @@ window.finishJob=async function(){
     if(sumFlags)sumFlags.textContent=flagged||'0';
     const isSold=outcome==='sold', isCB=outcome==='callback';
     const _nsR=nosaleReason;
-    membershipResult=null;reviewResult=null;nosaleReason=null;callbackReason=null;
+    membershipResult=null;reviewResult=null;nosaleReason=null;realObjection=null;callbackReason=null;
     go('s-review');
     showReviewScreen(isSold,isCB,t,_nsR);
   }catch(e){setSyncStatus('error');alert('Error: '+e.message);}
+};
+
+
+// ── ELEV8 COACH DASHBOARD ──
+window.openCoach=function(){
+  const pin=prompt('Coach PIN:');
+  if(pin!==COACH_PIN){if(pin!==null)alert('Incorrect PIN.');return;}
+  go('s-coach');renderCoach();
+};
+
+const NSR_LABELS={price:'💰 Price Too High',trust:'🤝 Trust Issue',notowner:'🏠 Not Decision Maker',competitor:'⚔️ Going Competitor',timing:'📅 Bad Timing',nourgency:'😐 No Urgency Felt',callback:'📞 Needs Callback',other:'❓ Other'};
+const REAL_LABELS={same:'🎯 Same As Stated',price:'💰 Truly Price',trust:'🤝 Didn\u2019t Trust Us',spouse:'👫 Spouse Approval',afford:'💳 Truly Can\u2019t Afford',diagnosis:'🔍 Doubted Diagnosis',fear:'😨 Fear of Deciding',ripoff:'🚩 Feared Rip-Off',wait:'😐 No Real Urgency',unsure:'❓ Not Sure'};
+const HIT_LABELS={price:'Price Too High',think:'Need to Think',spouse:'Need Spouse',patch:'Just Patch It',quotes:'Other Quotes',afford:"Can't Afford",trust:'Trust Issue',wait:'Not Urgent'};
+
+window.renderCoach=async function(){
+  const body=document.getElementById('coach-body');
+  if(!body)return;
+  body.innerHTML='<div class="co-empty">Loading crew data…</div>';
+  let docs=[],scope='crew';
+  try{
+    const snap=await getDocs(query(collection(db,'jobs'),where('shopId','==',SHOP_ID)));
+    docs=snap.docs.map(d=>d.data());
+  }catch(e){docs=[];}
+  if(!docs.length){
+    // Fallback: this device only (older jobs pre-date shopId, or Firestore rules block crew reads)
+    try{
+      const snap=await getDocs(query(collection(db,'jobs'),where('deviceId','==',devId())));
+      docs=snap.docs.map(d=>d.data());scope='device';
+    }catch(e){}
+  }
+  const jobs=docs.filter(j=>j.status==='completed');
+  if(!jobs.length){body.innerHTML='<div class="co-empty">No completed jobs yet.<br>Data appears here as the crew closes out calls.</div>';return;}
+
+  const isPilot=j=>(j.date||'')>=PILOT_START;
+  const pct=(n,d)=>d?Math.round(n/d*100):0;
+
+  // ── Per-tech: baseline vs pilot ──
+  const techs={};
+  jobs.forEach(j=>{
+    const t=j.techName||'Unknown';
+    techs[t]=techs[t]||{b:{sold:0,tot:0,rev:0},p:{sold:0,tot:0,rev:0}};
+    const side=isPilot(j)?techs[t].p:techs[t].b;
+    side.tot++;
+    if(j.outcome==='sold'){side.sold++;side.rev+=Number(j.ticketAmount)||0;}
+  });
+  let techHtml='';
+  Object.keys(techs).sort().forEach(t=>{
+    const d=techs[t];
+    const bR=pct(d.b.sold,d.b.tot), pR=pct(d.p.sold,d.p.tot);
+    const delta=pR-bR;
+    const cls=d.p.tot===0?'flat':(delta>0?'up':(delta<0?'down':'flat'));
+    const deltaTxt=d.p.tot===0?'— pilot not started':(delta>0?'+':'')+delta+' pts';
+    const avgT=d.p.sold?Math.round(d.p.rev/d.p.sold):0;
+    techHtml+=`<div class="co-card"><div class="co-tech"><span class="co-tname">${t}</span><span class="co-delta ${cls}">${deltaTxt}</span></div><div class="co-sub">Baseline: <b>${bR}%</b> close (${d.b.sold}/${d.b.tot}) &nbsp;→&nbsp; Pilot: <b>${pR}%</b> close (${d.p.sold}/${d.p.tot})${avgT?` &nbsp;·&nbsp; Avg pilot ticket <b>$${avgT.toLocaleString()}</b>`:''}</div></div>`;
+  });
+
+  // ── Weekly close rate, last 6 weeks ──
+  const now=new Date();
+  let wkHtml='';const wkMax=[];
+  const weeks=[];
+  for(let w=5;w>=0;w--){
+    const end=new Date(now);end.setDate(end.getDate()-w*7);
+    const start=new Date(end);start.setDate(start.getDate()-6);
+    const s=start.toISOString().split('T')[0], e=end.toISOString().split('T')[0];
+    const inWk=jobs.filter(j=>(j.date||'')>=s&&(j.date||'')<=e);
+    const sold=inWk.filter(j=>j.outcome==='sold').length;
+    weeks.push({lbl:(start.getMonth()+1)+'/'+start.getDate(),rate:pct(sold,inWk.length),n:inWk.length});
+  }
+  weeks.forEach(w=>{
+    wkHtml+=`<div class="co-bar-row"><div class="co-bar-lbl">Wk of ${w.lbl} <span style="color:var(--slate-300);">(${w.n})</span></div><div class="co-bar-track"><div class="co-bar-fill" style="width:${w.rate}%;"></div></div><div class="co-bar-val">${w.rate}%</div></div>`;
+  });
+
+  // ── Stated objections (no-sales) ──
+  const ns=jobs.filter(j=>j.outcome==='nosale');
+  const stated={};ns.forEach(j=>{if(j.nosaleReason)stated[j.nosaleReason]=(stated[j.nosaleReason]||0)+1;});
+  const stArr=Object.entries(stated).sort((a,b)=>b[1]-a[1]);
+  const stMax=stArr.length?stArr[0][1]:1;
+  let stHtml=stArr.map(([k,v])=>`<div class="co-bar-row"><div class="co-bar-lbl">${(NSR_LABELS[k]||k).replace(/^\S+ /,'')}</div><div class="co-bar-track"><div class="co-bar-fill" style="width:${pct(v,stMax)}%;"></div></div><div class="co-bar-val">${v}</div></div>`).join('')||'<div class="co-sub">No lost jobs logged yet.</div>';
+
+  // ── Stated → Real mismatches (the money section) ──
+  const pairs={};
+  ns.forEach(j=>{
+    if(j.realObjection&&j.realObjection!=='same'&&j.realObjection!=='unsure'&&j.realObjection!==j.nosaleReason){
+      const key=(j.nosaleReason||'?')+'|'+j.realObjection;
+      pairs[key]=(pairs[key]||0)+1;
+    }
+  });
+  const withReal=ns.filter(j=>j.realObjection).length;
+  const masked=ns.filter(j=>j.realObjection&&j.realObjection!=='same'&&j.realObjection!=='unsure'&&j.realObjection!==j.nosaleReason).length;
+  let mmHtml=Object.entries(pairs).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([k,v])=>{
+    const [st,re]=k.split('|');
+    return `<div class="co-mm"><span>${NSR_LABELS[st]||st}</span><span class="co-mm-arrow">→</span><span>${REAL_LABELS[re]||re}</span><span class="co-mm-count">×${v}</span></div>`;
+  }).join('');
+  if(!mmHtml)mmHtml='<div class="co-sub">No mismatches logged yet. This fills in as techs record their read on lost jobs.</div>';
+  const mmSummary=withReal?`<div class="co-sub" style="margin-bottom:10px;">${masked} of ${withReal} logged no-sales (${pct(masked,withReal)}%) had a real objection <b>different</b> from what the homeowner said.</div>`:'';
+
+  // ── Presentation objections: survival rate ──
+  const hitStats={};
+  jobs.forEach(j=>{
+    const seen={};
+    (j.objectionsHit||[]).forEach(o=>{seen[o.key]=1;});
+    Object.keys(seen).forEach(k=>{
+      hitStats[k]=hitStats[k]||{hit:0,won:0};
+      hitStats[k].hit++;
+      if(j.outcome==='sold')hitStats[k].won++;
+    });
+  });
+  let hitHtml=Object.entries(hitStats).sort((a,b)=>b[1].hit-a[1].hit).map(([k,v])=>`<div class="co-bar-row"><div class="co-bar-lbl">${HIT_LABELS[k]||k}</div><div class="co-bar-track"><div class="co-bar-fill" style="width:${pct(v.won,v.hit)}%;background:${pct(v.won,v.hit)>=50?'var(--success)':'var(--copper)'};"></div></div><div class="co-bar-val">${pct(v.won,v.hit)}%</div></div>`).join('');
+  if(!hitHtml)hitHtml='<div class="co-sub">No mid-presentation objections logged yet. These record automatically when a tech taps an objection in Step 10.</div>';
+
+  const pilotJobs=jobs.filter(isPilot).length, baseJobs=jobs.length-pilotJobs;
+  body.innerHTML=`
+    ${scope==='device'?'<div class="co-note" style="color:var(--danger);margin-bottom:10px;">⚠ Showing this device only — crew-wide query returned nothing. Older jobs may pre-date shopId, or Firestore rules need a read rule for shopId queries.</div>':''}
+    <div class="co-sec"><div class="co-h">Close Rate by Tech <span class="co-pill">Baseline vs Pilot</span></div>${techHtml}
+      <div class="co-sub" style="padding:0 2px;">Pilot start: ${PILOT_START} · ${baseJobs} baseline jobs · ${pilotJobs} pilot jobs</div></div>
+    <div class="co-sec"><div class="co-h">Weekly Close Rate — Last 6 Weeks</div><div class="co-card">${wkHtml}</div></div>
+    <div class="co-sec"><div class="co-h">Stated Objections on Lost Jobs</div><div class="co-card">${stHtml}</div></div>
+    <div class="co-sec"><div class="co-h">Stated → Real Objection Map <span class="co-pill">The Deliverable</span></div><div class="co-card">${mmSummary}${mmHtml}</div></div>
+    <div class="co-sec"><div class="co-h">Close Rate When Objection Comes Up</div><div class="co-card">${hitHtml}</div>
+      <div class="co-sub" style="padding:0 2px;">Green = crew survives this objection more often than not. Copper = it\u2019s killing deals — coach here first.</div></div>`;
 };
 
 window.finalClose=async function(){
@@ -1953,6 +2122,17 @@ window.showObj=function(btn,key,ctx){
   const scope=ctx==='step'?'#s-step-9':'#s-objref';
   document.querySelectorAll(scope+' .objbtn').forEach(b=>b.classList.remove('sel'));
   btn.classList.add('sel');
+  // ── PILOT: log every objection hit during a live presentation ──
+  if(ctx==='step'&&jobId){
+    try{
+      jobData.objectionsHit=jobData.objectionsHit||[];
+      const last=jobData.objectionsHit[jobData.objectionsHit.length-1];
+      if(!last||last.key!==key){
+        jobData.objectionsHit.push({key:key,ts:Date.now()});
+        updateDoc(doc(db,'jobs',jobId),{objectionsHit:jobData.objectionsHit}).catch(function(){});
+      }
+    }catch(e){}
+  }
   const pid=ctx==='step'?'obj-step':'obj-ref';
   const mId=ctx==='step'?'os-m':'or-m';
   const stylesId=ctx==='step'?'os-styles':'or-styles';
