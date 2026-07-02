@@ -1236,8 +1236,8 @@
 
   <!-- PAST JOBS -->
   <div id="s-jobs" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
-    <div class="topbar"><span class="tb-back" onclick="go('s-home')">← Home</span><span class="tb-title">Past Jobs</span><span></span></div>
-    <div class="sbody"><div style="padding:16px 20px;" id="jobslist"><div style="text-align:center;padding:40px;color:var(--slate-400);">Loading...</div></div></div>
+    <div class="topbar"><span class="tb-back" onclick="go('s-home')">← Home</span><span class="tb-title">Past Jobs</span><span class="tb-action" onclick="openBacklog()">+ Log Past</span></div>
+    <div class="sbody"><div style="padding:16px 20px 0;"><button onclick="openBacklog()" style="width:100%;background:transparent;border:1.5px dashed var(--border-mid);border-radius:10px;padding:12px;font-size:12.5px;font-weight:700;color:var(--slate-500);font-family:var(--font);cursor:pointer;">🕓 Forgot to log a job? Add it here</button></div><div style="padding:16px 20px;" id="jobslist"><div style="text-align:center;padding:40px;color:var(--slate-400);">Loading...</div></div></div>
     <div class="navtabs" data-nav></div>
   </div>
 
@@ -1407,6 +1407,68 @@
 
 
   <!-- LOGIN -->
+  <!-- LOG PAST JOB -->
+  <div id="s-backlog" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="tb-back" onclick="go('s-jobs')">← Jobs</span><span class="tb-title">Log a Past Job</span><span></span></div>
+    <div class="sbody"><div style="padding:18px 20px 28px;">
+      <div style="font-size:12px;color:var(--slate-400);line-height:1.6;margin-bottom:16px;">Ran a call and forgot to log it? Add it here so your close rate stays honest. Backdated jobs are marked so the data stays clean.</div>
+      <div class="fl">Date of the Job</div>
+      <input class="fi" type="date" id="bl-date" />
+      <div class="fl">Call Type</div>
+      <select class="fi" id="bl-ct">
+        <option value="">Select call type…</option>
+        <optgroup label="Plumbing"><option>Water Heater</option><option>Leak</option><option>Toilet</option><option>Faucet</option><option>Repipe</option><option>Filtration</option><option>Pressure</option><option>Gas Line</option></optgroup>
+        <optgroup label="Drain"><option>Drain</option><option>Sewer</option><option>Sump Pump</option></optgroup>
+        <optgroup label="HVAC"><option>AC / Cooling</option><option>Heating</option></optgroup>
+        <optgroup label="Electrical"><option>Electrical</option><option>Panel / Breaker</option></optgroup>
+        <optgroup label="Other"><option>Emergency</option></optgroup>
+      </select>
+      <div class="fl">Customer (optional)</div>
+      <input class="fi" type="text" id="bl-customer" placeholder="e.g. Sarah Mitchell" />
+      <div class="fl">Outcome</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;" id="bl-oc-row">
+        <div class="nosale-btn" style="text-align:center;" onclick="blSetOC('sold',this)">💰 Sold</div>
+        <div class="nosale-btn" style="text-align:center;" onclick="blSetOC('callback',this)">📞 Callback</div>
+        <div class="nosale-btn" style="text-align:center;" onclick="blSetOC('nosale',this)">✕ No Sale</div>
+      </div>
+      <div id="bl-sold-panel" style="display:none;">
+        <div class="fl">Ticket Amount ($)</div>
+        <input class="fi" type="number" id="bl-ticket" placeholder="0" inputmode="decimal" />
+      </div>
+      <div id="bl-lost-panel" style="display:none;">
+        <div class="fl">What did they say? (stated reason)</div>
+        <select class="fi" id="bl-stated">
+          <option value="">Select…</option>
+          <option value="price">💰 Price Too High</option>
+          <option value="trust">🤝 Trust Issue</option>
+          <option value="notowner">🏠 Not Decision Maker</option>
+          <option value="competitor">⚔️ Going Competitor</option>
+          <option value="timing">📅 Bad Timing</option>
+          <option value="nourgency">😐 No Urgency Felt</option>
+          <option value="callback">📞 Needed Callback</option>
+          <option value="other">❓ Other</option>
+        </select>
+        <div class="fl">Your read — what was <u>really</u> stopping them?</div>
+        <select class="fi" id="bl-real">
+          <option value="">Select…</option>
+          <option value="same">🎯 Same As Stated</option>
+          <option value="price">💰 Truly Price</option>
+          <option value="trust">🤝 Didn't Trust Us</option>
+          <option value="spouse">👫 Spouse Approval</option>
+          <option value="afford">💳 Truly Can't Afford</option>
+          <option value="diagnosis">🔍 Doubted Diagnosis</option>
+          <option value="fear">😨 Fear of Deciding</option>
+          <option value="ripoff">🚩 Feared Being Ripped Off</option>
+          <option value="wait">😐 No Real Urgency</option>
+          <option value="unsure">❓ Not Sure</option>
+        </select>
+      </div>
+      <div class="fl">Notes (optional)</div>
+      <textarea class="fi" id="bl-notes" style="min-height:56px;resize:none;" placeholder="Anything worth remembering about this call..."></textarea>
+    </div></div>
+    <div class="bbar"><button class="btn-gold" onclick="saveBacklog()">Save Past Job</button></div>
+  </div>
+
   <!-- COACH DASHBOARD (Elev8 pilot — PIN gated) -->
   <div id="s-coach" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
     <div class="topbar"><span class="tb-back" onclick="go('s-profile')">← Profile</span><span class="tb-title">Coach Dashboard</span><span class="tb-action" onclick="renderCoach()">↻</span></div>
@@ -1956,12 +2018,68 @@ window.openCoach=function(){
   go('s-coach');renderCoach();
 };
 
+let blOutcome=null;
+window.openBacklog=function(){
+  blOutcome=null;
+  const d=document.getElementById('bl-date');
+  d.max=new Date().toISOString().split('T')[0];
+  d.value='';
+  document.getElementById('bl-ct').value='';
+  document.getElementById('bl-customer').value='';
+  document.getElementById('bl-ticket').value='';
+  document.getElementById('bl-stated').value='';
+  document.getElementById('bl-real').value='';
+  document.getElementById('bl-notes').value='';
+  document.querySelectorAll('#bl-oc-row .nosale-btn').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('bl-sold-panel').style.display='none';
+  document.getElementById('bl-lost-panel').style.display='none';
+  go('s-backlog');
+};
+window.blSetOC=function(oc,btn){
+  blOutcome=oc;
+  document.querySelectorAll('#bl-oc-row .nosale-btn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  document.getElementById('bl-sold-panel').style.display=oc==='sold'?'block':'none';
+  document.getElementById('bl-lost-panel').style.display=(oc==='nosale'||oc==='callback')?'block':'none';
+};
+window.saveBacklog=async function(){
+  const date=document.getElementById('bl-date').value;
+  const ct=document.getElementById('bl-ct').value;
+  if(!date)return alert('Pick the date the job happened.');
+  if(date>new Date().toISOString().split('T')[0])return alert('Backdated jobs can\u2019t be in the future.');
+  if(!ct)return alert('Select the call type.');
+  if(!blOutcome)return alert('Select the outcome.');
+  const payload={
+    deviceId:devId(),shopId:SHOP_ID,techName:profile?.name||'',
+    customer:document.getElementById('bl-customer').value.trim(),
+    callType:ct,date,status:'completed',outcome:blOutcome,
+    jobNotes:document.getElementById('bl-notes').value.trim(),
+    backlogged:true,createdAt:serverTimestamp(),completedAt:serverTimestamp(),
+    objectionsHit:[],stepsCompleted:[]
+  };
+  if(blOutcome==='sold'){
+    payload.ticketAmount=Number(document.getElementById('bl-ticket').value)||0;
+  }else{
+    const st=document.getElementById('bl-stated').value;
+    const re=document.getElementById('bl-real').value;
+    if(!st)return alert('What reason did they give?');
+    if(!re)return alert('And your read \u2014 what was really stopping them?');
+    payload.nosaleReason=st;payload.realObjection=re;
+    if(blOutcome==='callback'){payload.callbackReason=st;}
+  }
+  try{
+    await addDoc(collection(db,'jobs'),payload);
+    alert('Past job saved \u2014 your numbers just got more honest.');
+    go('s-jobs');loadJobs();loadStats();
+  }catch(e){alert('Error saving: '+e.message);}
+};
+
 window.exportCoachCSV=function(){
   const jobs=window.__coachJobs||[];
   if(!jobs.length)return alert('No data loaded yet — open the dashboard first.');
   const esc=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
-  const rows=[['date','tech','callType','outcome','ticket','statedObjection','realObjection','objectionsHit','durationMin','callbackResolved']];
-  jobs.forEach(j=>rows.push([j.date||'',(j.techName||'').trim(),j.callType||'',j.outcome||'',j.ticketAmount||0,j.nosaleReason||'',j.realObjection||'',(j.objectionsHit||[]).map(o=>o.key).join('|'),j.durationSec?Math.round(j.durationSec/60):'',j.callbackResolved?'yes':'']));
+  const rows=[['date','tech','callType','outcome','ticket','statedObjection','realObjection','objectionsHit','durationMin','callbackResolved','backlogged']];
+  jobs.forEach(j=>rows.push([j.date||'',(j.techName||'').trim(),j.callType||'',j.outcome||'',j.ticketAmount||0,j.nosaleReason||'',j.realObjection||'',(j.objectionsHit||[]).map(o=>o.key).join('|'),j.durationSec?Math.round(j.durationSec/60):'',j.callbackResolved?'yes':'',j.backlogged?'yes':'']));
   const csv=rows.map(r=>r.map(esc).join(',')).join('\n');
   const blob=new Blob([csv],{type:'text/csv'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='elev8-pilot-data-'+new Date().toISOString().split('T')[0]+'.csv';a.click();
@@ -2113,7 +2231,7 @@ window.renderCoach=async function(){
     ${abandoned?`<div class="co-note" style="color:var(--danger);margin-bottom:10px;">\u26A0 ${abandoned} job${abandoned>1?'s':''} started but never closed out (24h+). Abandoned jobs hide losses and inflate close rate \u2014 have techs finish or discard them.</div>`:''}
     ${scope==='device'?'<div class="co-note" style="color:var(--danger);margin-bottom:10px;">⚠ Showing this device only — crew-wide query returned nothing. Older jobs may pre-date shopId, or Firestore rules need a read rule for shopId queries.</div>':''}
     <div class="co-sec"><div class="co-h">Close Rate by Tech <span class="co-pill">Baseline vs Pilot</span></div>${techHtml}
-      <div class="co-sub" style="padding:0 2px;">Pilot start: ${PILOT_START} · ${baseJobs} baseline jobs · ${pilotJobs} pilot jobs</div></div>
+      <div class="co-sub" style="padding:0 2px;">Pilot start: ${PILOT_START} · ${baseJobs} baseline jobs · ${pilotJobs} pilot jobs${(()=>{const bl=jobs.filter(j=>j.backlogged).length;return bl?` · ${bl} backlogged (${pct(bl,jobs.length)}%)`:'';})()}</div></div>
     <div class="co-sec"><div class="co-h">Weekly Close Rate — Last 6 Weeks</div><div class="co-card">${wkHtml}</div></div>
     <div class="co-sec"><div class="co-h">Stated Objections on Lost Jobs</div><div class="co-card">${stHtml}</div></div>
     <div class="co-sec"><div class="co-h">Stated → Real Objection Map <span class="co-pill">The Deliverable</span></div><div class="co-card">${mmSummary}${mmHtml}</div></div>
