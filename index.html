@@ -627,6 +627,31 @@
   #login-err{background:var(--danger-pale);color:var(--danger);font-size:13px;font-weight:600;padding:10px 12px;border-radius:9px;margin-bottom:14px;border:1px solid rgba(217,64,64,.25);}
 
 
+  /* ── FIELD TOOLS ── */
+  .tool-card{background:var(--white);border:1px solid var(--border);border-radius:14px;margin:0 18px 10px;overflow:hidden;box-shadow:0 1px 3px rgba(26,29,35,.04);}
+  .tool-head{display:flex;align-items:center;gap:12px;padding:15px 16px;cursor:pointer;}
+  .tool-ico{font-size:20px;flex-shrink:0;}
+  .tool-tw{flex:1;min-width:0;}
+  .tool-title{font-size:14px;font-weight:800;color:var(--slate-900);}
+  .tool-sub{font-size:11px;color:var(--slate-400);margin-top:2px;}
+  .tool-chev{color:var(--slate-300);font-size:12px;transition:transform .2s;}
+  .tool-card.open .tool-chev{transform:rotate(90deg);}
+  .tool-body{display:none;padding:2px 16px 16px;border-top:1px solid var(--border);}
+  .tool-card.open .tool-body{display:block;}
+  .tool-row{display:flex;gap:10px;}
+  .tool-row .fi{flex:1;min-width:0;}
+  .tool-out{background:var(--slate-900);border-radius:12px;padding:16px;text-align:center;margin-top:6px;}
+  .tool-out-big{font-size:28px;font-weight:800;color:#E8A85C;letter-spacing:-.02em;line-height:1.1;}
+  .tool-out-sub{font-size:11px;color:rgba(255,255,255,.55);margin-top:6px;line-height:1.5;}
+  .tool-note{font-size:10.5px;color:var(--slate-400);line-height:1.55;margin-top:10px;}
+  .tool-tbl{width:100%;border-collapse:collapse;margin-top:8px;}
+  .tool-tbl td{padding:8px 6px;font-size:12.5px;border-bottom:1px solid var(--border);color:var(--slate-800);}
+  .tool-tbl td:last-child{text-align:right;font-weight:800;color:var(--copper-dim);}
+  .fut-btn{background:transparent;color:var(--copper-dim);border:1.5px solid var(--copper);border-radius:8px;padding:9px;font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;width:100%;margin-top:8px;}
+  .rd-row{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--border);}
+  .rd-k{font-size:12.5px;font-weight:700;color:var(--slate-700);flex:1;}
+  .rd-v{font-size:14px;font-weight:800;color:var(--slate-900);}
+  .rd-x{color:var(--danger);font-weight:800;cursor:pointer;padding:0 6px;font-size:15px;}
   /* ── TRADE PICKER PILLS ── */
   .trrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
   .tropt{display:inline-flex;align-items:center;gap:4px;padding:9px 13px;border-radius:20px;border:1.5px solid var(--border-mid);background:var(--slate-50);font-size:12px;font-weight:700;color:var(--slate-700);cursor:pointer;transition:all .15s;}
@@ -753,6 +778,14 @@
           <div class="ql" onclick="go('s-scripts')">
             <div class="ql-icon"><svg viewBox="0 0 20 20" fill="none" stroke="var(--copper)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h12v2H4zM4 9h8M4 13h6"/><path d="M14 11l3 3-3 3"/></svg></div>
             <div class="qll">Scripts</div><div class="qls">Full library</div>
+          </div>
+          <div class="ql" onclick="openTools('s-home')">
+            <div class="ql-icon"><svg viewBox="0 0 20 20" fill="none" stroke="var(--copper)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3a4 4 0 0 0-3.8 5.2L3 14.4V17h2.6l6.2-6.2A4 4 0 0 0 17 7l-2.5 1-1.5-1.5L14 4z"/></svg></div>
+            <div class="qll">Field Tools</div><div class="qls">Trade calculators</div>
+          </div>
+          <div class="ql" onclick="openBacklog()">
+            <div class="ql-icon"><svg viewBox="0 0 20 20" fill="none" stroke="var(--copper)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><polyline points="10,6 10,10 13,12"/></svg></div>
+            <div class="qll">Log Past Job</div><div class="qls">Forgot one?</div>
           </div>
         </div>
       </div>
@@ -1044,6 +1077,20 @@
     </div>
     <div class="sbody"><div class="stepcont">
 
+      <!-- MEASURED READINGS — show your numbers -->
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:18px;">
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:var(--copper-dim);margin-bottom:4px;">📏 Measured Readings</div>
+        <div style="font-size:11px;color:var(--slate-400);line-height:1.5;margin-bottom:10px;">Numbers beat opinions. Log what you measured and show the homeowner the screen.</div>
+        <div class="tool-row">
+          <select class="fi" id="rd-type" style="margin-bottom:8px;">
+            <option>Delta-T (°F)</option><option>Superheat (°F)</option><option>Subcool (°F)</option><option>Static Pressure (inWC)</option><option>Water Pressure (PSI)</option><option>Voltage (V)</option><option>Amps (A)</option><option>Temp (°F)</option><option>CO (ppm)</option><option>Other</option>
+          </select>
+          <input class="fi" type="text" id="rd-val" placeholder="Value" style="margin-bottom:8px;max-width:110px;" inputmode="decimal" />
+        </div>
+        <button onclick="addReading()" style="width:100%;background:var(--slate-900);color:#fff;border:none;border-radius:8px;padding:10px;font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;">+ Add Reading</button>
+        <div id="rd-list"></div>
+      </div>
+
       <!-- DISCOVERY CARRY-THROUGH — auto-populated from Step 5 -->
       <div id="present-discovery" style="display:none;background:var(--slate-900);border-radius:12px;padding:16px 18px;margin-bottom:18px;">
         <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:var(--copper-bright);margin-bottom:10px;">🎯 Their Words — Use These to Close</div>
@@ -1076,6 +1123,7 @@
       <div class="sp-step-sub" id="sps-9">Step 10 of 11</div>
     </div>
     <div class="sbody"><div class="stepcont">
+      <button onclick="openTools('s-step-9','pay')" style="width:100%;background:var(--copper-pale);color:var(--copper-dim);border:1.5px solid var(--copper);border-radius:10px;padding:12px;font-size:13px;font-weight:800;font-family:var(--font);cursor:pointer;margin-bottom:14px;">💳 Break the price into monthly payments</button>
       <div class="scrs" style="margin-bottom:14px;">Tap the objection you're hearing:</div>
       <div class="objgrid">
         <div class="objbtn" onclick="showObj(this,'price','step')">Price Too High</div>
@@ -1407,6 +1455,130 @@
 
 
   <!-- LOGIN -->
+  <!-- FIELD TOOLS -->
+  <div id="s-tools" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="tb-back" id="tools-back" onclick="go(toolsReturn)">← Back</span><span class="tb-title">Field Tools</span><span></span></div>
+    <div class="sbody"><div style="padding:18px 0 28px;">
+
+      <div class="tool-card" id="tool-pay">
+        <div class="tool-head" onclick="this.parentElement.classList.toggle('open')"><span class="tool-ico">💳</span><div class="tool-tw"><div class="tool-title">Monthly Payment</div><div class="tool-sub">Turn the ticket into a monthly number</div></div><span class="tool-chev">▶</span></div>
+        <div class="tool-body">
+          <div class="fl">Job Total ($)</div>
+          <input class="fi" type="number" id="pay-amt" placeholder="8900" inputmode="decimal" oninput="calcPay()" />
+          <div class="tool-row">
+            <div style="flex:1;"><div class="fl">APR %</div><input class="fi" type="number" id="pay-apr" value="9.99" inputmode="decimal" oninput="calcPay()" /></div>
+            <div style="flex:1;"><div class="fl">Term (months)</div><select class="fi" id="pay-term" onchange="calcPay()"><option>12</option><option>24</option><option selected>36</option><option>60</option><option>120</option></select></div>
+          </div>
+          <div class="tool-out"><div class="tool-out-big" id="pay-out">$0<span style="font-size:14px;color:rgba(255,255,255,.5);">/mo</span></div><div class="tool-out-sub" id="pay-sub">Enter the job total above</div></div>
+          <div class="tool-note">Say it like this: “Instead of $8,900 today, this is about $287 a month — less than most cable bills.” Always confirm actual rates and approval with your financing partner; this is a conversation number, not a quote.</div>
+        </div>
+      </div>
+
+      <div class="tool-card" id="tool-dt">
+        <div class="tool-head" onclick="this.parentElement.classList.toggle('open')"><span class="tool-ico">❄️</span><div class="tool-tw"><div class="tool-title">Delta-T Check</div><div class="tool-sub">Is the system actually cooling?</div></div><span class="tool-chev">▶</span></div>
+        <div class="tool-body">
+          <div class="tool-row">
+            <div style="flex:1;"><div class="fl">Return Air (°F)</div><input class="fi" type="number" id="dt-ret" placeholder="75" inputmode="decimal" oninput="calcDT()" /></div>
+            <div style="flex:1;"><div class="fl">Supply Air (°F)</div><input class="fi" type="number" id="dt-sup" placeholder="57" inputmode="decimal" oninput="calcDT()" /></div>
+          </div>
+          <div class="tool-out"><div class="tool-out-big" id="dt-out">–</div><div class="tool-out-sub" id="dt-sub">Healthy cooling split: 16–22°F</div></div>
+        </div>
+      </div>
+
+      <div class="tool-card" id="tool-sh">
+        <div class="tool-head" onclick="this.parentElement.classList.toggle('open')"><span class="tool-ico">🌡️</span><div class="tool-tw"><div class="tool-title">Target Superheat &amp; Subcool</div><div class="tool-sub">Fixed-orifice charge check</div></div><span class="tool-chev">▶</span></div>
+        <div class="tool-body">
+          <div class="tool-row">
+            <div style="flex:1;"><div class="fl">Indoor Wet Bulb (°F)</div><input class="fi" type="number" id="sh-wb" placeholder="63" inputmode="decimal" oninput="calcSH()" /></div>
+            <div style="flex:1;"><div class="fl">Outdoor Dry Bulb (°F)</div><input class="fi" type="number" id="sh-od" placeholder="95" inputmode="decimal" oninput="calcSH()" /></div>
+          </div>
+          <div class="tool-out"><div class="tool-out-big" id="sh-out">–</div><div class="tool-out-sub" id="sh-sub">Target superheat (fixed orifice / piston)</div></div>
+          <div style="height:10px;"></div>
+          <div class="tool-row">
+            <div style="flex:1;"><div class="fl">Sat. Temp (gauge, °F)</div><input class="fi" type="number" id="sc-sat" placeholder="105" inputmode="decimal" oninput="calcSC()" /></div>
+            <div style="flex:1;"><div class="fl">Liquid Line (°F)</div><input class="fi" type="number" id="sc-ll" placeholder="95" inputmode="decimal" oninput="calcSC()" /></div>
+          </div>
+          <div class="tool-out"><div class="tool-out-big" id="sc-out">–</div><div class="tool-out-sub">Measured subcool · compare to data plate (TXV systems)</div></div>
+          <div class="tool-note">Target SH formula: (3×WB − 80 − ODT) ÷ 2. If the target comes back under 5°F, don’t charge by this method — conditions are outside the chart.</div>
+        </div>
+      </div>
+
+      <div class="tool-card" id="tool-slope">
+        <div class="tool-head" onclick="this.parentElement.classList.toggle('open')"><span class="tool-ico">🌀</span><div class="tool-tw"><div class="tool-title">Drain Slope</div><div class="tool-sub">Required fall over a run</div></div><span class="tool-chev">▶</span></div>
+        <div class="tool-body">
+          <div class="tool-row">
+            <div style="flex:1;"><div class="fl">Run Length (ft)</div><input class="fi" type="number" id="sl-len" placeholder="20" inputmode="decimal" oninput="calcSlope()" /></div>
+            <div style="flex:1;"><div class="fl">Pipe Size</div><select class="fi" id="sl-size" onchange="calcSlope()"><option value="0.25">2½″ &amp; under (¼″/ft)</option><option value="0.125">3″ &amp; larger (⅛″/ft)</option></select></div>
+          </div>
+          <div class="tool-out"><div class="tool-out-big" id="sl-out">–</div><div class="tool-out-sub">Total fall needed across the run</div></div>
+        </div>
+      </div>
+
+      <div class="tool-card" id="tool-wh">
+        <div class="tool-head" onclick="this.parentElement.classList.toggle('open')"><span class="tool-ico">🔥</span><div class="tool-tw"><div class="tool-title">Water Heater Sizing</div><div class="tool-sub">Tank size by household</div></div><span class="tool-chev">▶</span></div>
+        <div class="tool-body">
+          <div class="fl">People in the Home</div>
+          <select class="fi" id="wh-ppl" onchange="calcWH()"><option value="">Select…</option><option value="1">1–2</option><option value="3">2–3</option><option value="4">3–4</option><option value="5">5+</option></select>
+          <div class="tool-out"><div class="tool-out-big" id="wh-out">–</div><div class="tool-out-sub" id="wh-sub">Typical tank recommendation</div></div>
+          <div class="tool-note">Rules of thumb for standard tanks. High-demand homes (soaker tubs, teenagers, back-to-back showers) → size up or open the tankless conversation using first-hour rating.</div>
+        </div>
+      </div>
+
+      <div class="tool-card" id="tool-vd">
+        <div class="tool-head" onclick="this.parentElement.classList.toggle('open')"><span class="tool-ico">⚡</span><div class="tool-tw"><div class="tool-title">Voltage Drop</div><div class="tool-sub">Copper, single phase</div></div><span class="tool-chev">▶</span></div>
+        <div class="tool-body">
+          <div class="tool-row">
+            <div style="flex:1;"><div class="fl">Load (A)</div><input class="fi" type="number" id="vd-amp" placeholder="20" inputmode="decimal" oninput="calcVD()" /></div>
+            <div style="flex:1;"><div class="fl">One-Way (ft)</div><input class="fi" type="number" id="vd-len" placeholder="80" inputmode="decimal" oninput="calcVD()" /></div>
+          </div>
+          <div class="tool-row">
+            <div style="flex:1;"><div class="fl">Wire (AWG Cu)</div><select class="fi" id="vd-awg" onchange="calcVD()"><option value="4107">14</option><option value="6530" selected>12</option><option value="10380">10</option><option value="16510">8</option><option value="26240">6</option><option value="41740">4</option></select></div>
+            <div style="flex:1;"><div class="fl">Voltage</div><select class="fi" id="vd-volt" onchange="calcVD()"><option>120</option><option>240</option></select></div>
+          </div>
+          <div class="tool-out"><div class="tool-out-big" id="vd-out">–</div><div class="tool-out-sub" id="vd-sub">Recommended max: 3% on a branch circuit</div></div>
+        </div>
+      </div>
+
+      <div class="tool-card" id="tool-ohm">
+        <div class="tool-head" onclick="this.parentElement.classList.toggle('open')"><span class="tool-ico">🔢</span><div class="tool-tw"><div class="tool-title">Watts / Amps / Volts</div><div class="tool-sub">Quick load math</div></div><span class="tool-chev">▶</span></div>
+        <div class="tool-body">
+          <div class="tool-row">
+            <div style="flex:1;"><div class="fl">Volts</div><input class="fi" type="number" id="oh-v" value="120" inputmode="decimal" oninput="calcOhm()" /></div>
+            <div style="flex:1;"><div class="fl">Watts</div><input class="fi" type="number" id="oh-w" placeholder="1500" inputmode="decimal" oninput="calcOhm()" /></div>
+          </div>
+          <div class="tool-out"><div class="tool-out-big" id="oh-out">–</div><div class="tool-out-sub" id="oh-sub">Amps drawn · 80% continuous rule shown below</div></div>
+        </div>
+      </div>
+
+      <div class="tool-card" id="tool-amp">
+        <div class="tool-head" onclick="this.parentElement.classList.toggle('open')"><span class="tool-ico">📋</span><div class="tool-tw"><div class="tool-title">Wire Ampacity</div><div class="tool-sub">Copper NM cable quick chart</div></div><span class="tool-chev">▶</span></div>
+        <div class="tool-body">
+          <table class="tool-tbl">
+            <tr><td>14 AWG</td><td>15 A</td></tr>
+            <tr><td>12 AWG</td><td>20 A</td></tr>
+            <tr><td>10 AWG</td><td>30 A</td></tr>
+            <tr><td>8 AWG</td><td>40 A</td></tr>
+            <tr><td>6 AWG</td><td>55 A</td></tr>
+          </table>
+          <div class="tool-note">NM-B (Romex) at the 60°C column — the residential default. Derate for bundling, ambient heat, and long conduit fills; when in doubt, the code book wins, not the app.</div>
+        </div>
+      </div>
+
+    </div></div>
+    <div class="navtabs" data-nav></div>
+  </div>
+
+  <!-- FOLLOW-UP TEXT -->
+  <div id="s-futext" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="tb-back" onclick="go('s-jobs')">← Jobs</span><span class="tb-title">Follow-Up Text</span><span></span></div>
+    <div class="sbody"><div style="padding:18px 20px 28px;">
+      <div id="fut-context" style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--copper-dim);margin-bottom:10px;"></div>
+      <textarea class="fi" id="fut-msg" style="min-height:190px;resize:vertical;font-size:14px;line-height:1.6;"></textarea>
+      <button class="btn-gold" style="width:100%;margin-top:6px;" onclick="futCopy()">📋 Copy Message</button>
+      <div class="tool-note" style="margin-top:12px;">Written for the <b>real</b> objection you logged, not the one they said. Edit anything before sending — it should sound like you, not an app. Best send window: next morning, 9–11am.</div>
+    </div></div>
+  </div>
+
   <!-- LOG PAST JOB -->
   <div id="s-backlog" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
     <div class="topbar"><span class="tb-back" onclick="go('s-jobs')">← Jobs</span><span class="tb-title">Log a Past Job</span><span></span></div>
@@ -1986,7 +2158,7 @@ window.finishJob=async function(){
   const cbDate=document.getElementById('callback-date')?.value||'';
   const flagged=jobData.flaggedItems||0;
   if(!jobId)return;
-  const payload={status:'completed',outcome,ticketAmount:t,jobNotes:notes,completedAt:serverTimestamp(),stepsCompleted:[0,1,2,3,4,5,6,7,8,9,10],shopId:SHOP_ID,objectionsHit:jobData.objectionsHit||[],durationSec:timerSeconds||0};
+  const payload={status:'completed',outcome,ticketAmount:t,jobNotes:notes,completedAt:serverTimestamp(),stepsCompleted:[0,1,2,3,4,5,6,7,8,9,10],shopId:SHOP_ID,objectionsHit:jobData.objectionsHit||[],durationSec:timerSeconds||0,readings:jobData.readings||[]};
   if(outcome==='nosale'){payload.nosaleReason=nosaleReason;payload.nosaleNotes=nsNotes;payload.realObjection=realObjection;}
   if(outcome==='callback'){payload.callbackReason=callbackReason||'';payload.callbackDate=cbDate;payload.realObjection=realObjection;}
   try{
@@ -2016,6 +2188,141 @@ window.openCoach=function(){
   const pin=prompt('Coach PIN:');
   if(pin!==COACH_PIN){if(pin!==null)alert('Incorrect PIN.');return;}
   go('s-coach');renderCoach();
+};
+
+// ── FIELD TOOLS ──
+let toolsReturn='s-home';
+window.openTools=function(from,card){
+  toolsReturn=from||'s-home';
+  go('s-tools');
+  if(card){
+    document.querySelectorAll('#s-tools .tool-card').forEach(c=>c.classList.remove('open'));
+    const el=document.getElementById('tool-'+card);
+    if(el){el.classList.add('open');setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'start'}),80);}
+  }
+};
+window.calcPay=function(){
+  const P=Number(document.getElementById('pay-amt').value)||0;
+  const apr=Number(document.getElementById('pay-apr').value)||0;
+  const n=Number(document.getElementById('pay-term').value)||36;
+  const out=document.getElementById('pay-out'),sub=document.getElementById('pay-sub');
+  if(P<=0){out.innerHTML='$0<span style="font-size:14px;color:rgba(255,255,255,.5);">/mo</span>';sub.textContent='Enter the job total above';return;}
+  const r=apr/100/12;
+  const m=r>0?P*r/(1-Math.pow(1+r,-n)):P/n;
+  out.innerHTML='$'+Math.round(m).toLocaleString()+'<span style="font-size:14px;color:rgba(255,255,255,.5);">/mo</span>';
+  sub.textContent='$'+P.toLocaleString()+' over '+n+' months at '+apr+'% APR · total $'+Math.round(m*n).toLocaleString();
+};
+window.calcDT=function(){
+  const r=Number(document.getElementById('dt-ret').value),s=Number(document.getElementById('dt-sup').value);
+  const out=document.getElementById('dt-out'),sub=document.getElementById('dt-sub');
+  if(!document.getElementById('dt-ret').value||!document.getElementById('dt-sup').value){out.textContent='–';sub.textContent='Healthy cooling split: 16–22°F';return;}
+  const dt=Math.round((r-s)*10)/10;
+  out.textContent=dt+'°F split';
+  sub.textContent=dt>=16&&dt<=22?'✅ In range — system is moving heat like it should':(dt<16?'⚠ Low split — think low charge, high airflow, or a tired compressor':'⚠ High split — think choked airflow: filter, coil, blower');
+};
+window.calcSH=function(){
+  const wb=Number(document.getElementById('sh-wb').value),od=Number(document.getElementById('sh-od').value);
+  const out=document.getElementById('sh-out'),sub=document.getElementById('sh-sub');
+  if(!document.getElementById('sh-wb').value||!document.getElementById('sh-od').value){out.textContent='–';return;}
+  const t=Math.round(((3*wb-80-od)/2)*10)/10;
+  if(t<5){out.textContent='N/A';sub.textContent='Target under 5°F — don’t charge by superheat in these conditions';}
+  else{out.textContent=t+'°F';sub.textContent='Target superheat · compare against measured SH at the suction line';}
+};
+window.calcSC=function(){
+  const sat=Number(document.getElementById('sc-sat').value),ll=Number(document.getElementById('sc-ll').value);
+  const out=document.getElementById('sc-out');
+  if(!document.getElementById('sc-sat').value||!document.getElementById('sc-ll').value){out.textContent='–';return;}
+  out.textContent=(Math.round((sat-ll)*10)/10)+'°F';
+};
+window.calcSlope=function(){
+  const len=Number(document.getElementById('sl-len').value),per=Number(document.getElementById('sl-size').value);
+  const out=document.getElementById('sl-out');
+  if(!document.getElementById('sl-len').value){out.textContent='–';return;}
+  const fall=len*per;
+  out.textContent=(Math.round(fall*100)/100)+'″ fall';
+};
+window.calcWH=function(){
+  const p=document.getElementById('wh-ppl').value;
+  const out=document.getElementById('wh-out'),sub=document.getElementById('wh-sub');
+  const map={'1':['30–40 gal','Light demand — standard recovery is fine'],'3':['40–50 gal','The most common residential size'],'4':['50–60 gal','Consider high-recovery or hybrid'],'5':['60–80 gal','Or tankless — size by GPM and groundwater temp']};
+  if(!p){out.textContent='–';sub.textContent='Typical tank recommendation';return;}
+  out.textContent=map[p][0];sub.textContent=map[p][1];
+};
+window.calcVD=function(){
+  const I=Number(document.getElementById('vd-amp').value),L=Number(document.getElementById('vd-len').value);
+  const cm=Number(document.getElementById('vd-awg').value),V=Number(document.getElementById('vd-volt').value)||120;
+  const out=document.getElementById('vd-out'),sub=document.getElementById('vd-sub');
+  if(!document.getElementById('vd-amp').value||!document.getElementById('vd-len').value){out.textContent='–';sub.textContent='Recommended max: 3% on a branch circuit';return;}
+  const vd=2*12.9*I*L/cm;
+  const pctd=Math.round(vd/V*1000)/10;
+  out.textContent=(Math.round(vd*10)/10)+'V ('+pctd+'%)';
+  sub.textContent=pctd<=3?'✅ Within the 3% recommendation':'⚠ Over 3% — upsize the conductor or shorten the run';
+};
+window.calcOhm=function(){
+  const V=Number(document.getElementById('oh-v').value),W=Number(document.getElementById('oh-w').value);
+  const out=document.getElementById('oh-out'),sub=document.getElementById('oh-sub');
+  if(!V||!W){out.textContent='–';sub.textContent='Amps drawn · 80% continuous rule shown below';return;}
+  const A=W/V;
+  out.textContent=(Math.round(A*10)/10)+' A';
+  const need=A/0.8;
+  sub.textContent='Continuous load needs a circuit rated ≥ '+Math.ceil(need)+' A (80% rule)';
+};
+
+// ── READINGS LOGGER ──
+window.renderReadings=function(){
+  const list=document.getElementById('rd-list');if(!list)return;
+  const rd=(jobData&&jobData.readings)||[];
+  list.innerHTML=rd.map((r,i)=>`<div class="rd-row"><span class="rd-k">${r.k}</span><span class="rd-v">${r.v}</span><span class="rd-x" onclick="delReading(${i})">×</span></div>`).join('');
+};
+window.addReading=function(){
+  const k=document.getElementById('rd-type').value;
+  const v=document.getElementById('rd-val').value.trim();
+  if(!v)return alert('Enter the value you measured.');
+  jobData.readings=jobData.readings||[];
+  jobData.readings.push({k,v});
+  document.getElementById('rd-val').value='';
+  renderReadings();
+  if(jobId){updateDoc(doc(db,'jobs',jobId),{readings:jobData.readings}).catch(()=>{});}
+};
+window.delReading=function(i){
+  (jobData.readings||[]).splice(i,1);
+  renderReadings();
+  if(jobId){updateDoc(doc(db,'jobs',jobId),{readings:jobData.readings}).catch(()=>{});}
+};
+
+// ── FOLLOW-UP TEXT GENERATOR ──
+const FUT_LABEL={same:'Same as stated',price:'Truly price',trust:'Didn\u2019t trust us',spouse:'Spouse approval',afford:'Truly can\u2019t afford',diagnosis:'Doubted diagnosis',fear:'Fear of deciding',ripoff:'Feared being ripped off',wait:'No real urgency',unsure:'Not sure'};
+function futMsg(j){
+  const c=(j.customer||'').trim().split(' ')[0]||'there';
+  const t=(profile&&profile.name||'').split(' ')[0]||'your tech';
+  const co=(profile&&profile.company)||'the shop';
+  const M={
+    spouse:`Hi ${c}, it\u2019s ${t} from ${co}. No pressure at all \u2014 just wanted to make sure you two had everything you needed to talk it over. If any questions came up between you, I\u2019m happy to jump on a quick call with both of you. Either way, you\u2019ve got my number.`,
+    price:`Hi ${c}, ${t} from ${co}. I kept thinking about your situation \u2014 I ran the numbers and there\u2019s a monthly option that gets this handled for roughly the cost of a dinner out each month, instead of one big hit. Want me to text you the breakdown?`,
+    afford:`Hi ${c}, it\u2019s ${t} from ${co}. I get that the timing on a big expense is real. If it helps, we have payment plans that spread this out \u2014 and I can also put together a smaller \u201Ckeep it safe for now\u201D option so nothing gets worse while you plan. Which would be more useful?`,
+    trust:`Hi ${c}, ${t} from ${co}. Totally understand wanting to feel sure before moving forward \u2014 honestly, I\u2019d do the same. If it helps, I\u2019m happy to send over the photos from your visit and walk through exactly what I found. And if you want a second opinion first, no hard feelings \u2014 just make sure whoever looks at it checks the same spots.`,
+    ripoff:`Hi ${c}, it\u2019s ${t} from ${co}. I want you to feel 100% solid about whatever you decide \u2014 so here\u2019s what I\u2019d tell my own family: get a second opinion if you want one, and compare it against the photos I took at your place. What I showed you is what\u2019s there. When you\u2019re ready, the quote stands.`,
+    diagnosis:`Hi ${c}, ${t} from ${co}. Wanted to follow up \u2014 I\u2019m sending the photos and the actual readings I took at your home so you can see the numbers yourself, not just take my word for it. Happy to explain any of them. The measurements don\u2019t have an opinion \u2014 they just are what they are.`,
+    fear:`Hi ${c}, it\u2019s ${t} from ${co}. Just checking in \u2014 big decisions deserve a little breathing room, so no rush from me. When you\u2019re ready, everything\u2019s backed by our warranty, and I\u2019ll personally walk the job from start to finish. If any \u201Cwhat if\u201D questions popped up since I left, fire away.`,
+    wait:`Hi ${c}, ${t} from ${co}. Quick follow-up on what we looked at \u2014 it\u2019s holding for now like I said, but this is the kind of thing that picks its own timing if we wait too long, and it\u2019s never a convenient week. If you want to get ahead of it, I can get you on the schedule this week.`,
+    unsure:`Hi ${c}, it\u2019s ${t} from ${co}. Just wanted to follow up after my visit \u2014 if any questions came up after I left, I\u2019m happy to answer them, no strings. And if you\u2019d like me to resend the options we talked through, say the word.`
+  };
+  M.same=M[j.nosaleReason]||M.unsure;
+  return M[j.realObjection]||M.unsure;
+}
+window.futOpen=function(id){
+  const j=(window.__myJobs||[]).find(x=>x.id===id);
+  if(!j)return;
+  document.getElementById('fut-context').textContent='Written for: '+(FUT_LABEL[j.realObjection]||'General follow-up')+(j.customer?' \u00b7 '+j.customer:'');
+  document.getElementById('fut-msg').value=futMsg(j);
+  go('s-futext');
+};
+window.futCopy=function(){
+  const ta=document.getElementById('fut-msg');
+  ta.select();ta.setSelectionRange(0,99999);
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(ta.value).then(()=>alert('Copied \u2014 paste it into your Messages app.')).catch(()=>{document.execCommand('copy');alert('Copied.');});
+  }else{document.execCommand('copy');alert('Copied.');}
 };
 
 let blOutcome=null;
@@ -2078,8 +2385,8 @@ window.exportCoachCSV=function(){
   const jobs=window.__coachJobs||[];
   if(!jobs.length)return alert('No data loaded yet — open the dashboard first.');
   const esc=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
-  const rows=[['date','tech','callType','outcome','ticket','statedObjection','realObjection','objectionsHit','durationMin','callbackResolved','backlogged']];
-  jobs.forEach(j=>rows.push([j.date||'',(j.techName||'').trim(),j.callType||'',j.outcome||'',j.ticketAmount||0,j.nosaleReason||'',j.realObjection||'',(j.objectionsHit||[]).map(o=>o.key).join('|'),j.durationSec?Math.round(j.durationSec/60):'',j.callbackResolved?'yes':'',j.backlogged?'yes':'']));
+  const rows=[['date','tech','callType','outcome','ticket','statedObjection','realObjection','objectionsHit','durationMin','callbackResolved','backlogged','readings']];
+  jobs.forEach(j=>rows.push([j.date||'',(j.techName||'').trim(),j.callType||'',j.outcome||'',j.ticketAmount||0,j.nosaleReason||'',j.realObjection||'',(j.objectionsHit||[]).map(o=>o.key).join('|'),j.durationSec?Math.round(j.durationSec/60):'',j.callbackResolved?'yes':'',j.backlogged?'yes':'',(j.readings||[]).map(r=>r.k+'='+r.v).join('|')]));
   const csv=rows.map(r=>r.map(esc).join(',')).join('\n');
   const blob=new Blob([csv],{type:'text/csv'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='elev8-pilot-data-'+new Date().toISOString().split('T')[0]+'.csv';a.click();
@@ -2437,9 +2744,10 @@ async function loadJobs(){
     if(snap.empty){c.innerHTML='<div style="text-align:center;padding:40px;color:var(--slate-400);font-size:14px;">No jobs yet. Hit Start New Job to begin.</div>';return;}
     const jobs=snap.docs.map(d=>({id:d.id,...d.data()}));
     jobs.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    window.__myJobs=jobs;
     const ocColor={sold:'var(--success)',nosale:'var(--danger)',callback:'var(--copper)'};
     const ocLabel={sold:'Sold',nosale:'No Sale',callback:'Callback',in_progress:'Active'};
-    c.innerHTML=jobs.map(j=>`<div style="background:var(--white);border-radius:10px;padding:14px 16px;margin-bottom:10px;border:1px solid var(--border);box-shadow:0 1px 3px rgba(26,29,35,.04);"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;"><div style="font-size:15px;font-weight:700;color:var(--slate-900);">${j.customer||'–'}</div><div style="font-size:10px;font-weight:800;color:${ocColor[j.outcome]||'var(--slate-400)'};text-transform:uppercase;">${ocLabel[j.outcome]||'In Progress'}</div></div><div style="font-size:12px;color:var(--slate-400);margin-bottom:6px;">${j.address||''}</div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;"><span style="font-size:11px;font-weight:700;color:var(--copper-dim);">${j.callType||''}</span>${j.ticketAmount?`<span style="font-size:12px;font-weight:800;color:var(--success);">$${Number(j.ticketAmount).toLocaleString()}</span>`:''}<span style="font-size:11px;color:var(--slate-400);">${j.date||''}</span></div>${j.outcome==='callback'?`<div style="display:flex;gap:8px;margin-top:10px;"><button onclick="resolveCB('${j.id}','sold')" style="flex:1;background:var(--success);color:#fff;border:none;border-radius:8px;padding:9px;font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;">✓ Resolve — Sold</button><button onclick="resolveCB('${j.id}','nosale')" style="flex:1;background:transparent;color:var(--danger);border:1.5px solid var(--danger);border-radius:8px;padding:9px;font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;">✕ Resolve — Lost</button></div>`:''}</div>`).join('');
+    c.innerHTML=jobs.map(j=>`<div style="background:var(--white);border-radius:10px;padding:14px 16px;margin-bottom:10px;border:1px solid var(--border);box-shadow:0 1px 3px rgba(26,29,35,.04);"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;"><div style="font-size:15px;font-weight:700;color:var(--slate-900);">${j.customer||'–'}</div><div style="font-size:10px;font-weight:800;color:${ocColor[j.outcome]||'var(--slate-400)'};text-transform:uppercase;">${ocLabel[j.outcome]||'In Progress'}</div></div><div style="font-size:12px;color:var(--slate-400);margin-bottom:6px;">${j.address||''}</div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;"><span style="font-size:11px;font-weight:700;color:var(--copper-dim);">${j.callType||''}</span>${j.ticketAmount?`<span style="font-size:12px;font-weight:800;color:var(--success);">$${Number(j.ticketAmount).toLocaleString()}</span>`:''}<span style="font-size:11px;color:var(--slate-400);">${j.date||''}</span></div>${(j.outcome==='callback'||j.outcome==='nosale')?`<button class="fut-btn" onclick="futOpen('${j.id}')">📱 Follow-Up Text</button>`:''}${j.outcome==='callback'?`<div style="display:flex;gap:8px;margin-top:10px;"><button onclick="resolveCB('${j.id}','sold')" style="flex:1;background:var(--success);color:#fff;border:none;border-radius:8px;padding:9px;font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;">✓ Resolve — Sold</button><button onclick="resolveCB('${j.id}','nosale')" style="flex:1;background:transparent;color:var(--danger);border:1.5px solid var(--danger);border-radius:8px;padding:9px;font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;">✕ Resolve — Lost</button></div>`:''}</div>`).join('');
   }catch(e){if(c)c.innerHTML=`<div style="padding:20px;color:var(--danger);">Error: ${e.message}</div>`;}
 }
 
@@ -2592,6 +2900,7 @@ window.go=function(id){
   if(id==='s-step-6')__restorePhotos();
   if(id==='s-search'){var gi=document.getElementById('global-search');if(gi)setTimeout(function(){gi.focus();},60);}
   if(id==='s-step-7')optGuideInit();
+  if(id==='s-step-8')renderReadings();
   if(id==='s-profile')setTimeout(syncSettingToggles,0);
   injectNav(id);
 };
