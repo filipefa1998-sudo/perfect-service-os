@@ -1873,7 +1873,35 @@ async function loadStats(){
 }
 
 // ── JOB FLOW ──
+window.resetJobUI=function(){
+  // Every typed value in every job step: discovery answers, inspection notes,
+  // good/better/best options, financing fields, ticket, notes, callback date, readings input
+  document.querySelectorAll('[id^="s-step-"] input[type="text"], [id^="s-step-"] input[type="number"], [id^="s-step-"] textarea').forEach(el=>{el.value='';});
+  // Selects back to first option (readings type, option-guide picker, etc.)
+  document.querySelectorAll('[id^="s-step-"] select').forEach(el=>{el.selectedIndex=0;});
+  // Every tapped selection: outcome buttons, objection buttons, no-sale / callback / real-read grids
+  document.querySelectorAll('[id^="s-step-"] .sel').forEach(el=>el.classList.remove('sel'));
+  // Every checked checklist item across all steps
+  document.querySelectorAll('[id^="s-step-"] .chi.chk').forEach(el=>el.classList.remove('chk'));
+  // Close-out panels back to hidden
+  ['nosale-reason-panel','callback-reason-panel'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  // Inspection statuses (belt & suspenders — renderInsp rebuilds, but same-call-type jobs deserve a clean slate too)
+  document.querySelectorAll('#insp-cont .ok, #insp-cont .flag').forEach(el=>{el.classList.remove('ok');el.classList.remove('flag');const s=el.querySelector('.istat');if(s)s.textContent='';});
+  // Membership / review selections and the review link box
+  ['mem-yes','mem-no','rev-yes','rev-no'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('sel');});
+  const rlb=document.getElementById('rev-link-box');if(rlb)rlb.classList.add('hidden');
+  // Readings list UI
+  const rl=document.getElementById('rd-list');if(rl)rl.innerHTML='';
+  // Photo file input (slots are cleared separately in startJob)
+  const pi=document.getElementById('photo-input');if(pi)pi.value='';
+  // Discovery / flag carry-through boxes on the Present step
+  const pd=document.getElementById('present-discovery');if(pd)pd.style.display='none';
+  const pf=document.getElementById('present-flags');if(pf)pf.style.display='none';
+  // Timer back to zero
+  try{if(typeof stopTimer==='function')stopTimer();if(typeof resetTimer==='function')resetTimer();}catch(e){}
+};
 window.startJob=function(){
+  resetJobUI();
   jobId=null;jobData={};curStep=0;photos=0;outcome=null;callType=null;
   nosaleReason=null;realObjection=null;callbackReason=null;
   document.querySelectorAll('.ctb').forEach(b=>b.classList.remove('sel'));
@@ -2552,6 +2580,8 @@ window.finalClose=async function(){
     try{await updateDoc(doc(db,'jobs',jobId),{reviewAsked:reviewResult==='yes',reviewResult:reviewResult||'not_asked',membershipOffered:true,membershipAdded:membershipResult==='yes'});}catch(e){}
   }
   jobId=null;jobData={};membershipResult=null;reviewResult=null;
+  outcome=null;nosaleReason=null;realObjection=null;callbackReason=null;
+  resetJobUI();
   await loadStats();go('s-home');
 };
 
