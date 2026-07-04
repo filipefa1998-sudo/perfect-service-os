@@ -627,6 +627,14 @@
   #login-err{background:var(--danger-pale);color:var(--danger);font-size:13px;font-weight:600;padding:10px 12px;border-radius:9px;margin-bottom:14px;border:1px solid rgba(217,64,64,.25);}
 
 
+  /* ── LEADERBOARD ── */
+  .ldr-row{display:flex;align-items:center;gap:12px;background:var(--white);border:1px solid var(--border);border-radius:12px;padding:13px 14px;margin:0 18px 8px;}
+  .ldr-row.me{border-color:var(--copper);background:var(--copper-pale);}
+  .ldr-medal{font-size:20px;width:28px;text-align:center;flex-shrink:0;}
+  .ldr-mid{flex:1;min-width:0;}
+  .ldr-name{font-weight:800;font-size:14px;color:var(--slate-900);}
+  .ldr-sub{font-size:10.5px;color:var(--slate-400);margin-top:2px;}
+  .ldr-rev{font-weight:800;font-size:15px;color:var(--copper-dim);flex-shrink:0;}
   /* ── FIELD TOOLS ── */
   .tool-card{background:var(--white);border:1px solid var(--border);border-radius:14px;margin:0 18px 10px;overflow:hidden;box-shadow:0 1px 3px rgba(26,29,35,.04);}
   .tool-head{display:flex;align-items:center;gap:12px;padding:15px 16px;cursor:pointer;}
@@ -829,7 +837,7 @@
         <button class="btn-navy" onclick="saveEditProfile()" style="margin-top:16px;">Save Changes</button>
         <button class="btn-ghost" onclick="closeEditProfile()">Cancel</button>
       </div>
-      <div style="margin-top:24px;padding-top:18px;border-top:1px solid var(--border);"><div class="sdiv">Display &amp; Account</div><div class="set-row"><div><div class="set-l">Field mode</div><div class="set-s">High-contrast, large tap targets</div></div><button class="set-toggle" id="set-field" onclick="toggleField();syncSettingToggles();">Off</button></div><div class="set-row"><div><div class="set-l">Night mode</div><div class="set-s">Dark theme for low light</div></div><button class="set-toggle" id="set-night" onclick="toggleNight();syncSettingToggles();">Off</button></div><button class="btn-ghost" onclick="authSignOut()" style="margin-top:14px;">Sign Out</button><button class="btn-ghost" onclick="openCoach()" style="margin-top:8px;">🔒 Coach Access</button></div>
+      <div style="margin-top:24px;padding-top:18px;border-top:1px solid var(--border);"><div class="sdiv">Display &amp; Account</div><div class="set-row"><div><div class="set-l">Field mode</div><div class="set-s">High-contrast, large tap targets</div></div><button class="set-toggle" id="set-field" onclick="toggleField();syncSettingToggles();">Off</button></div><div class="set-row"><div><div class="set-l">Night mode</div><div class="set-s">Dark theme for low light</div></div><button class="set-toggle" id="set-night" onclick="toggleNight();syncSettingToggles();">Off</button></div><button class="btn-ghost" onclick="authSignOut()" style="margin-top:14px;">Sign Out</button><button class="btn-ghost" onclick="recoverMyJobs(false)" style="margin-top:8px;">🛟 Recover My Jobs</button><button class="btn-ghost" onclick="exportBackup()" style="margin-top:8px;">💾 Export Backup Data</button><button class="btn-ghost" onclick="openCoach()" style="margin-top:8px;">🔒 Coach Access</button></div>
       <div id="p-danger" style="margin-top:32px;padding-top:20px;border-top:1px solid var(--border);">
         <div style="font-size:12px;color:var(--slate-400);text-align:center;margin-bottom:8px;">Danger Zone</div>
         <button class="dangerbtn" onclick="resetAll()">Reset All Data</button>
@@ -1381,6 +1389,7 @@
     <div class="topbar"><span class="tb-back" onclick="go('s-home')">← Home</span><span class="tb-title">Weekly Scorecard</span><span></span></div>
     <div class="sbody"><div style="padding:20px;">
 
+      <button onclick="openLeader()" style="width:100%;background:#1A1D23;color:#E8A85C;border:none;border-radius:12px;padding:14px;font-size:13px;font-weight:800;font-family:var(--font);cursor:pointer;letter-spacing:.02em;margin-bottom:16px;">🏆 Crew Leaderboard</button>
       <!-- Week selector -->
       <div style="display:flex;gap:8px;margin-bottom:20px;">
         <div class="kpibtn active" id="wk-this" onclick="loadScorecard('this',this)">This Week</div>
@@ -1455,6 +1464,20 @@
 
 
   <!-- LOGIN -->
+  <!-- CREW LEADERBOARD -->
+  <div id="s-leader" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="tb-back" onclick="go('s-scorecard')">← Scorecard</span><span class="tb-title">Crew Leaderboard</span><span class="tb-action" onclick="renderLeader()">↻</span></div>
+    <div class="sbody"><div style="padding:18px 0 28px;">
+      <div style="display:flex;gap:8px;margin:0 18px 16px;">
+        <div class="kpibtn active" id="ld-wk" onclick="setLdPeriod('week',this)">This Week</div>
+        <div class="kpibtn" id="ld-mo" onclick="setLdPeriod('month',this)">This Month</div>
+      </div>
+      <div id="ldr-body"><div class="co-empty">Loading crew…</div></div>
+      <div class="co-note" style="margin-top:14px;">Ranked by sold revenue. Every completed job counts — if you didn’t log it, it didn’t happen. 😉</div>
+    </div></div>
+    <div class="navtabs" data-nav></div>
+  </div>
+
   <!-- FIELD TOOLS -->
   <div id="s-tools" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
     <div class="topbar"><span class="tb-back" id="tools-back" onclick="go(toolsReturn)">← Back</span><span class="tb-title">Field Tools</span><span></span></div>
@@ -1707,19 +1730,87 @@ const COACH_PIN='8248';               // coach dashboard passcode — change bef
 
 let profile=null, jobId=null, jobData={}, curStep=0, photos=0, outcome=null, callType=null, kpiPer='today', setupTrade='plumb', editTrade='plumb', setupAv='🔧', editAv='🔧', nosaleReason=null, realObjection=null, callbackReason=null, membershipResult=null, reviewResult=null, finTerm=12, timerInterval=null, timerSeconds=0, timerRunning=false, returningCheckTimeout=null, scorecardPeriod='this';
 
+// ── WRITE TRACKING + LOCAL BACKUP ──
+let pw=0;
+function syncBadge(){
+  let b=document.getElementById('sync-badge');
+  if(!b){b=document.createElement('div');b.id='sync-badge';b.style.cssText='position:fixed;bottom:76px;right:14px;z-index:9999;background:#1A1D23;color:#E8A85C;font-family:var(--font);font-weight:800;font-size:11px;padding:8px 13px;border-radius:20px;box-shadow:0 4px 14px rgba(0,0,0,.28);display:none;align-items:center;gap:6px;';document.body.appendChild(b);}
+  clearTimeout(b._t);
+  if(pw>0){b.style.display='flex';b.textContent='⏳ '+pw+' saving — keep app open';}
+  else{b.textContent='☁️ All saved';b.style.display='flex';b._t=setTimeout(function(){b.style.display='none';},2200);}
+}
+function stashBackup(e){try{const a=JSON.parse(localStorage.getItem('psos_backup')||'[]');a.push(e);while(a.length>80)a.shift();localStorage.setItem('psos_backup',JSON.stringify(a));}catch(x){}}
+function markSynced(id){if(!id)return;try{const a=JSON.parse(localStorage.getItem('psos_backup')||'[]');const f=a.find(x=>x.id===id);if(f)f.synced=true;localStorage.setItem('psos_backup',JSON.stringify(a));}catch(x){}}
+function trackWrite(p,label,entry){
+  if(entry)stashBackup(entry);
+  pw++;syncBadge();
+  p.then(function(){pw--;syncBadge();if(entry)markSynced(entry.id);})
+   .catch(function(err){pw--;syncBadge();alert('⚠ SAVE FAILED — '+label+'\n'+err.message+'\n\nThis job is backed up on this phone. Do NOT clear the app or browser data — tell your coach today.');});
+}
+window.exportBackup=function(){
+  const raw=localStorage.getItem('psos_backup')||'[]';
+  const n=JSON.parse(raw).length;
+  if(!n)return alert('No backed-up job records on this device yet.');
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(raw).then(function(){alert(n+' job records copied to clipboard. Paste into a text or email to your coach for recovery.');}).catch(function(){alert('Copy failed — screenshot this instead:\n'+raw.slice(0,300)+'…');});}
+  else alert('Clipboard unavailable — records:\n'+raw.slice(0,300)+'…');
+};
+
+// ── DURABLE IDENTITY: query by login (uid) AND device, merged ──
+async function myDocs(){
+  const uid=auth.currentUser?auth.currentUser.uid:null;
+  const runs=[getDocs(query(collection(db,'jobs'),where('deviceId','==',devId()))).catch(function(){return null;})];
+  if(uid)runs.push(getDocs(query(collection(db,'jobs'),where('uid','==',uid))).catch(function(){return null;}));
+  const snaps=await Promise.all(runs);
+  const seen={},out=[];
+  snaps.forEach(function(s){if(s)s.docs.forEach(function(d){if(!seen[d.id]){seen[d.id]=1;out.push(d);}});});
+  return out;
+}
+
+window.recoverMyJobs=async function(silent){
+  try{
+    const name=(profile&&profile.name||'').trim();
+    if(!name){if(!silent)alert('Set up your profile first.');return;}
+    const snap=await getDocs(query(collection(db,'jobs'),where('shopId','==',SHOP_ID),where('techName','==',name)));
+    const uid=auth.currentUser?auth.currentUser.uid:null;
+    const mine=snap.docs.filter(function(d){const j=d.data();return j.deviceId!==devId()&&(!uid||j.uid!==uid);});
+    if(!mine.length){if(!silent)alert('No unlinked jobs found under “'+name+'”. If jobs are still missing, the name on the old jobs may be spelled differently — ask your coach to check the dashboard.');return;}
+    if(!confirm('Found '+mine.length+' job(s) logged under “'+name+'” from another device or session. Re-link them to this phone?'))return;
+    for(const d of mine){await updateDoc(doc(db,'jobs',d.id),{deviceId:devId(),uid:uid||null});}
+    alert('Recovered '+mine.length+' job(s). Check your Jobs tab — they’re back.');
+    if(typeof loadJobs==='function')loadJobs();
+    if(typeof loadStats==='function')loadStats();
+  }catch(e){if(!silent)alert('Recovery error: '+e.message);}
+};
+async function autoRecoverCheck(){
+  try{
+    const own=await myDocs();
+    if(own.length>0)return;
+    const name=(profile&&profile.name||'').trim();if(!name)return;
+    const snap=await getDocs(query(collection(db,'jobs'),where('shopId','==',SHOP_ID),where('techName','==',name)));
+    if(snap.docs.length>0)recoverMyJobs(false);
+  }catch(e){}
+}
+
 function devId(){let id=localStorage.getItem(DK);if(!id){id='dev_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);localStorage.setItem(DK,id);}return id;}
 
 async function backfillShopId(){
-  if(localStorage.getItem('psos_backfilled'))return;
+  if(localStorage.getItem('psos_backfilled_v2'))return;
   try{
+    const uid=auth.currentUser?auth.currentUser.uid:null;
     const snap=await getDocs(query(collection(db,'jobs'),where('deviceId','==',devId())));
-    const missing=snap.docs.filter(d=>!d.data().shopId);
-    for(const d of missing){await updateDoc(doc(db,'jobs',d.id),{shopId:SHOP_ID});}
-    localStorage.setItem('psos_backfilled','1');
+    for(const d of snap.docs){
+      const j=d.data();const upd={};
+      if(!j.shopId)upd.shopId=SHOP_ID;
+      if(uid&&!j.uid)upd.uid=uid;
+      if(Object.keys(upd).length)await updateDoc(doc(db,'jobs',d.id),upd);
+    }
+    localStorage.setItem('psos_backfilled_v2','1');
   }catch(e){}
 }
 function boot(){
+  if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(function(){});
   backfillShopId();
+  setTimeout(autoRecoverCheck,3000);
   const s=localStorage.getItem(PK);
   if(s){profile=JSON.parse(s);applyProfile();go('s-home');}
   else go('s-setup');
@@ -1849,8 +1940,7 @@ async function loadProfileScreen(){
   document.getElementById('p-name').textContent=profile.name||'–';
   document.getElementById('p-co').textContent=(profile.role?profile.role+' · ':'')+( profile.company||'');
   try{
-    const q=query(collection(db,'jobs'),where('deviceId','==',devId()));
-    const snap=await getDocs(q);
+    const snap={docs:await myDocs()};
     const jobs=snap.docs.map(d=>d.data()).filter(j=>j.status==='completed');
     const rev=jobs.reduce((s,j)=>s+(Number(j.ticketAmount)||0),0);
     document.getElementById('p-calls').textContent=jobs.length||'0';
@@ -1861,8 +1951,7 @@ async function loadProfileScreen(){
 async function loadStats(){
   const today=new Date().toISOString().split('T')[0];
   try{
-    const q=query(collection(db,'jobs'),where('deviceId','==',devId()));
-    const snap=await getDocs(q);
+    const snap={docs:await myDocs()};
     const jobs=snap.docs.map(d=>d.data()).filter(j=>j.date===today);
     const total=jobs.length, sold=jobs.filter(j=>j.outcome==='sold').length;
     const rev=jobs.filter(j=>j.outcome==='sold').reduce((s,j)=>s+(Number(j.ticketAmount)||0),0);
@@ -1928,9 +2017,10 @@ window.createJob=async function(){
   if(!c)return alert('Enter customer name.');
   const a=document.getElementById('j-addr').value.trim();
   const today=new Date().toISOString().split('T')[0];
-  const jd={deviceId:devId(),shopId:SHOP_ID,techName:profile?.name||'',customer:c,address:a,callType,date:today,status:'in_progress',currentStep:0,stepsCompleted:[],createdAt:serverTimestamp()};
+  const jd={deviceId:devId(),shopId:SHOP_ID,uid:(auth.currentUser?auth.currentUser.uid:null),techName:profile?.name||'',customer:c,address:a,callType,date:today,status:'in_progress',currentStep:0,stepsCompleted:[],createdAt:serverTimestamp()};
   try{
-    const ref=await addDoc(collection(db,'jobs'),jd);
+    const ref=doc(collection(db,'jobs'));
+    trackWrite(setDoc(ref,jd),'job start',{id:ref.id,...jd,createdAt:null,ts:Date.now()});
     jobId=ref.id;jobData={...jd,id:ref.id};curStep=0;
     renderInsp(callType);updDash();go('s-dash');startTimer();
   }catch(e){alert('Firebase error: '+e.message);}
@@ -2158,8 +2248,7 @@ window.checkReturning=function(){
     if(!banner)return;
     if(name.length<3&&addr.length<5){banner.style.display='none';return;}
     try{
-      const q=query(collection(db,'jobs'),where('deviceId','==',devId()));
-      const snap=await getDocs(q);
+      const snap={docs:await myDocs()};
       const matches=snap.docs.map(d=>d.data()).filter(j=>{
         const jn=(j.customer||'').toLowerCase();
         const ja=(j.address||'').toLowerCase();
@@ -2186,12 +2275,12 @@ window.finishJob=async function(){
   const cbDate=document.getElementById('callback-date')?.value||'';
   const flagged=jobData.flaggedItems||0;
   if(!jobId)return;
-  const payload={status:'completed',outcome,ticketAmount:t,jobNotes:notes,completedAt:serverTimestamp(),stepsCompleted:[0,1,2,3,4,5,6,7,8,9,10],shopId:SHOP_ID,objectionsHit:jobData.objectionsHit||[],durationSec:timerSeconds||0,readings:jobData.readings||[]};
+  const payload={status:'completed',outcome,ticketAmount:t,jobNotes:notes,completedAt:serverTimestamp(),stepsCompleted:[0,1,2,3,4,5,6,7,8,9,10],shopId:SHOP_ID,objectionsHit:jobData.objectionsHit||[],durationSec:timerSeconds||0,readings:jobData.readings||[],uid:(auth.currentUser?auth.currentUser.uid:null)};
   if(outcome==='nosale'){payload.nosaleReason=nosaleReason;payload.nosaleNotes=nsNotes;payload.realObjection=realObjection;}
   if(outcome==='callback'){payload.callbackReason=callbackReason||'';payload.callbackDate=cbDate;payload.realObjection=realObjection;}
   try{
     setSyncStatus('saving');
-    await updateDoc(doc(db,'jobs',jobId),payload);
+    trackWrite(updateDoc(doc(db,'jobs',jobId),payload),'job close-out',{id:jobId,customer:jobData.customer||'',date:jobData.date||'',callType:jobData.callType||'',techName:profile?.name||'',...payload,completedAt:null,ts:Date.now()});
     setSyncStatus('saved');
     const custName=jobData.customer?.split(' ')[0]||'there';
     const revCustEl=document.getElementById('rev-cust-name');
@@ -2210,6 +2299,37 @@ window.finishJob=async function(){
   }catch(e){setSyncStatus('error');alert('Error: '+e.message);}
 };
 
+
+// ── CREW LEADERBOARD ──
+let ldPeriod='week';
+window.openLeader=function(){go('s-leader');renderLeader();};
+window.setLdPeriod=function(p,btn){ldPeriod=p;document.querySelectorAll('#ld-wk,#ld-mo').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');renderLeader();};
+window.renderLeader=async function(){
+  const body=document.getElementById('ldr-body');if(!body)return;
+  body.innerHTML='<div class="co-empty">Loading crew…</div>';
+  let docs=[];
+  try{const snap=await getDocs(query(collection(db,'jobs'),where('shopId','==',SHOP_ID)));docs=snap.docs.map(function(d){return d.data();});}catch(e){}
+  const now=new Date();let start;
+  if(ldPeriod==='week'){const d=new Date(now);const day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);start=d.toISOString().split('T')[0];}
+  else{start=now.toISOString().slice(0,8)+'01';}
+  const jobs=docs.filter(function(j){return j.status==='completed'&&(j.date||'')>=start;});
+  if(!jobs.length){body.innerHTML='<div class="co-empty">No completed jobs '+(ldPeriod==='week'?'this week':'this month')+' yet.<br>First one on the board wins the bragging rights.</div>';return;}
+  const techs={};
+  jobs.forEach(function(j){
+    const disp=(j.techName||'Unknown').trim()||'Unknown';const k=disp.toLowerCase();
+    techs[k]=techs[k]||{disp:disp,rev:0,sold:0,tot:0};
+    techs[k].tot++;
+    if(j.outcome==='sold'){techs[k].sold++;techs[k].rev+=Number(j.ticketAmount)||0;}
+  });
+  const rows=Object.values(techs).sort(function(a,b){return b.rev-a.rev;});
+  const meName=(profile&&profile.name||'').trim().toLowerCase();
+  const medals=['🥇','🥈','🥉'];
+  body.innerHTML=rows.map(function(t,i){
+    const cr=t.tot?Math.round(t.sold/t.tot*100):0;
+    const me=t.disp.toLowerCase()===meName?' me':'';
+    return '<div class="ldr-row'+me+'"><span class="ldr-medal">'+(medals[i]||('#'+(i+1)))+'</span><div class="ldr-mid"><div class="ldr-name">'+t.disp+(me?' (you)':'')+'</div><div class="ldr-sub">'+cr+'% close · '+t.sold+' sold / '+t.tot+' run</div></div><span class="ldr-rev">$'+t.rev.toLocaleString()+'</span></div>';
+  }).join('');
+};
 
 // ── ELEV8 COACH DASHBOARD ──
 window.openCoach=function(){
@@ -2385,7 +2505,7 @@ window.saveBacklog=async function(){
   if(!ct)return alert('Select the call type.');
   if(!blOutcome)return alert('Select the outcome.');
   const payload={
-    deviceId:devId(),shopId:SHOP_ID,techName:profile?.name||'',
+    deviceId:devId(),shopId:SHOP_ID,uid:(auth.currentUser?auth.currentUser.uid:null),techName:profile?.name||'',
     customer:document.getElementById('bl-customer').value.trim(),
     callType:ct,date,status:'completed',outcome:blOutcome,
     jobNotes:document.getElementById('bl-notes').value.trim(),
@@ -2403,7 +2523,8 @@ window.saveBacklog=async function(){
     if(blOutcome==='callback'){payload.callbackReason=st;}
   }
   try{
-    await addDoc(collection(db,'jobs'),payload);
+    const ref=doc(collection(db,'jobs'));
+    trackWrite(setDoc(ref,payload),'past job',{id:ref.id,...payload,createdAt:null,completedAt:null,ts:Date.now()});
     alert('Past job saved \u2014 your numbers just got more honest.');
     go('s-jobs');loadJobs();loadStats();
   }catch(e){alert('Error saving: '+e.message);}
@@ -2453,8 +2574,8 @@ window.renderCoach=async function(){
   if(!docs.length){
     // Fallback: this device only (older jobs pre-date shopId, or Firestore rules block crew reads)
     try{
-      const snap=await getDocs(query(collection(db,'jobs'),where('deviceId','==',devId())));
-      docs=snap.docs.map(d=>d.data());scope='device';
+      const own=await myDocs();
+      docs=own.map(d=>d.data());scope='device';
     }catch(e){}
   }
   const jobs=docs.filter(j=>j.status==='completed');
@@ -2746,8 +2867,7 @@ async function loadKPI(){
   else if(kpiPer==='week'){const d=new Date(today);d.setDate(d.getDate()-7);start=d.toISOString().split('T')[0];}
   else{const d=new Date(today);d.setDate(1);start=d.toISOString().split('T')[0];}
   try{
-    const q=query(collection(db,'jobs'),where('deviceId','==',devId()));
-    const snap=await getDocs(q);
+    const snap={docs:await myDocs()};
     const jobs=snap.docs.map(d=>d.data()).filter(j=>j.status==='completed'&&j.date>=start);
     const total=jobs.length, sold=jobs.filter(j=>j.outcome==='sold').length;
     const rev=jobs.filter(j=>j.outcome==='sold').reduce((s,j)=>s+(Number(j.ticketAmount)||0),0);
@@ -2769,8 +2889,7 @@ async function loadJobs(){
   if(!c)return;
   c.innerHTML='<div style="text-align:center;padding:30px;color:var(--slate-400);">Loading...</div>';
   try{
-    const q=query(collection(db,'jobs'),where('deviceId','==',devId()));
-    const snap=await getDocs(q);
+    const snap={docs:await myDocs()};
     if(snap.empty){c.innerHTML='<div style="text-align:center;padding:40px;color:var(--slate-400);font-size:14px;">No jobs yet. Hit Start New Job to begin.</div>';return;}
     const jobs=snap.docs.map(d=>({id:d.id,...d.data()}));
     jobs.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
@@ -2784,8 +2903,7 @@ async function loadJobs(){
 // ── STREAK ──
 async function calcStreak(){
   try{
-    const q=query(collection(db,'jobs'),where('deviceId','==',devId()));
-    const snap=await getDocs(q);
+    const snap={docs:await myDocs()};
     const soldDates=[...new Set(snap.docs.map(d=>d.data()).filter(j=>j.outcome==='sold'&&j.date).map(j=>j.date))].sort((a,b)=>b.localeCompare(a));
     if(!soldDates.length)return 0;
     const today=new Date().toISOString().split('T')[0];
@@ -2836,8 +2954,7 @@ function getWeekRange(period){
 async function renderScorecard(){
   try{
     const{start,end}=getWeekRange(scorecardPeriod);
-    const q=query(collection(db,'jobs'),where('deviceId','==',devId()));
-    const snap=await getDocs(q);
+    const snap={docs:await myDocs()};
     const jobs=snap.docs.map(d=>d.data()).filter(j=>j.date>=start&&j.date<=end&&j.status==='completed');
     const total=jobs.length, sold=jobs.filter(j=>j.outcome==='sold');
     const soldCount=sold.length;
