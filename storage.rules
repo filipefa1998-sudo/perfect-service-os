@@ -1,0 +1,52 @@
+rules_version = '2';
+
+// ============================================================
+//  PSOS — STORAGE SECURITY RULES
+//  Path contract (must match psos-recorder.js and functions):
+//    recordings/{uid}/{jobId}/chunk-###.webm|mp4  (uid = Firebase Auth uid)
+//
+//  Techs write ONLY into their own folder. Nobody reads or
+//  deletes raw audio from the client — the Cloud Function
+//  (Admin SDK, bypasses rules) is the only consumer, and a
+//  lifecycle rule handles retention (see note below).
+// ============================================================
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    match /recordings/{techId}/{jobId}/{chunkFile} {
+      // Upload: own folder only, audio only, sane chunk size.
+      // A 30s voice chunk at 24kbps is ~90KB; 5MB is a generous
+      // ceiling that still blocks abuse.
+      allow write: if request.auth != null
+        && request.auth.uid == techId
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('audio/.*');
+
+      // Raw audio is the sensitive artifact — no client reads.
+      // Coaches consume transcripts/scorecards via Firestore.
+      // (If you later add in-app playback for film review, swap
+      // this for a coach-claim check or signed URLs minted by a
+      // callable function.)
+      allow read: if false;
+
+      // No client deletes — retention is server-side.
+      allow delete: if false;
+    }
+
+    // Default deny
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+// ------------------------------------------------------------
+// RETENTION (run once, not part of rules):
+// Auto-delete raw audio after 45 days with a bucket lifecycle
+// rule — transcripts and scorecards in Firestore live forever.
+//
+//   echo '{"rule":[{"action":{"type":"Delete"},
+//     "condition":{"age":45,"matchesPrefix":["recordings/"]}}]}' > lifecycle.json
+//   gsutil lifecycle set lifecycle.json gs://YOUR-BUCKET
+// ------------------------------------------------------------
