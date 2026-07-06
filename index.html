@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>Perfect Service OS</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800;900&family=Barlow+Condensed:wght@600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800;900&family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@500&display=swap');
   :root {
     /* ── SHOP FLOOR PREMIUM palette ── */
     --sf-bg:#101216;--sf-card:#1D2026;--sf-ink:#14161A;--sf-ink2:#1A1D23;--sf-ink3:#2A2E36;
@@ -699,6 +699,20 @@
   .co-note{font-size:11px;color:var(--slate-400);line-height:1.6;padding:10px 18px 0;}
   .co-empty{text-align:center;padding:36px 24px;color:var(--slate-400);font-size:13px;line-height:1.6;}
   .co-pill{display:inline-block;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;padding:3px 8px;border-radius:10px;background:var(--copper-pale);color:var(--copper-dim);margin-left:6px;}
+
+  /* ══ SHOP FLOOR SKIN v2 — demo-matching type & controls ══ */
+  .tb-brand{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.2em;color:var(--copper);}
+  .tb-title{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;}
+  .kpiv{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:36px;letter-spacing:0;font-variant-numeric:tabular-nums;line-height:1.05;}
+  .kpil{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.16em;font-weight:500;}
+  .btn-gold{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#14161A;box-shadow:0 6px 18px rgba(255,90,31,.25);}
+  .btn-navy{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;border:1px solid var(--sf-raise);}
+  .btn-ghost{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;}
+  #rec-pill{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:.08em;background:#14161A;border:2px solid #3A3F49;padding:10px 16px;}
+  #rec-pill.live{border-color:var(--copper);box-shadow:0 0 0 0 rgba(255,90,31,.4);animation:recglow 1.6s infinite;}
+  @keyframes recglow{0%{box-shadow:0 0 0 0 rgba(255,90,31,.4)}70%{box-shadow:0 0 0 14px rgba(255,90,31,0)}100%{box-shadow:0 0 0 0 rgba(255,90,31,0)}}
+  #debrief-toast{font-family:'Barlow Condensed',sans-serif;font-size:16px;letter-spacing:.05em;}
+  .timer-display,.big-timer{font-family:'Barlow Condensed',sans-serif!important;font-variant-numeric:tabular-nums;}
   /* ── FILM ROOM: REC PILL + DEBRIEF ── */
   #rec-pill{position:fixed;bottom:76px;left:14px;z-index:9999;background:var(--sf-ink);color:var(--copper-bright);font-family:var(--font);font-weight:800;font-size:12px;padding:9px 14px;border-radius:20px;box-shadow:0 4px 14px rgba(0,0,0,.28);display:none;align-items:center;gap:7px;cursor:pointer;border:1.5px solid transparent;}
   #rec-pill.live{border-color:var(--danger);color:#fff;}
@@ -1783,7 +1797,48 @@ const cfg={apiKey:"AIzaSyBjFq_iD0wrLqgzbiAgd1zbPEkf-kvYawE",authDomain:"perfect-
 const fbApp=initializeApp(cfg);
 const db=getFirestore(fbApp);
 const auth=getAuth(fbApp);
-try{enableIndexedDbPersistence(db).catch(function(){});}catch(e){}
+try{enableIndexedDbPersistence(db).catch(function(err){
+  if(err&&err.code==='failed-precondition'){
+    var w=document.createElement('div');
+    w.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#B23E14;color:#fff;font-size:11px;font-weight:700;padding:5px 16px;border-radius:0 0 10px 10px;z-index:9600;letter-spacing:.03em;';
+    w.textContent='⚠ PSOS open in another tab — close it so offline saving works';
+    document.body.appendChild(w);setTimeout(function(){w.remove();},12000);
+  }
+});}catch(e){}
+// ── VAULT RESILIENCE: durable device id + auto-resubmit unsynced jobs ──
+(function(){
+  try{
+    const req=indexedDB.open('psos-meta',1);
+    req.onupgradeneeded=function(){req.result.createObjectStore('kv');};
+    req.onsuccess=function(){
+      const mdb=req.result;
+      try{
+        const tx=mdb.transaction('kv','readwrite'),st=tx.objectStore('kv');
+        const g=st.get('devId');
+        g.onsuccess=function(){
+          const ls=localStorage.getItem(DK);
+          if(!ls&&g.result){localStorage.setItem(DK,g.result);}          // restore evicted id
+          else if(ls&&g.result!==ls){st.put(ls,'devId');}               // mirror current id
+          else if(ls&&!g.result){st.put(ls,'devId');}
+        };
+      }catch(e){}
+    };
+  }catch(e){}
+})();
+function resubmitVault(){
+  if(!navigator.onLine)return;
+  try{
+    const a=JSON.parse(localStorage.getItem('psos_backup')||'[]');
+    a.filter(function(e){return e&&e.id&&!e.synced;}).forEach(function(e){
+      const p={};Object.keys(e).forEach(function(k){if(k!=='id'&&k!=='ts'&&k!=='synced')p[k]=e[k];});
+      if(p.createdAt==null)p.createdAt=serverTimestamp();
+      setDoc(doc(db,'jobs',e.id),p,{merge:true}).then(function(){markSynced(e.id);}).catch(function(){});
+    });
+  }catch(x){}
+}
+window.addEventListener('online',function(){setTimeout(resubmitVault,1500);});
+setTimeout(resubmitVault,4000);
+window.addEventListener('beforeunload',function(ev){if(typeof pw!=='undefined'&&pw>0){ev.preventDefault();ev.returnValue='';}});
 try{setPersistence(auth,browserLocalPersistence);}catch(e){}
 
 const PK='psos_profile', DK='psos_device';
@@ -1832,6 +1887,7 @@ async function frInit(){
 async function frStartForJob(){
   if(frRec)await frStopAndFinalize(); // rolled into a new job mid-recording — close out the last one
   if(!frDb)return;
+  frPill('idle','🎙 MIC…'); // instant feedback while the mic spins up
   if(!frUid()){frPill('idle','🎙 Sign in to record');setTimeout(function(){frPill('hide');},2500);return;}
   const mm=frMime();
   if(!mm)return;
@@ -2253,8 +2309,8 @@ window.createJob=async function(){
     const ref=doc(collection(db,'jobs'));
     trackWrite(setDoc(ref,jd),'job start',{id:ref.id,...jd,createdAt:null,ts:Date.now()});
     jobId=ref.id;jobData={...jd,id:ref.id};curStep=0;
+    frStartForJob(); // Film Room first: mic prompt fires instantly on the tap (non-blocking)
     renderInsp(callType);updDash();go('s-dash');startTimer();
-    frStartForJob(); // Film Room: begin ride-along recording (non-blocking; job proceeds if mic denied)
   }catch(e){alert('Firebase error: '+e.message);}
 };
 
