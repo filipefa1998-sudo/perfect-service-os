@@ -742,9 +742,12 @@
   .sync-bar{background:#14161A;border-bottom:1px solid #2A2E36;}
   .sync-text{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;}
   /* ── NIGHT MODE, REPURPOSED: true-black attic mode ── */
-  body.night{--sf-bg:#000000;--sf-card:#0E1013;--sf-ink:#050607;--sf-ink2:#0A0C0F;--sf-ink3:#16181D;
+  body.night{--sf-bg:#000000;--sf-card:#0C0E11;--sf-ink:#050607;--sf-ink2:#0A0C0F;--sf-ink3:#16181D;
     --sf-raise:#16181D;--sf-raise2:#22252C;--slate-100:#16181D;--slate-200:#22252C;--slate-50:#000000;
-    --border:rgba(242,239,234,.07);--border-mid:rgba(242,239,234,.13);}
+    --white:#050607;--copper:#E04A12;--copper-light:#E8632E;--copper-bright:#E8632E;
+    --sf-text:#E4E1DA;--gold:#B8933F;
+    --border:rgba(242,239,234,.06);--border-mid:rgba(242,239,234,.11);}
+  body.night{background:#000;}
   body.night .hh{background:#050607;}
   body.night .app{background:#000;}
   body.night .hbody .btn-gold{box-shadow:0 8px 22px rgba(255,90,31,.22), inset 0 2px 4px rgba(255,255,255,.25), inset 0 -4px 8px rgba(0,0,0,.35);}
@@ -4824,7 +4827,11 @@ window.savePhotoEditor=function(){try{var url=canvas.toDataURL('image/jpeg',0.85
 
 // ===== NIGHT MODE + SETTINGS =====
 function applyNightIcon(){var t=document.getElementById('night-toggle');if(t)t.style.color=document.body.classList.contains('night')?'var(--copper-bright)':'';}
-window.toggleNight=function(){var on=document.body.classList.toggle('night');try{localStorage.setItem('psos_night',on?'1':'0');}catch(e){}applyNightIcon();};
+window.toggleNight=function(){var on=document.body.classList.toggle('night');try{localStorage.setItem('psos_night',on?'1':'0');}catch(e){}applyNightIcon();
+  var t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:'+(on?'#000':'#1D2026')+';color:#E3C87F;border:1px solid #C9A24B;font-family:Barlow Condensed,sans-serif;font-size:15px;font-weight:700;letter-spacing:.08em;padding:9px 18px;border-radius:20px;z-index:10001;';
+  t.textContent=on?'🌙 NIGHT MODE — PURE BLACK':'☀️ STANDARD DARK';
+  document.body.appendChild(t);setTimeout(function(){t.remove();},1800);};
 applyNightIcon();
 function syncSettingToggles(){
   var f=document.getElementById('set-field'),n=document.getElementById('set-night');
