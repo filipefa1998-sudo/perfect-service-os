@@ -713,6 +713,41 @@
   @keyframes recglow{0%{box-shadow:0 0 0 0 rgba(255,90,31,.4)}70%{box-shadow:0 0 0 14px rgba(255,90,31,0)}100%{box-shadow:0 0 0 0 rgba(255,90,31,0)}}
   #debrief-toast{font-family:'Barlow Condensed',sans-serif;font-size:16px;letter-spacing:.05em;}
   .timer-display,.big-timer{font-family:'Barlow Condensed',sans-serif!important;font-variant-numeric:tabular-nums;}
+
+  /* ══ SHOP FLOOR SKIN v3 — home hero, quick links, attic night mode ══ */
+  /* Home hero: gauge-face greeting panel */
+  .hh{background:linear-gradient(170deg,#1A1D23 0%,#14161A 70%);border-bottom:1px solid #2A2E36;position:relative;}
+  .hh::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:linear-gradient(90deg,var(--gold) 0%,rgba(201,162,75,0) 60%);}
+  .hg{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.22em;color:var(--copper);font-weight:500;}
+  .hn{font-family:'Barlow Condensed',sans-serif;font-size:34px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;}
+  .hc{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;color:rgba(242,239,234,.38);text-transform:uppercase;}
+  .hstats{border-top:1px solid rgba(242,239,234,.08);}
+  .hstat{border-right:1px solid rgba(242,239,234,.08);}
+  .hsv{font-family:'Barlow Condensed',sans-serif;font-size:34px;font-weight:700;color:var(--gold);letter-spacing:0;font-variant-numeric:tabular-nums;}
+  .hsl{font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.18em;color:rgba(242,239,234,.4);font-weight:500;}
+  #streak-badge{background:rgba(201,162,75,.10)!important;border:1px solid rgba(201,162,75,.35);}
+  #streak-count{font-family:'Barlow Condensed',sans-serif!important;color:var(--gold)!important;font-size:19px!important;}
+  /* Start New Job: the industrial control */
+  .hbody .btn-gold{min-height:66px;border-radius:16px;font-size:21px;letter-spacing:.12em;
+    background:radial-gradient(circle at 30% 22%, #FF8A55 0%, #FF5A1F 48%, #C8430F 100%);
+    box-shadow:0 10px 26px rgba(255,90,31,.30), inset 0 2px 4px rgba(255,255,255,.35), inset 0 -4px 8px rgba(0,0,0,.30);
+    border:1px solid rgba(255,255,255,.12);}
+  .hbody .btn-gold:active{transform:scale(.98);}
+  /* Quick links: dispatch cards */
+  .ql{background:#1D2026;border:1px solid #2A2E36;border-radius:14px;box-shadow:none;}
+  .ql:active{border-color:var(--gold);}
+  .ql-icon{background:#14161A;border:1px solid #2A2E36;border-radius:11px;}
+  .qll{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;}
+  .qls{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;color:var(--sf-mut);text-transform:uppercase;margin-top:3px;}
+  .sync-bar{background:#14161A;border-bottom:1px solid #2A2E36;}
+  .sync-text{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;}
+  /* ── NIGHT MODE, REPURPOSED: true-black attic mode ── */
+  body.night{--sf-bg:#000000;--sf-card:#0E1013;--sf-ink:#050607;--sf-ink2:#0A0C0F;--sf-ink3:#16181D;
+    --sf-raise:#16181D;--sf-raise2:#22252C;--slate-100:#16181D;--slate-200:#22252C;--slate-50:#000000;
+    --border:rgba(242,239,234,.07);--border-mid:rgba(242,239,234,.13);}
+  body.night .hh{background:#050607;}
+  body.night .app{background:#000;}
+  body.night .hbody .btn-gold{box-shadow:0 8px 22px rgba(255,90,31,.22), inset 0 2px 4px rgba(255,255,255,.25), inset 0 -4px 8px rgba(0,0,0,.35);}
   /* ── FILM ROOM: REC PILL + DEBRIEF ── */
   #rec-pill{position:fixed;bottom:76px;left:14px;z-index:9999;background:var(--sf-ink);color:var(--copper-bright);font-family:var(--font);font-weight:800;font-size:12px;padding:9px 14px;border-radius:20px;box-shadow:0 4px 14px rgba(0,0,0,.28);display:none;align-items:center;gap:7px;cursor:pointer;border:1.5px solid transparent;}
   #rec-pill.live{border-color:var(--danger);color:#fff;}
