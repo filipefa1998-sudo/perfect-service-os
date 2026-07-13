@@ -1427,6 +1427,13 @@
     <div class="navtabs" data-nav></div>
   </div>
 
+  <!-- JOB DETAIL -->
+  <div id="s-jobdetail" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
+    <div class="topbar"><span class="tb-back" onclick="go('s-jobs')">← Jobs</span><span class="tb-title">Job Detail</span><span></span></div>
+    <div class="sbody"><div style="padding:18px 20px;" id="jobdetail-body"></div></div>
+    <div class="navtabs" data-nav></div>
+  </div>
+
   <!-- KPI -->
   <div id="s-kpi" class="hidden" style="display:flex;flex-direction:column;flex:1;max-height:100vh;">
     <div class="topbar"><span class="tb-back" onclick="go('s-home')">← Home</span><span class="tb-title">My Performance</span><span></span></div>
@@ -1879,7 +1886,7 @@
 <script type="module">
 import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import{getFirestore,doc,setDoc,addDoc,updateDoc,collection,query,where,getDocs,serverTimestamp,enableIndexedDbPersistence,onSnapshot,increment}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-import{getStorage,ref as sRef,uploadBytes}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
+import{getStorage,ref as sRef,uploadBytes,getDownloadURL}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
 import{getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut,setPersistence,browserLocalPersistence}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
 const cfg={apiKey:"AIzaSyBjFq_iD0wrLqgzbiAgd1zbPEkf-kvYawE",authDomain:"perfect-service-os.firebaseapp.com",projectId:"perfect-service-os",storageBucket:"perfect-service-os.firebasestorage.app",messagingSenderId:"7540754161",appId:"1:7540754161:web:56bd56999da60d7f8d8b50"};
@@ -1969,51 +1976,96 @@ function frPill(mode,txt){
 
 async function frInit(){
   try{frDb=await frOpenDb();}catch(e){return;}
+  // Finalize sessions orphaned by a crash / refresh / iOS killing the tab.
+  // Previously these sat in 'recording' status forever — chunks uploaded but the
+  // job doc never got recStatus:'uploaded', so the recording was never scored.
+  try{
+    const ss=await frAll('sessions');
+    for(const s of ss){
+      if(s.status==='recording'){
+        const cn=(await frAll('chunks')).filter(function(c){return c.jobId===s.jobId;}).length;
+        if(cn>0)await frPatch('sessions',s.jobId,{status:'stopped',chunkCount:cn});
+        else await frDel('sessions',s.jobId);
+      }
+    }
+  }catch(e){}
   window.addEventListener('online',function(){frSync();});
+  // iOS releases the wake lock whenever the app is backgrounded — re-grab it on return
+  document.addEventListener('visibilitychange',async function(){
+    if(document.visibilityState==='visible'){
+      if(frRec&&'wakeLock'in navigator){try{frWake=await navigator.wakeLock.request('screen');}catch(e){}}
+      frSync();
+    }
+  });
   frSync(); // resume any orphaned session from a crash
 }
 
 async function frStartForJob(){
-  if(frRec)await frStopAndFinalize(); // rolled into a new job mid-recording — close out the last one
-  if(!frDb)return;
+  try{
+  if(frRec||frSes){try{await frStopAndFinalize();}catch(e){}} // rolled into a new job mid-recording — close out the last one
+  if(!frDb){frPill('hide');return;}
   frPill('idle','🎙 MIC…'); // instant feedback while the mic spins up
   if(!frUid()){frPill('idle','🎙 Sign in to record');setTimeout(function(){frPill('hide');},2500);return;}
   const mm=frMime();
-  if(!mm)return;
+  if(!mm){frPill('idle','🎙 Recording not supported here');setTimeout(function(){frPill('hide');},3000);return;}
   let stream;
   try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,channelCount:1}});}
   catch(e){frPill('idle','🎙 Mic blocked — tap Aa in address bar');setTimeout(function(){frPill('hide');},4000);return;}
   frStream=stream;
-  frSes={jobId:jobId,uid:frUid(),trade:(profile&&profile.trade)||callType||'plumbing',mimeType:mm.m,ext:mm.x,seq:0,startedAt:Date.now()};
-  await frPut('sessions',{jobId:jobId,uid:frSes.uid,trade:frSes.trade,mimeType:mm.m,ext:mm.x,status:'recording',startedAt:Date.now(),chunkCount:0});
+  // Resuming the same job? Continue the chunk sequence so we never overwrite chunk-000.
+  let startSeq=0,startedAt=Date.now();
+  try{const prev=await frGet('sessions',jobId);if(prev){startSeq=prev.chunkCount||0;startedAt=prev.startedAt||startedAt;}}catch(e){}
+  frSes={jobId:jobId,uid:frUid(),trade:(profile&&profile.trade)||callType||'plumbing',mimeType:mm.m,ext:mm.x,seq:startSeq,startedAt:startedAt};
+  await frPut('sessions',{jobId:jobId,uid:frSes.uid,trade:frSes.trade,mimeType:mm.m,ext:mm.x,status:'recording',startedAt:startedAt,chunkCount:startSeq});
   frRec=new MediaRecorder(stream,{mimeType:mm.m,audioBitsPerSecond:FR_BPS});
   frRec.ondataavailable=async function(e){
     if(!e.data||e.data.size===0||!frSes)return;
     const seq=frSes.seq++;
+    const jid=frSes.jobId;
     try{
-      await frPut('chunks',{key:frSes.jobId+':'+String(seq).padStart(3,'0'),jobId:frSes.jobId,seq:seq,blob:e.data,synced:false});
-      await frPatch('sessions',frSes.jobId,{chunkCount:frSes.seq});
+      await frPut('chunks',{key:jid+':'+String(seq).padStart(3,'0'),jobId:jid,seq:seq,blob:e.data,synced:false});
+      await frPatch('sessions',jid,{chunkCount:seq+1});
       if(navigator.onLine)frSync();
     }catch(err){}
   };
+  // If iOS kills the recorder (screen lock, phone call, backgrounding), finalize
+  // instead of leaving a zombie session that blocks every future recording.
+  frRec.onerror=function(){frStopAndFinalize();};
+  stream.getTracks().forEach(function(t){t.onended=function(){if(frRec)frStopAndFinalize();};});
   frRec.start(FR_CHUNK_MS);
   frElapsed=0;
   frTimerId=setInterval(function(){frElapsed++;const m=String(Math.floor(frElapsed/60)).padStart(2,'0'),s=String(frElapsed%60).padStart(2,'0');frPill('live',m+':'+s);},1000);
   try{if('wakeLock'in navigator)frWake=await navigator.wakeLock.request('screen');}catch(e){}
   frPill('live','00:00');
+  }catch(e){frPill('hide');}
 }
 
 async function frStopAndFinalize(){
-  if(!frRec)return;
-  const jid=frSes.jobId;
-  await new Promise(function(res){frRec.onstop=res;frRec.stop();});
-  await new Promise(function(r){setTimeout(r,200);});
-  try{frStream.getTracks().forEach(function(t){t.stop();});}catch(e){}
+  if(!frRec&&!frSes)return;
+  const jid=frSes?frSes.jobId:null;
+  // MediaRecorder.stop() throws if the recorder already died (iOS screen lock,
+  // incoming call). The old version hung forever on that, blocking every
+  // subsequent recording and leaving the session un-finalized — this was the
+  // main reason recordings "never showed up." Never hang, never throw:
+  try{
+    if(frRec&&frRec.state!=='inactive'){
+      await new Promise(function(res){
+        let done=false;const fin=function(){if(!done){done=true;res();}};
+        frRec.onstop=fin;
+        try{frRec.stop();}catch(e){fin();}
+        setTimeout(fin,3000); // safety: don't wait on an onstop that never fires
+      });
+    }
+  }catch(e){}
+  await new Promise(function(r){setTimeout(r,250);}); // let the final chunk write land
+  try{if(frStream)frStream.getTracks().forEach(function(t){try{t.stop();}catch(e){}});}catch(e){}
   clearInterval(frTimerId);frTimerId=null;
   try{if(frWake)frWake.release();}catch(e){}
   frWake=null;
-  await frPatch('sessions',jid,{status:'stopped',chunkCount:frSes.seq});
+  const seqNow=frSes?frSes.seq:0;
   frRec=null;frStream=null;frSes=null;
+  if(!jid)return;
+  try{await frPatch('sessions',jid,{status:'stopped',chunkCount:seqNow});}catch(e){}
   frPill('idle','⏳ Uploading…');
   frSync();
   frWatchScore(jid);
@@ -2035,11 +2087,13 @@ async function frSync(){
           await frPatch('chunks',c.key,{synced:true,blob:null});
           done++;
           if(!frRec)frPill('idle','⏳ '+done+'/'+chunks.length+' up');
-        }catch(err){setTimeout(function(){frSync();},FR_RETRY_MS);frSyncing=false;return;}
+        }catch(err){if(!frRec)frPill('idle','⚠ Upload retrying…');setTimeout(function(){frSync();},FR_RETRY_MS);frSyncing=false;return;}
       }
-      if(s.status==='stopped'&&done===s.chunkCount&&s.chunkCount>0){
+      // Finalize on the ACTUAL number of chunks present, not the bookkept count —
+      // a single dropped session-patch used to strand recordings in "uploading" forever.
+      if(s.status==='stopped'&&chunks.length>0&&done===chunks.length){
         try{
-          await updateDoc(doc(db,'jobs',s.jobId),{recStatus:'uploaded',recChunkCount:s.chunkCount,recContentType:s.mimeType,recRecordedAt:s.startedAt,recUploadedAt:serverTimestamp()});
+          await updateDoc(doc(db,'jobs',s.jobId),{recStatus:'uploaded',recChunkCount:chunks.length,recContentType:s.mimeType,recRecordedAt:s.startedAt,recUploadedAt:serverTimestamp()});
           const cs=(await frAll('chunks')).filter(function(c){return c.jobId===s.jobId;});
           for(const c of cs)await frDel('chunks',c.key);
           await frDel('sessions',s.jobId);
@@ -2116,7 +2170,8 @@ window.renderCoachQueue=async function(){
   const el=document.getElementById('cq-body');if(!el)return;
   el.innerHTML='';
   let docs=[];
-  try{const snap=await getDocs(query(collection(db,'jobs'),where('shopId','==',SHOP_ID)));docs=snap.docs.map(function(d){return d.data();});}catch(e){return;}
+  try{const snap=await getDocs(query(collection(db,'jobs'),where('shopId','==',SHOP_ID)));docs=snap.docs.map(function(d){return d.data();});}
+  catch(e){el.innerHTML='<div class="cq-wrap"><div class="cq-h">\ud83c\udf99 Coach Queue</div><div class="cq-empty">Couldn\u2019t load crew data \u2014 '+frEsc(e.message)+'</div></div>';return;}
   const scored=docs.filter(function(j){return j.scorecard&&j.scorecard.overallScore!=null;});
   if(!scored.length){
     el.innerHTML='<div class="cq-wrap"><div class="cq-h">\ud83c\udf99 Coach Queue</div><div class="cq-empty">No scored recordings yet. Once techs run recorded appointments, each rep shows up here with their one focus behavior, trend, and flagged moments.</div></div>';
@@ -2290,6 +2345,11 @@ async function autoRecoverCheck(){
 
 function devId(){let id=localStorage.getItem(DK);if(!id){id='dev_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);localStorage.setItem(DK,id);}return id;}
 
+// Local-timezone date (YYYY-MM-DD). toISOString() is UTC — after ~5–6pm MT it rolls
+// to tomorrow's date, which corrupts streaks, "today" stats, and the pilot CSV.
+function localISO(d){d=d||new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().split('T')[0];}
+window.localISO=localISO;
+
 async function backfillShopId(){
   if(localStorage.getItem('psos_backfilled_v2'))return;
   try{
@@ -2446,7 +2506,7 @@ async function loadProfileScreen(){
 }
 
 async function loadStats(){
-  const today=new Date().toISOString().split('T')[0];
+  const today=localISO();
   try{
     const snap={docs:await myDocs()};
     const jobs=snap.docs.map(d=>d.data()).filter(j=>j.date===today);
@@ -2483,6 +2543,12 @@ window.resetJobUI=function(){
   // Discovery / flag carry-through boxes on the Present step
   const pd=document.getElementById('present-discovery');if(pd)pd.style.display='none';
   const pf=document.getElementById('present-flags');if(pf)pf.style.display='none';
+  // Arrival timestamp — carried over from the previous job if not cleared
+  const ats=document.getElementById('arr-ts');if(ats)ats.textContent='Not logged yet';
+  // Objection response panel from the previous job's Step 10
+  const osp=document.getElementById('obj-step');if(osp)osp.classList.remove('vis');
+  // Required-photo checkboxes in the inspection step
+  document.querySelectorAll('#insp-cont .preq-done').forEach(el=>{el.classList.remove('preq-done');const b=el.querySelector('.preq-box');if(b){b.textContent='';b.style.background='var(--sf-card)';b.style.borderColor='var(--border-mid)';}});
   // Timer back to zero
   try{if(typeof stopTimer==='function')stopTimer();if(typeof resetTimer==='function')resetTimer();}catch(e){}
 };
@@ -2513,7 +2579,7 @@ window.createJob=async function(){
   const c=document.getElementById('j-cust').value.trim();
   if(!c)return alert('Enter customer name.');
   const a=document.getElementById('j-addr').value.trim();
-  const today=new Date().toISOString().split('T')[0];
+  const today=localISO();
   const jd={deviceId:devId(),shopId:SHOP_ID,uid:(auth.currentUser?auth.currentUser.uid:null),techName:profile?.name||'',customer:c,address:a,callType,date:today,status:'in_progress',currentStep:0,stepsCompleted:[],createdAt:serverTimestamp()};
   try{
     const ref=doc(collection(db,'jobs'));
@@ -2794,7 +2860,7 @@ window.finishJob=async function(){
     membershipResult=null;reviewResult=null;nosaleReason=null;realObjection=null;callbackReason=null;
     go('s-review');
     showReviewScreen(isSold,isCB,t,_nsR);
-    if(frRec)frStopAndFinalize(); // Film Room: stop, upload remainder, watch for the scorecard
+    frStopAndFinalize(); // Film Room: stop, upload remainder, watch for the scorecard (safe no-op if idle)
   }catch(e){setSyncStatus('error');alert('Error: '+e.message);}
 };
 
@@ -2811,7 +2877,7 @@ window.renderLeader=async function(){
   let films={};
   try{const fsn=await getDocs(query(collection(db,'filmstudy'),where('shopId','==',SHOP_ID)));const wk=frWeek();fsn.docs.forEach(function(d){const f=d.data();if(f.week===wk&&f.techName){const kk=f.techName.trim().toLowerCase();films[kk]=(films[kk]||0)+(f.count||0);}});}catch(e){}
   const now=new Date();let start;
-  if(ldPeriod==='week'){const d=new Date(now);const day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);start=d.toISOString().split('T')[0];}
+  if(ldPeriod==='week'){const d=new Date(now);const day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);start=localISO(d);}
   else{start=now.toISOString().slice(0,8)+'01';}
   const jobs=docs.filter(function(j){return j.status==='completed'&&(j.date||'')>=start;});
   if(!jobs.length){body.innerHTML='<div class="co-empty">No completed jobs '+(ldPeriod==='week'?'this week':'this month')+' yet.<br>First one on the board wins the bragging rights.</div>';return;}
@@ -2978,7 +3044,7 @@ let blOutcome=null;
 window.openBacklog=function(){
   blOutcome=null;
   const d=document.getElementById('bl-date');
-  d.max=new Date().toISOString().split('T')[0];
+  d.max=localISO();
   d.value='';
   document.getElementById('bl-ct').value='';
   document.getElementById('bl-customer').value='';
@@ -3002,7 +3068,7 @@ window.saveBacklog=async function(){
   const date=document.getElementById('bl-date').value;
   const ct=document.getElementById('bl-ct').value;
   if(!date)return alert('Pick the date the job happened.');
-  if(date>new Date().toISOString().split('T')[0])return alert('Backdated jobs can\u2019t be in the future.');
+  if(date>localISO())return alert('Backdated jobs can\u2019t be in the future.');
   if(!ct)return alert('Select the call type.');
   if(!blOutcome)return alert('Select the outcome.');
   const payload={
@@ -3039,7 +3105,7 @@ window.exportCoachCSV=function(){
   jobs.forEach(j=>rows.push([j.date||'',(j.techName||'').trim(),j.callType||'',j.outcome||'',j.ticketAmount||0,j.nosaleReason||'',j.realObjection||'',(j.objectionsHit||[]).map(o=>o.key).join('|'),j.durationSec?Math.round(j.durationSec/60):'',j.callbackResolved?'yes':'',j.backlogged?'yes':'',(j.readings||[]).map(r=>r.k+'='+r.v).join('|')]));
   const csv=rows.map(r=>r.map(esc).join(',')).join('\n');
   const blob=new Blob([csv],{type:'text/csv'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='elev8-pilot-data-'+new Date().toISOString().split('T')[0]+'.csv';a.click();
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='elev8-pilot-data-'+localISO()+'.csv';a.click();
 };
 
 window.resolveCB=async function(id,oc){
@@ -3119,7 +3185,7 @@ window.renderCoach=async function(){
   for(let w=5;w>=0;w--){
     const end=new Date(now);end.setDate(end.getDate()-w*7);
     const start=new Date(end);start.setDate(start.getDate()-6);
-    const s=start.toISOString().split('T')[0], e=end.toISOString().split('T')[0];
+    const s=localISO(start), e=localISO(end);
     const inWk=jobs.filter(j=>(j.date||'')>=s&&(j.date||'')<=e);
     const sold=inWk.filter(j=>j.outcome==='sold').length;
     weeks.push({lbl:(start.getMonth()+1)+'/'+start.getDate(),rate:pct(sold,inWk.length),n:inWk.length});
@@ -3364,9 +3430,9 @@ window.setPer=async function(btn,p){
 
 async function loadKPI(){
   const today=new Date();let start;
-  if(kpiPer==='today')start=today.toISOString().split('T')[0];
-  else if(kpiPer==='week'){const d=new Date(today);d.setDate(d.getDate()-7);start=d.toISOString().split('T')[0];}
-  else{const d=new Date(today);d.setDate(1);start=d.toISOString().split('T')[0];}
+  if(kpiPer==='today')start=localISO(today);
+  else if(kpiPer==='week'){const d=new Date(today);d.setDate(d.getDate()-7);start=localISO(d);}
+  else{const d=new Date(today);d.setDate(1);start=localISO(d);}
   try{
     const snap={docs:await myDocs()};
     const jobs=snap.docs.map(d=>d.data()).filter(j=>j.status==='completed'&&j.date>=start);
@@ -3391,15 +3457,158 @@ async function loadJobs(){
   c.innerHTML='<div style="text-align:center;padding:30px;color:var(--slate-400);">Loading...</div>';
   try{
     const snap={docs:await myDocs()};
-    if(snap.empty){c.innerHTML='<div style="text-align:center;padding:40px;color:var(--slate-400);font-size:14px;">No jobs yet. Hit Start New Job to begin.</div>';return;}
+    // (was snap.empty — a property that never existed on this shape, so the
+    // "No jobs yet" message never showed and the list just rendered blank)
+    if(!snap.docs.length){c.innerHTML='<div style="text-align:center;padding:40px;color:var(--slate-400);font-size:14px;">No jobs yet. Hit Start New Job to begin.</div>';return;}
     const jobs=snap.docs.map(d=>({id:d.id,...d.data()}));
     jobs.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     window.__myJobs=jobs;
     const ocColor={sold:'var(--success)',nosale:'var(--danger)',callback:'var(--copper)'};
     const ocLabel={sold:'Sold',nosale:'No Sale',callback:'Callback',in_progress:'Active'};
-    c.innerHTML=jobs.map(j=>`<div style="background:var(--sf-card);border-radius:10px;padding:14px 16px;margin-bottom:10px;border:1px solid var(--border);box-shadow:0 1px 3px rgba(26,29,35,.04);"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;"><div style="font-size:15px;font-weight:700;color:var(--sf-text);">${j.customer||'–'}</div><div style="font-size:10px;font-weight:800;color:${ocColor[j.outcome]||'var(--slate-400)'};text-transform:uppercase;">${ocLabel[j.outcome]||'In Progress'}</div></div><div style="font-size:12px;color:var(--slate-400);margin-bottom:6px;">${j.address||''}</div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;"><span style="font-size:11px;font-weight:700;color:var(--copper-dim);">${j.callType||''}</span>${j.ticketAmount?`<span style="font-size:12px;font-weight:800;color:var(--success);">$${Number(j.ticketAmount).toLocaleString()}</span>`:''}<span style="font-size:11px;color:var(--slate-400);">${j.date||''}</span></div>${(j.outcome==='callback'||j.outcome==='nosale')?`<button class="fut-btn" onclick="futOpen('${j.id}')">📱 Follow-Up Text</button>`:''}${j.outcome==='callback'?`<div style="display:flex;gap:8px;margin-top:10px;"><button onclick="resolveCB('${j.id}','sold')" style="flex:1;background:var(--success);color:#fff;border:none;border-radius:8px;padding:9px;font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;">✓ Resolve — Sold</button><button onclick="resolveCB('${j.id}','nosale')" style="flex:1;background:transparent;color:var(--danger);border:1.5px solid var(--danger);border-radius:8px;padding:9px;font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;">✕ Resolve — Lost</button></div>`:''}</div>`).join('');
+    c.innerHTML=jobs.map(j=>`<div onclick="openJobDetail('${j.id}')" style="background:var(--sf-card);border-radius:10px;padding:14px 16px;margin-bottom:10px;border:1px solid var(--border);box-shadow:0 1px 3px rgba(26,29,35,.04);cursor:pointer;"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;"><div style="font-size:15px;font-weight:700;color:var(--sf-text);">${j.customer||'–'}</div><div style="display:flex;align-items:center;gap:6px;"><div style="font-size:10px;font-weight:800;color:${ocColor[j.outcome]||'var(--slate-400)'};text-transform:uppercase;">${ocLabel[j.outcome]||'In Progress'}</div><span style="color:var(--slate-400);font-size:13px;">›</span></div></div><div style="font-size:12px;color:var(--slate-400);margin-bottom:6px;">${j.address||''}</div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;"><span style="font-size:11px;font-weight:700;color:var(--copper-dim);">${j.callType||''}</span>${j.ticketAmount?`<span style="font-size:12px;font-weight:800;color:var(--success);">$${Number(j.ticketAmount).toLocaleString()}</span>`:''}<span style="font-size:11px;color:var(--slate-400);">${j.date||''}</span>${j.recStatus?`<span style="font-size:11px;font-weight:700;color:var(--copper-dim);">🎙 ${j.recStatus==='scored'?'Scored':'Recorded'}</span>`:''}</div>${(j.outcome==='callback'||j.outcome==='nosale')?`<button class="fut-btn" onclick="event.stopPropagation();futOpen('${j.id}')">📱 Follow-Up Text</button>`:''}${j.outcome==='callback'?`<div style="display:flex;gap:8px;margin-top:10px;"><button onclick="event.stopPropagation();resolveCB('${j.id}','sold')" style="flex:1;background:var(--success);color:#fff;border:none;border-radius:8px;padding:9px;font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;">✓ Resolve — Sold</button><button onclick="event.stopPropagation();resolveCB('${j.id}','nosale')" style="flex:1;background:transparent;color:var(--danger);border:1.5px solid var(--danger);border-radius:8px;padding:9px;font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;">✕ Resolve — Lost</button></div>`:''}</div>`).join('');
   }catch(e){if(c)c.innerHTML=`<div style="padding:20px;color:var(--danger);">Error: ${e.message}</div>`;}
 }
+
+// ── JOB DETAIL — tap any past job to open it ──
+function jdEsc(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+window.openJobDetail=function(id){
+  const j=(window.__myJobs||[]).find(x=>x.id===id);
+  if(!j)return;
+  const body=document.getElementById('jobdetail-body');
+  if(!body)return;
+  const ocColor={sold:'var(--success)',nosale:'var(--danger)',callback:'var(--copper)'};
+  const ocLabel={sold:'Sold',nosale:'No Sale',callback:'Callback',in_progress:'In Progress'};
+  const row=(k,v)=>v?`<div style="display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);"><div style="font-size:12px;color:var(--slate-400);font-weight:700;flex-shrink:0;">${k}</div><div style="font-size:13px;color:var(--sf-text);font-weight:600;text-align:right;">${v}</div></div>`:'';
+  const sec=(t)=>`<div style="font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--slate-400);margin:18px 0 8px;">${t}</div>`;
+  let h='';
+  // Header
+  h+=`<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;"><div style="font-size:20px;font-weight:800;color:var(--sf-text);">${jdEsc(j.customer||'–')}</div><div style="font-size:11px;font-weight:800;color:${ocColor[j.outcome]||'var(--copper)'};text-transform:uppercase;">${ocLabel[j.outcome]||ocLabel[j.status]||'In Progress'}</div></div>`;
+  if(j.address)h+=`<div style="font-size:13px;color:var(--slate-400);margin-bottom:12px;">${jdEsc(j.address)}</div>`;
+  // Resume button for unfinished jobs
+  if(j.status==='in_progress')h+=`<button class="btn-gold" style="margin:6px 0 4px;" onclick="resumeJob('${j.id}')">▶ Resume This Job</button><div style="font-size:11px;color:var(--slate-400);margin-bottom:8px;text-align:center;">Picks up at the step you left off. Recording restarts automatically.</div>`;
+  // Core facts
+  h+=sec('Job Info');
+  h+=row('Date',jdEsc(j.date||''));
+  h+=row('Call Type',jdEsc(j.callType||''));
+  h+=row('Ticket',j.ticketAmount?'$'+Number(j.ticketAmount).toLocaleString():'');
+  h+=row('Duration',j.durationSec?Math.round(j.durationSec/60)+' min':'');
+  h+=row('Arrival',j.arrivalTime?new Date(j.arrivalTime).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'');
+  h+=row('Photos',j.photoCount?j.photoCount+' captured':'');
+  const NSL={price:'Price Too High',trust:'Trust Issue',notowner:'Not Decision Maker',competitor:'Going Competitor',timing:'Bad Timing',nourgency:'No Urgency Felt',callback:'Needs Callback',other:'Other'};
+  const ROL={same:'Same as stated',price:'Truly price',trust:'Didn\u2019t trust us',spouse:'Spouse approval',afford:'Truly can\u2019t afford',diagnosis:'Doubted diagnosis',fear:'Fear of deciding',ripoff:'Feared rip-off',wait:'No real urgency',unsure:'Not sure'};
+  const CBL={spouse:'Needs Spouse',quote:'Wants Quote',finance:'Finance Approval',schedule:'Schedule Later'};
+  if(j.outcome==='nosale'){h+=row('Stated Reason',NSL[j.nosaleReason]||jdEsc(j.nosaleReason||''));h+=row('Your Read',ROL[j.realObjection]||jdEsc(j.realObjection||''));if(j.nosaleNotes)h+=row('No-Sale Notes',jdEsc(j.nosaleNotes));}
+  if(j.outcome==='callback'){h+=row('Callback Reason',CBL[j.callbackReason]||jdEsc(j.callbackReason||''));h+=row('Your Read',ROL[j.realObjection]||jdEsc(j.realObjection||''));h+=row('Callback Date',jdEsc(j.callbackDate||''));}
+  if(j.membershipAdded)h+=row('Membership','⭐ Added');
+  if(j.reviewResult==='yes')h+=row('Review','✓ Asked & agreed');
+  // Discovery
+  const disc=j.discovery||{};
+  const dq=['When did this start?','How often does it happen?','Has anything been done before?','What concerns you most?','How long in this home?'];
+  const dFilled=['q1','q2','q3','q4','q5'].map((k,i)=>({q:dq[i],a:(disc[k]||'').trim()})).filter(x=>x.a);
+  if(dFilled.length){h+=sec('Discovery');h+=dFilled.map(x=>`<div style="background:var(--sf-bg);border-radius:8px;padding:10px 12px;margin-bottom:6px;border:1px solid var(--border);"><div style="font-size:11px;color:var(--slate-400);font-weight:700;margin-bottom:3px;">${x.q}</div><div style="font-size:13px;color:var(--sf-text);">"${jdEsc(x.a)}"</div></div>`).join('');}
+  // Flagged inspection items
+  const flagged=(j.inspectionResults||[]).filter(i=>i.status==='flagged');
+  if(flagged.length){h+=sec('Flagged on Inspection');h+=flagged.map(f=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--sf-bg);border-radius:8px;margin-bottom:6px;border-left:3px solid var(--danger);"><div style="font-size:13px;color:var(--sf-text);font-weight:600;">${jdEsc(f.label)}</div></div>`).join('');}
+  if(j.inspectionNotes)h+=sec('Inspection Notes')+`<div style="font-size:13px;color:var(--sf-text);line-height:1.6;background:var(--sf-bg);border-radius:8px;padding:12px;border:1px solid var(--border);">${jdEsc(j.inspectionNotes)}</div>`;
+  // Options presented
+  const o=j.options||{};
+  if(o.good&&(o.good.price||o.good.desc)){
+    h+=sec('Options Presented');
+    [['Good',o.good],['Better',o.better],['Best',o.best]].forEach(([t,v])=>{
+      if(v&&(v.price||v.desc))h+=`<div style="background:var(--sf-bg);border-radius:8px;padding:10px 12px;margin-bottom:6px;border:1px solid var(--border);"><div style="display:flex;justify-content:space-between;"><span style="font-size:12px;font-weight:800;color:var(--copper-dim);">${t}</span>${v.price?`<span style="font-size:13px;font-weight:800;color:var(--sf-text);">$${jdEsc(v.price)}</span>`:''}</div>${v.desc?`<div style="font-size:12px;color:var(--sf-mut);margin-top:4px;white-space:pre-wrap;">${jdEsc(v.desc)}</div>`:''}</div>`;
+    });
+  }
+  // Objections hit mid-presentation
+  if((j.objectionsHit||[]).length){
+    const OL={price:'Price Too High',think:'Need to Think',spouse:'Need Spouse',patch:'Just Patch It',quotes:'Other Quotes',afford:"Can't Afford",trust:'Trust Issue',wait:'Not Urgent'};
+    h+=sec('Objections Hit');
+    h+='<div style="display:flex;gap:6px;flex-wrap:wrap;">'+j.objectionsHit.map(ob=>`<span style="font-size:11px;font-weight:700;background:var(--copper-pale);color:var(--copper);padding:4px 10px;border-radius:12px;">${OL[ob.key]||ob.key}</span>`).join('')+'</div>';
+  }
+  if(j.jobNotes)h+=sec('Job Notes')+`<div style="font-size:13px;color:var(--sf-text);line-height:1.6;background:var(--sf-bg);border-radius:8px;padding:12px;border:1px solid var(--border);">${jdEsc(j.jobNotes)}</div>`;
+  // Scorecard from the coach engine
+  if(j.scorecard&&j.scorecard.overallScore!=null){
+    const sc=j.scorecard;
+    h+=sec('Coach Engine Score');
+    h+=`<div style="background:var(--sf-ink);border-radius:12px;padding:16px;margin-bottom:8px;"><div style="display:flex;align-items:baseline;gap:8px;"><div style="font-size:34px;font-weight:800;color:var(--copper-bright);">${sc.overallScore}</div><div style="font-size:11px;font-weight:800;letter-spacing:.1em;color:rgba(255,255,255,.4);">PROCESS SCORE</div></div>${sc.focusBehavior?`<div style="font-size:12px;color:rgba(255,255,255,.75);margin-top:8px;line-height:1.5;"><b style="color:var(--copper-bright);">FOCUS:</b> ${jdEsc(sc.focusBehavior)}</div>`:''}${sc.drivewayNote?`<div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:6px;line-height:1.5;">${jdEsc(sc.drivewayNote)}</div>`:''}</div>`;
+  }
+  // Recording — play it back or download it
+  if(j.recStatus==='uploaded'||j.recStatus==='scored'){
+    h+=sec('Recording');
+    h+=`<div id="jd-audio-box"><button class="btn-ghost" style="margin:0;" onclick="frLoadRecording('${j.id}')">🎙 Load Recording (${j.recChunkCount||'?'} part${(j.recChunkCount||0)>1?'s':''})</button></div>`;
+  } else if(j.recStatus){
+    h+=sec('Recording')+`<div style="font-size:12px;color:var(--slate-400);">Status: ${jdEsc(j.recStatus)}</div>`;
+  }
+  body.innerHTML=h;
+  window.__jdJob=j;
+  go('s-jobdetail');
+};
+
+// ── RECORDING PLAYBACK / DOWNLOAD ──
+// Chunks are byte-slices of one continuous MediaRecorder stream, so
+// concatenating them in order rebuilds a playable file (webm and mp4 alike).
+window.frLoadRecording=async function(id){
+  const j=window.__jdJob&&window.__jdJob.id===id?window.__jdJob:(window.__myJobs||[]).find(x=>x.id===id);
+  const box=document.getElementById('jd-audio-box');
+  if(!j||!box)return;
+  const uid=j.uid||frUid();
+  if(!uid){box.innerHTML='<div style="font-size:12px;color:var(--danger);">Sign in to load recordings.</div>';return;}
+  const ct=j.recContentType||'audio/webm';
+  const ext=ct.indexOf('mp4')>=0?'mp4':'webm';
+  const n=j.recChunkCount||0;
+  if(!n){box.innerHTML='<div style="font-size:12px;color:var(--slate-400);">No chunks recorded on this job.</div>';return;}
+  box.innerHTML='<div style="font-size:12px;color:var(--slate-400);padding:8px 0;">⏳ Loading '+n+' part'+(n>1?'s':'')+'…</div>';
+  try{
+    const parts=[];
+    for(let i=0;i<n;i++){
+      const path='recordings/'+uid+'/'+j.id+'/chunk-'+String(i).padStart(3,'0')+'.'+ext;
+      const url=await getDownloadURL(sRef(fbStorage,path));
+      const res=await fetch(url);
+      if(!res.ok)throw new Error('chunk '+i+' fetch failed');
+      parts.push(await res.arrayBuffer());
+      box.innerHTML='<div style="font-size:12px;color:var(--slate-400);padding:8px 0;">⏳ '+(i+1)+'/'+n+' loaded…</div>';
+    }
+    const blob=new Blob(parts,{type:ct});
+    const objUrl=URL.createObjectURL(blob);
+    const fname=('rec-'+(j.customer||'job').replace(/[^a-z0-9]+/gi,'-')+'-'+(j.date||'')+'.'+ext).toLowerCase();
+    box.innerHTML='<audio controls style="width:100%;margin-bottom:8px;" src="'+objUrl+'"></audio>'
+      +'<a href="'+objUrl+'" download="'+fname+'" style="display:block;text-align:center;font-size:13px;font-weight:800;color:var(--copper-bright);padding:10px;border:1.5px solid var(--copper-dim);border-radius:10px;text-decoration:none;">⬇ Download Audio ('+Math.round(blob.size/1024)+' KB)</a>';
+  }catch(e){
+    box.innerHTML='<div style="font-size:12px;color:var(--danger);padding:8px 0;">Couldn\u2019t load the recording — '+jdEsc(e.message)+'.<br>If this keeps happening, check the Storage read rules for recordings/{uid}.</div>'
+      +'<button class="btn-ghost" style="margin-top:8px;" onclick="frLoadRecording(\''+id+'\')">Try again</button>';
+  }
+};
+
+// ── RESUME AN IN-PROGRESS JOB ──
+window.resumeJob=function(id){
+  const j=(window.__myJobs||[]).find(x=>x.id===id);
+  if(!j||j.status!=='in_progress')return;
+  resetJobUI();
+  jobId=j.id;jobData={...j};callType=j.callType||null;curStep=j.currentStep||0;
+  photos=0;outcome=null;nosaleReason=null;realObjection=null;callbackReason=null;
+  // Rebuild inspection list for the call type, then re-apply saved statuses
+  renderInsp(callType);
+  try{
+    (j.inspectionResults||[]).forEach(saved=>{
+      document.querySelectorAll('#insp-cont .insp').forEach(el=>{
+        const lbl=el.querySelector('.ilbl');
+        if(lbl&&lbl.textContent===saved.label&&saved.status!=='unchecked'){
+          el.classList.add(saved.status==='flagged'?'flag':'ok');
+          const st=el.querySelector('.istat');if(st)st.textContent=saved.status==='flagged'?'Flagged':'OK';
+        }
+      });
+    });
+    const inotes=document.getElementById('insp-notes');if(inotes&&j.inspectionNotes)inotes.value=j.inspectionNotes;
+  }catch(e){}
+  // Restore discovery answers
+  try{const d=j.discovery||{};['d1','d2','d3','d4','d5'].forEach((eid,i)=>{const el=document.getElementById(eid);if(el)el.value=d['q'+(i+1)]||'';});}catch(e){}
+  // Restore options
+  try{const o=j.options||{};const map={'og-p':['good','price'],'og-d':['good','desc'],'og-w':['good','warranty'],'ob-p':['better','price'],'ob-d':['better','desc'],'ob-w':['better','warranty'],'obe-p':['best','price'],'obe-d':['best','desc'],'obe-w':['best','warranty']};Object.keys(map).forEach(eid=>{const el=document.getElementById(eid);const[t,f]=map[eid];if(el&&o[t]&&o[t][f])el.value=o[t][f];});}catch(e){}
+  // Restore arrival stamp
+  try{if(j.arrivalTime){const ats=document.getElementById('arr-ts');if(ats)ats.textContent='Arrived at '+new Date(j.arrivalTime).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}}catch(e){}
+  __restorePhotos();
+  updDash();go('s-dash');startTimer();
+  frStartForJob(); // continues the same job's chunk sequence — earlier audio is preserved
+};
 
 // ── STREAK ──
 async function calcStreak(){
@@ -3407,8 +3616,8 @@ async function calcStreak(){
     const snap={docs:await myDocs()};
     const soldDates=[...new Set(snap.docs.map(d=>d.data()).filter(j=>j.outcome==='sold'&&j.date).map(j=>j.date))].sort((a,b)=>b.localeCompare(a));
     if(!soldDates.length)return 0;
-    const today=new Date().toISOString().split('T')[0];
-    const yesterday=new Date(Date.now()-86400000).toISOString().split('T')[0];
+    const today=localISO();
+    const yesterday=localISO(new Date(Date.now()-86400000));
     if(soldDates[0]!==today&&soldDates[0]!==yesterday)return 0;
     let streak=1;
     for(let i=1;i<soldDates.length;i++){
@@ -3447,9 +3656,9 @@ function getWeekRange(period){
   const dow=now.getDay();
   const monday=new Date(now);
   monday.setDate(now.getDate()-(dow===0?6:dow-1));monday.setHours(0,0,0,0);
-  if(period==='this')return{start:monday.toISOString().split('T')[0],end:new Date().toISOString().split('T')[0]};
-  if(period==='last'){const lm=new Date(monday);lm.setDate(monday.getDate()-7);const ls=new Date(monday);ls.setDate(monday.getDate()-1);return{start:lm.toISOString().split('T')[0],end:ls.toISOString().split('T')[0]};}
-  const fw=new Date(monday);fw.setDate(monday.getDate()-28);return{start:fw.toISOString().split('T')[0],end:new Date().toISOString().split('T')[0]};
+  if(period==='this')return{start:localISO(monday),end:localISO()};
+  if(period==='last'){const lm=new Date(monday);lm.setDate(monday.getDate()-7);const ls=new Date(monday);ls.setDate(monday.getDate()-1);return{start:localISO(lm),end:localISO(ls)};}
+  const fw=new Date(monday);fw.setDate(monday.getDate()-28);return{start:localISO(fw),end:localISO()};
 }
 
 async function renderScorecard(){
@@ -3571,7 +3780,7 @@ const NAV_ITEMS=[
  {id:'s-kpi',label:'Scorecard',svg:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V4M4 20h16"/><rect x="7" y="11" width="3" height="6"/><rect x="12" y="7" width="3" height="10"/><rect x="17" y="13" width="3" height="4"/></svg>`},
  {id:'s-jobs',label:'Jobs',svg:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg>`}
 ];
-const NAV_ACTIVE={'s-home':'s-home','s-profile':'s-home','s-guide':'s-guide','s-objref':'s-objref','s-scripts':'s-objref','s-kpi':'s-kpi','s-scorecard':'s-kpi','s-jobs':'s-jobs'};
+const NAV_ACTIVE={'s-home':'s-home','s-profile':'s-home','s-guide':'s-guide','s-objref':'s-objref','s-scripts':'s-objref','s-kpi':'s-kpi','s-scorecard':'s-kpi','s-jobs':'s-jobs','s-jobdetail':'s-jobs','s-backlog':'s-jobs','s-futext':'s-jobs'};
 window.injectNav=function(id){
   const cur=NAV_ACTIVE[id]||id;
   document.querySelectorAll('#'+id+' [data-nav]').forEach(nav=>{
@@ -4736,7 +4945,16 @@ window.__storePhoto=function(slot,url){
   photos=Object.keys(jobData.photos).length;
   var pctr=document.getElementById('pctr');if(pctr)pctr.textContent=photos+' / 5';
   if(jobId){try{updateDoc(doc(db,'jobs',jobId),{photoCount:photos});}catch(e){}}
-  try{localStorage.setItem('psos_photos_'+(jobId||'cur'),JSON.stringify(jobData.photos));}catch(e){}
+  try{
+    localStorage.setItem('psos_photos_'+(jobId||'cur'),JSON.stringify(jobData.photos));
+    // Photo caches are big (base64 jpegs). Keep only the 6 most recent jobs' photos
+    // so localStorage never fills up and blocks the crash-backup writes.
+    let idx=[];try{idx=JSON.parse(localStorage.getItem('psos_photos_index')||'[]');}catch(e){}
+    const key=jobId||'cur';
+    idx=idx.filter(k=>k!==key);idx.push(key);
+    while(idx.length>6){const old=idx.shift();try{localStorage.removeItem('psos_photos_'+old);}catch(e){}}
+    localStorage.setItem('psos_photos_index',JSON.stringify(idx));
+  }catch(e){}
 };
 window.__restorePhotos=function(){
   if((!jobData.photos||!Object.keys(jobData.photos).length)&&jobId){try{var j=localStorage.getItem('psos_photos_'+jobId);if(j)jobData.photos=JSON.parse(j);}catch(e){}}
