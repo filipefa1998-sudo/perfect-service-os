@@ -894,6 +894,11 @@
         </div>
       </div>
       <div class="hbody">
+        <div id="resume-banner" style="display:none;background:var(--sf-ink);border:1.5px solid var(--gold);border-radius:12px;padding:14px 16px;margin-bottom:12px;cursor:pointer;" onclick="resumeActiveJob()">
+          <div style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--copper-bright);margin-bottom:4px;">▶ Job In Progress</div>
+          <div id="resume-banner-cust" style="font-size:16px;font-weight:800;color:#fff;">–</div>
+          <div id="resume-banner-sub" style="font-size:12px;color:rgba(255,255,255,.55);margin-top:2px;">Tap to pick up where you left off</div>
+        </div>
         <button class="btn-gold" onclick="startJob()">Start New Job</button>
         <button class="btn-navy" onclick="go('s-guide')" style="margin-top:10px;">Field Diagnostic Guide</button>
         <div class="qlinks">
@@ -1031,7 +1036,9 @@
     <div class="topbar"><span class="tb-back" onclick="go('s-home')">← Home</span><span class="tb-title">Job Overview</span><span></span></div>
     <div class="pbar"><div class="pfill" id="jpbar" style="width:5%"></div></div>
     <div class="jcard"><div class="jcust" id="d-cust">–</div><div class="jaddr" id="d-addr">–</div><div class="jmeta"><div class="jbadge" id="d-ct">–</div><div class="jbadge">In Progress</div></div></div>
-    <div class="sbody"><div class="slist" id="steplist"></div></div>
+    <div class="sbody"><div class="slist" id="steplist"></div>
+      <div style="padding:0 20px 16px;"><button class="btn-ghost" style="margin:0;" onclick="openGuideForJob()">🔍 Diagnose This Job — Field Guide</button></div>
+    </div>
     <div class="bbar"><button class="btn-navy" onclick="goStep(curStep)">Continue →</button></div>
   </div>
 
@@ -1884,10 +1891,10 @@
 
 
 <script type="module">
-import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import{getFirestore,doc,setDoc,addDoc,updateDoc,collection,query,where,getDocs,serverTimestamp,enableIndexedDbPersistence,onSnapshot,increment}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-import{getStorage,ref as sRef,uploadBytes,getDownloadURL}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
-import{getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut,setPersistence,browserLocalPersistence}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import{initializeApp}from'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import{getFirestore,doc,getDoc,setDoc,addDoc,updateDoc,collection,query,where,getDocs,serverTimestamp,enableIndexedDbPersistence,onSnapshot,increment}from'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+import{getStorage,ref as sRef,uploadBytes,getDownloadURL}from'https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js';
+import{getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut,setPersistence,browserLocalPersistence}from'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 
 const cfg={apiKey:"AIzaSyBjFq_iD0wrLqgzbiAgd1zbPEkf-kvYawE",authDomain:"perfect-service-os.firebaseapp.com",projectId:"perfect-service-os",storageBucket:"perfect-service-os.firebasestorage.app",messagingSenderId:"7540754161",appId:"1:7540754161:web:56bd56999da60d7f8d8b50"};
 const fbApp=initializeApp(cfg);
@@ -1954,7 +1961,8 @@ let profile=null, jobId=null, jobData={}, curStep=0, photos=0, outcome=null, cal
 // ══════════════════════════════════════════════════════════════
 const fbStorage=getStorage(fbApp);
 const FR_DB='psos-film-room', FR_VER=1, FR_CHUNK_MS=30000, FR_BPS=24000, FR_RETRY_MS=20000;
-let frDb=null, frRec=null, frStream=null, frSes=null, frTimerId=null, frElapsed=0, frSyncing=false, frWake=null, frScoreUnsub=null, frLastCard=null, frLastJob=null;
+let frFailCount=0, frLastErr='';
+let frDb=null, frRec=null, frStream=null, frSes=null, frTimerId=null, frElapsed=0, frSyncing=false, frWake=null, frScoreUnsub=null, frLastCard=null, frLastJob=null, frIntentJob=null;
 
 function frOpenDb(){return new Promise(function(res,rej){const r=indexedDB.open(FR_DB,FR_VER);r.onupgradeneeded=function(){const d=r.result;if(!d.objectStoreNames.contains('sessions'))d.createObjectStore('sessions',{keyPath:'jobId'});if(!d.objectStoreNames.contains('chunks'))d.createObjectStore('chunks',{keyPath:'key'});};r.onsuccess=function(){res(r.result);};r.onerror=function(){rej(r.error);};});}
 function frPut(st,v){return new Promise(function(res,rej){const tx=frDb.transaction(st,'readwrite');tx.objectStore(st).put(v);tx.oncomplete=res;tx.onerror=function(){rej(tx.error);};});}
@@ -1990,11 +1998,18 @@ async function frInit(){
     }
   }catch(e){}
   window.addEventListener('online',function(){frSync();});
-  // iOS releases the wake lock whenever the app is backgrounded — re-grab it on return
+  // iOS releases the wake lock whenever the app is backgrounded — re-grab it on
+  // return. If iOS killed the recorder while backgrounded, restart it and keep
+  // appending to the same job's chunk sequence (browser pages cannot record
+  // while backgrounded — this is the closest the web platform allows).
   document.addEventListener('visibilitychange',async function(){
     if(document.visibilityState==='visible'){
       if(frRec&&'wakeLock'in navigator){try{frWake=await navigator.wakeLock.request('screen');}catch(e){}}
+      if(!frRec&&frIntentJob&&jobId&&frIntentJob===jobId){try{await frStartForJob();}catch(e){}}
       frSync();
+    } else {
+      // Backgrounding: flush the current partial chunk to IndexedDB right now
+      try{if(frRec&&frRec.state==='recording')frRec.requestData();}catch(e){}
     }
   });
   frSync(); // resume any orphaned session from a crash
@@ -2015,6 +2030,12 @@ async function frStartForJob(){
   // Resuming the same job? Continue the chunk sequence so we never overwrite chunk-000.
   let startSeq=0,startedAt=Date.now();
   try{const prev=await frGet('sessions',jobId);if(prev){startSeq=prev.chunkCount||0;startedAt=prev.startedAt||startedAt;}}catch(e){}
+  // A prior recording on this job may already be finalized in the cloud
+  try{if(jobData&&jobData.id===jobId&&jobData.recChunkCount)startSeq=Math.max(startSeq,jobData.recChunkCount);}catch(e){}
+  if(startSeq===0){ // no local trace — ask the job doc so we never overwrite cloud chunks
+    try{const jsnap=await getDoc(doc(db,'jobs',jobId));if(jsnap.exists()&&jsnap.data().recChunkCount)startSeq=jsnap.data().recChunkCount;}catch(e){}
+  }
+  frIntentJob=jobId; // remember the rep WANTS this job recorded (for auto-resume)
   frSes={jobId:jobId,uid:frUid(),trade:(profile&&profile.trade)||callType||'plumbing',mimeType:mm.m,ext:mm.x,seq:startSeq,startedAt:startedAt};
   await frPut('sessions',{jobId:jobId,uid:frSes.uid,trade:frSes.trade,mimeType:mm.m,ext:mm.x,status:'recording',startedAt:startedAt,chunkCount:startSeq});
   frRec=new MediaRecorder(stream,{mimeType:mm.m,audioBitsPerSecond:FR_BPS});
@@ -2084,16 +2105,35 @@ async function frSync(){
         const path='recordings/'+s.uid+'/'+s.jobId+'/chunk-'+String(c.seq).padStart(3,'0')+'.'+s.ext;
         try{
           await uploadBytes(sRef(fbStorage,path),c.blob,{contentType:s.mimeType});
+          frFailCount=0;frLastErr='';
           await frPatch('chunks',c.key,{synced:true,blob:null});
           done++;
           if(!frRec)frPill('idle','⏳ '+done+'/'+chunks.length+' up');
-        }catch(err){if(!frRec)frPill('idle','⚠ Upload retrying…');setTimeout(function(){frSync();},FR_RETRY_MS);frSyncing=false;return;}
+        }catch(err){
+          frFailCount++;frLastErr=(err&&(err.code||err.message))||'unknown';
+          if(!frRec){
+            if(frFailCount>=3)frPill('idle','⚠ Upload blocked: '+frLastErr.replace('storage/','')+' — audio is safe on this phone');
+            else frPill('idle','⚠ Upload retrying…');
+          }
+          setTimeout(function(){frSync();},frFailCount>=3?FR_RETRY_MS*3:FR_RETRY_MS);
+          frSyncing=false;return;
+        }
       }
-      // Finalize on the ACTUAL number of chunks present, not the bookkept count —
-      // a single dropped session-patch used to strand recordings in "uploading" forever.
+      // Finalize when every locally-present chunk is uploaded. Total count =
+      // max(bookkept, highest local seq+1) so resumed sessions (earlier chunks
+      // already uploaded and pruned from IndexedDB) report the full length.
+      const lastSeq=chunks.length?chunks[chunks.length-1].seq+1:0;
+      const totalCount=Math.max(s.chunkCount||0,lastSeq);
+      if(s.status==='stopped'&&chunks.length===0&&totalCount>0){
+        // Nothing new to upload (e.g. app relaunched after everything synced) — just close it out.
+        try{await updateDoc(doc(db,'jobs',s.jobId),{recStatus:'uploaded',recChunkCount:totalCount,recContentType:s.mimeType,recRecordedAt:s.startedAt,recUploadedAt:serverTimestamp()});await frDel('sessions',s.jobId);}catch(e){}
+        continue;
+      }
+      if(s.status==='stopped'&&chunks.length===0){try{await frDel('sessions',s.jobId);}catch(e){}continue;}
       if(s.status==='stopped'&&chunks.length>0&&done===chunks.length){
         try{
-          await updateDoc(doc(db,'jobs',s.jobId),{recStatus:'uploaded',recChunkCount:chunks.length,recContentType:s.mimeType,recRecordedAt:s.startedAt,recUploadedAt:serverTimestamp()});
+          await updateDoc(doc(db,'jobs',s.jobId),{recStatus:'uploaded',recChunkCount:totalCount,recContentType:s.mimeType,recRecordedAt:s.startedAt,recUploadedAt:serverTimestamp()});
+          try{if(jobId===s.jobId&&jobData)jobData.recChunkCount=totalCount;}catch(e){}
           const cs=(await frAll('chunks')).filter(function(c){return c.jobId===s.jobId;});
           for(const c of cs)await frDel('chunks',c.key);
           await frDel('sessions',s.jobId);
@@ -2123,7 +2163,7 @@ function frWatchScore(jid){
 
 window.recPillTap=function(){
   if(frRec){
-    if(confirm('Stop recording this appointment?'))frStopAndFinalize();
+    if(confirm('Stop recording this appointment?')){frIntentJob=null;frStopAndFinalize();}
   }
 };
 window.openDebrief=function(){
@@ -2310,11 +2350,19 @@ window.exportBackup=function(){
 // ── DURABLE IDENTITY: query by login (uid) AND device, merged ──
 async function myDocs(){
   const uid=auth.currentUser?auth.currentUser.uid:null;
-  const runs=[getDocs(query(collection(db,'jobs'),where('deviceId','==',devId()))).catch(function(){return null;})];
-  if(uid)runs.push(getDocs(query(collection(db,'jobs'),where('uid','==',uid))).catch(function(){return null;}));
+  const name=(profile&&profile.name||'').trim();
+  let failed=0;
+  const wrap=function(p){return p.catch(function(){failed++;return null;});};
+  const runs=[wrap(getDocs(query(collection(db,'jobs'),where('deviceId','==',devId()))))];
+  if(uid)runs.push(wrap(getDocs(query(collection(db,'jobs'),where('uid','==',uid)))));
+  // Third net: jobs logged under this rep's name from a wiped browser / pre-sign-in
+  // session carry neither this deviceId nor this uid and used to vanish from the list.
+  if(name)runs.push(wrap(getDocs(query(collection(db,'jobs'),where('shopId','==',SHOP_ID),where('techName','==',name)))));
   const snaps=await Promise.all(runs);
   const seen={},out=[];
   snaps.forEach(function(s){if(s)s.docs.forEach(function(d){if(!seen[d.id]){seen[d.id]=1;out.push(d);}});});
+  window.__myDocsPartial=failed>0&&out.length>0;
+  if(failed>0&&out.length===0)throw new Error('Couldn\u2019t reach your jobs \u2014 check connection and try again.');
   return out;
 }
 
@@ -2369,9 +2417,41 @@ function boot(){
   backfillShopId();
   setTimeout(autoRecoverCheck,3000);
   const s=localStorage.getItem(PK);
-  if(s){profile=JSON.parse(s);applyProfile();go('s-home');}
+  if(s){profile=JSON.parse(s);applyProfile();go('s-home');checkActiveJob();}
   else go('s-setup');
 }
+
+// ── ACTIVE JOB RECOVERY ──
+// iOS kills the PWA after a couple hours idle; jobId/jobData live only in
+// memory, so the rep used to come back to a blank home screen with their job
+// stranded as "in progress" in Past Jobs and no way to touch it.
+async function checkActiveJob(){
+  let id=null;
+  try{id=localStorage.getItem('psos_active_job');}catch(e){}
+  const banner=document.getElementById('resume-banner');
+  if(!banner)return;
+  if(!id||jobId){banner.style.display='none';return;}
+  try{
+    const snap=await getDoc(doc(db,'jobs',id));
+    if(!snap.exists()||snap.data().status!=='in_progress'){
+      try{localStorage.removeItem('psos_active_job');}catch(e){}
+      banner.style.display='none';return;
+    }
+    const j=snap.data();
+    window.__resumeJobDoc={id:id,...j};
+    document.getElementById('resume-banner-cust').textContent=j.customer||'Unnamed job';
+    document.getElementById('resume-banner-sub').textContent=(j.callType||'')+(j.date?' · '+j.date:'')+' — tap to pick up where you left off';
+    banner.style.display='block';
+  }catch(e){banner.style.display='none';}
+}
+window.resumeActiveJob=function(){
+  const j=window.__resumeJobDoc;
+  if(!j)return;
+  window.__myJobs=window.__myJobs||[];
+  if(!window.__myJobs.find(x=>x.id===j.id))window.__myJobs.push(j);
+  resumeJob(j.id);
+  const banner=document.getElementById('resume-banner');if(banner)banner.style.display='none';
+};
 function init(){
   onAuthStateChanged(auth,function(user){
     const ld=document.getElementById('loading');if(ld)ld.style.display='none';
@@ -2585,6 +2665,7 @@ window.createJob=async function(){
     const ref=doc(collection(db,'jobs'));
     trackWrite(setDoc(ref,jd),'job start',{id:ref.id,...jd,createdAt:null,ts:Date.now()});
     jobId=ref.id;jobData={...jd,id:ref.id};curStep=0;
+    try{localStorage.setItem('psos_active_job',ref.id);}catch(e){} // survive iOS killing the app mid-job
     frStartForJob(); // Film Room first: mic prompt fires instantly on the tap (non-blocking)
     renderInsp(callType);updDash();go('s-dash');startTimer();
   }catch(e){alert('Firebase error: '+e.message);}
@@ -2860,6 +2941,7 @@ window.finishJob=async function(){
     membershipResult=null;reviewResult=null;nosaleReason=null;realObjection=null;callbackReason=null;
     go('s-review');
     showReviewScreen(isSold,isCB,t,_nsR);
+    frIntentJob=null;
     frStopAndFinalize(); // Film Room: stop, upload remainder, watch for the scorecard (safe no-op if idle)
   }catch(e){setSyncStatus('error');alert('Error: '+e.message);}
 };
@@ -3264,6 +3346,7 @@ window.renderCoach=async function(){
 
 window.finalClose=async function(){
   stopTimer();resetTimer();
+  try{localStorage.removeItem('psos_active_job');}catch(e){}
   if(jobId&&(reviewResult||membershipResult)){
     try{await updateDoc(doc(db,'jobs',jobId),{reviewAsked:reviewResult==='yes',reviewResult:reviewResult||'not_asked',membershipOffered:true,membershipAdded:membershipResult==='yes'});}catch(e){}
   }
@@ -3431,7 +3514,7 @@ window.setPer=async function(btn,p){
 async function loadKPI(){
   const today=new Date();let start;
   if(kpiPer==='today')start=localISO(today);
-  else if(kpiPer==='week'){const d=new Date(today);d.setDate(d.getDate()-7);start=localISO(d);}
+  else if(kpiPer==='week'){const d=new Date(today);const dow=d.getDay();d.setDate(d.getDate()-(dow===0?6:dow-1));start=localISO(d);} // Monday of the CURRENT week — was a rolling 7 days that pulled in last week
   else{const d=new Date(today);d.setDate(1);start=localISO(d);}
   try{
     const snap={docs:await myDocs()};
@@ -3461,11 +3544,12 @@ async function loadJobs(){
     // "No jobs yet" message never showed and the list just rendered blank)
     if(!snap.docs.length){c.innerHTML='<div style="text-align:center;padding:40px;color:var(--slate-400);font-size:14px;">No jobs yet. Hit Start New Job to begin.</div>';return;}
     const jobs=snap.docs.map(d=>({id:d.id,...d.data()}));
-    jobs.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    jobs.sort((a,b)=>(b.createdAt?.seconds||0)-((a.createdAt?.seconds)||0));
     window.__myJobs=jobs;
     const ocColor={sold:'var(--success)',nosale:'var(--danger)',callback:'var(--copper)'};
     const ocLabel={sold:'Sold',nosale:'No Sale',callback:'Callback',in_progress:'Active'};
-    c.innerHTML=jobs.map(j=>`<div onclick="openJobDetail('${j.id}')" style="background:var(--sf-card);border-radius:10px;padding:14px 16px;margin-bottom:10px;border:1px solid var(--border);box-shadow:0 1px 3px rgba(26,29,35,.04);cursor:pointer;"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;"><div style="font-size:15px;font-weight:700;color:var(--sf-text);">${j.customer||'–'}</div><div style="display:flex;align-items:center;gap:6px;"><div style="font-size:10px;font-weight:800;color:${ocColor[j.outcome]||'var(--slate-400)'};text-transform:uppercase;">${ocLabel[j.outcome]||'In Progress'}</div><span style="color:var(--slate-400);font-size:13px;">›</span></div></div><div style="font-size:12px;color:var(--slate-400);margin-bottom:6px;">${j.address||''}</div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;"><span style="font-size:11px;font-weight:700;color:var(--copper-dim);">${j.callType||''}</span>${j.ticketAmount?`<span style="font-size:12px;font-weight:800;color:var(--success);">$${Number(j.ticketAmount).toLocaleString()}</span>`:''}<span style="font-size:11px;color:var(--slate-400);">${j.date||''}</span>${j.recStatus?`<span style="font-size:11px;font-weight:700;color:var(--copper-dim);">🎙 ${j.recStatus==='scored'?'Scored':'Recorded'}</span>`:''}</div>${(j.outcome==='callback'||j.outcome==='nosale')?`<button class="fut-btn" onclick="event.stopPropagation();futOpen('${j.id}')">📱 Follow-Up Text</button>`:''}${j.outcome==='callback'?`<div style="display:flex;gap:8px;margin-top:10px;"><button onclick="event.stopPropagation();resolveCB('${j.id}','sold')" style="flex:1;background:var(--success);color:#fff;border:none;border-radius:8px;padding:9px;font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;">✓ Resolve — Sold</button><button onclick="event.stopPropagation();resolveCB('${j.id}','nosale')" style="flex:1;background:transparent;color:var(--danger);border:1.5px solid var(--danger);border-radius:8px;padding:9px;font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;">✕ Resolve — Lost</button></div>`:''}</div>`).join('');
+    const partialNote=window.__myDocsPartial?'<div style="background:var(--copper-pale);border:1px solid var(--gold);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:var(--copper);font-weight:600;">⚠ Some jobs may be missing — one of the lookups failed. Pull to refresh or check your signal.</div>':'';
+    c.innerHTML=partialNote+jobs.map(j=>`<div onclick="openJobDetail('${j.id}')" style="background:var(--sf-card);border-radius:10px;padding:14px 16px;margin-bottom:10px;border:1px solid var(--border);box-shadow:0 1px 3px rgba(26,29,35,.04);cursor:pointer;"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;"><div style="font-size:15px;font-weight:700;color:var(--sf-text);">${j.customer||'–'}</div><div style="display:flex;align-items:center;gap:6px;"><div style="font-size:10px;font-weight:800;color:${ocColor[j.outcome]||'var(--slate-400)'};text-transform:uppercase;">${ocLabel[j.outcome]||'In Progress'}</div><span style="color:var(--slate-400);font-size:13px;">›</span></div></div><div style="font-size:12px;color:var(--slate-400);margin-bottom:6px;">${j.address||''}</div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;"><span style="font-size:11px;font-weight:700;color:var(--copper-dim);">${j.callType||''}</span>${j.ticketAmount?`<span style="font-size:12px;font-weight:800;color:var(--success);">$${Number(j.ticketAmount).toLocaleString()}</span>`:''}<span style="font-size:11px;color:var(--slate-400);">${j.date||''}</span>${j.recStatus?`<span style="font-size:11px;font-weight:700;color:var(--copper-dim);">🎙 ${j.recStatus==='scored'?'Scored':'Recorded'}</span>`:''}</div>${(j.outcome==='callback'||j.outcome==='nosale')?`<button class="fut-btn" onclick="event.stopPropagation();futOpen('${j.id}')">📱 Follow-Up Text</button>`:''}${j.outcome==='callback'?`<div style="display:flex;gap:8px;margin-top:10px;"><button onclick="event.stopPropagation();resolveCB('${j.id}','sold')" style="flex:1;background:var(--success);color:#fff;border:none;border-radius:8px;padding:9px;font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;">✓ Resolve — Sold</button><button onclick="event.stopPropagation();resolveCB('${j.id}','nosale')" style="flex:1;background:transparent;color:var(--danger);border:1.5px solid var(--danger);border-radius:8px;padding:9px;font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;">✕ Resolve — Lost</button></div>`:''}</div>`).join('');
   }catch(e){if(c)c.innerHTML=`<div style="padding:20px;color:var(--danger);">Error: ${e.message}</div>`;}
 }
 
@@ -3484,6 +3568,8 @@ window.openJobDetail=function(id){
   // Header
   h+=`<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;"><div style="font-size:20px;font-weight:800;color:var(--sf-text);">${jdEsc(j.customer||'–')}</div><div style="font-size:11px;font-weight:800;color:${ocColor[j.outcome]||'var(--copper)'};text-transform:uppercase;">${ocLabel[j.outcome]||ocLabel[j.status]||'In Progress'}</div></div>`;
   if(j.address)h+=`<div style="font-size:13px;color:var(--slate-400);margin-bottom:12px;">${jdEsc(j.address)}</div>`;
+  // Edit any completed job — outcomes, tickets, names, dates
+  if(j.status!=='in_progress')h+=`<button class="btn-ghost" style="margin:0 0 6px;" onclick="jdEdit('${j.id}')">✎ Edit This Job</button>`;
   // Resume button for unfinished jobs
   if(j.status==='in_progress')h+=`<button class="btn-gold" style="margin:6px 0 4px;" onclick="resumeJob('${j.id}')">▶ Resume This Job</button><div style="font-size:11px;color:var(--slate-400);margin-bottom:8px;text-align:center;">Picks up at the step you left off. Recording restarts automatically.</div>`;
   // Core facts
@@ -3543,6 +3629,65 @@ window.openJobDetail=function(id){
   go('s-jobdetail');
 };
 
+// ── EDIT PAST JOB ──
+window.jdEdit=function(id){
+  const j=(window.__myJobs||[]).find(x=>x.id===id);
+  const body=document.getElementById('jobdetail-body');
+  if(!j||!body)return;
+  const CTS=['Water Heater','Drain','Leak','Sewer','Toilet','Filtration','Repipe','Sump Pump','Gas Line','Other'];
+  const ctOpts=CTS.map(c=>`<option value="${c}"${j.callType===c?' selected':''}>${c}</option>`).join('')+(CTS.includes(j.callType)?'':`<option value="${jdEsc(j.callType||'')}" selected>${jdEsc(j.callType||'Unknown')}</option>`);
+  const ocBtn=(oc,lbl,icon)=>`<div class="ctb${j.outcome===oc?' sel':''}" data-oc="${oc}" onclick="jdEditOC(this)" style="text-align:center;"><div class="cti" style="margin:0 auto 6px;">${icon}</div><div class="ctl" style="font-size:11px;">${lbl}</div></div>`;
+  body.innerHTML=`
+    <div style="font-size:18px;font-weight:800;color:var(--sf-text);margin-bottom:14px;">✎ Edit Job</div>
+    <div class="fl" style="margin-bottom:6px;">Customer Name</div>
+    <input class="fi" type="text" id="je-cust" value="${jdEsc(j.customer||'')}" />
+    <div class="fl" style="margin-bottom:6px;">Address</div>
+    <input class="fi" type="text" id="je-addr" value="${jdEsc(j.address||'')}" />
+    <div class="fl" style="margin-bottom:6px;">Job Date</div>
+    <input class="fi" type="date" id="je-date" value="${jdEsc(j.date||'')}" max="${localISO()}" />
+    <div class="fl" style="margin-bottom:6px;">Call Type</div>
+    <select class="fi" id="je-ct">${ctOpts}</select>
+    <div class="fl" style="margin-bottom:6px;">Outcome</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;" id="je-oc-row">
+      ${ocBtn('sold','Sold','✅')}${ocBtn('callback','Callback','📞')}${ocBtn('nosale','No Sale','❌')}
+    </div>
+    <div class="fl" style="margin-bottom:6px;">Ticket Amount ($)</div>
+    <input class="fi" type="number" id="je-ticket" value="${j.ticketAmount||''}" placeholder="0" />
+    <div class="fl" style="margin-bottom:6px;">Job Notes</div>
+    <textarea class="fi" id="je-notes" style="min-height:70px;resize:none;">${jdEsc(j.jobNotes||'')}</textarea>
+    <button class="btn-gold" style="margin-top:6px;" onclick="jdSaveEdit('${j.id}')">Save Changes</button>
+    <button class="btn-ghost" style="margin-top:8px;" onclick="openJobDetail('${j.id}')">Cancel</button>`;
+};
+window.jdEditOC=function(btn){
+  document.querySelectorAll('#je-oc-row .ctb').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+};
+window.jdSaveEdit=async function(id){
+  const j=(window.__myJobs||[]).find(x=>x.id===id);
+  if(!j)return;
+  const oc=(document.querySelector('#je-oc-row .ctb.sel')||{}).dataset?.oc||j.outcome;
+  const date=document.getElementById('je-date').value||j.date;
+  if(date>localISO())return alert('Job date can\u2019t be in the future.');
+  const upd={
+    customer:document.getElementById('je-cust').value.trim(),
+    address:document.getElementById('je-addr').value.trim(),
+    date:date,
+    callType:document.getElementById('je-ct').value,
+    outcome:oc,
+    ticketAmount:Number(document.getElementById('je-ticket').value)||0,
+    jobNotes:document.getElementById('je-notes').value.trim(),
+    editedAt:serverTimestamp()
+  };
+  try{
+    setSyncStatus('saving');
+    await updateDoc(doc(db,'jobs',id),upd);
+    setSyncStatus('saved');
+    Object.assign(j,upd,{editedAt:null});
+    openJobDetail(id);
+    loadStats();
+  }catch(e){setSyncStatus('error');alert('Save failed: '+e.message);}
+};
+
 // ── RECORDING PLAYBACK / DOWNLOAD ──
 // Chunks are byte-slices of one continuous MediaRecorder stream, so
 // concatenating them in order rebuilds a playable file (webm and mp4 alike).
@@ -3584,6 +3729,7 @@ window.resumeJob=function(id){
   if(!j||j.status!=='in_progress')return;
   resetJobUI();
   jobId=j.id;jobData={...j};callType=j.callType||null;curStep=j.currentStep||0;
+  try{localStorage.setItem('psos_active_job',j.id);}catch(e){}
   photos=0;outcome=null;nosaleReason=null;realObjection=null;callbackReason=null;
   // Rebuild inspection list for the call type, then re-apply saved statuses
   renderInsp(callType);
@@ -3750,7 +3896,7 @@ window.go=function(id){
   el.classList.remove('hidden');el.classList.add('fade');setTimeout(()=>el.classList.remove('fade'),250);
   if(id==='s-kpi')loadKPI();
   if(id==='s-jobs')loadJobs();
-  if(id==='s-home'){loadStats();updateStreakBadge();}
+  if(id==='s-home'){loadStats();updateStreakBadge();checkActiveJob();}
   if(id==='s-profile')loadProfileScreen();
   if(id==='s-scorecard')renderScorecard();
   if(id==='s-guide')renderGuide();
@@ -3760,7 +3906,45 @@ window.go=function(id){
   if(id==='s-step-8')renderReadings();
   if(id==='s-profile')setTimeout(syncSettingToggles,0);
   injectNav(id);
+  updateJobReturnPill(id);
 };
+
+// ── DIAGNOSE THE LIVE JOB ──
+// Opens the Field Guide pre-matched to the current call type, with a floating
+// "Back to Job" pill so leaving the job flow never loses the job.
+window.openGuideForJob=function(){
+  go('s-guide');
+  setTimeout(function(){
+    try{
+      if(!window.__GUIDE||!window.__GUIDE.length)return;
+      if(window.guideSetRole)window.guideSetRole('all');
+      var gs=document.getElementById('guide-search');if(gs)gs.value='';
+      if(window.guideFilter)window.guideFilter();
+      var best=(typeof optBestCardIndex==='function')?optBestCardIndex():0;
+      var title=window.__GUIDE[best]&&window.__GUIDE[best].title;
+      if(!title)return;
+      document.querySelectorAll('#s-guide .g-card').forEach(function(c){
+        var t=c.querySelector('.g-ctitle');
+        if(t&&t.textContent===title){c.classList.add('open');c.scrollIntoView({behavior:'smooth',block:'center'});}
+      });
+    }catch(e){}
+  },120);
+};
+const JOB_SCREENS={'s-dash':1,'s-review':1,'s-debrief':1,'s-calltype':1};
+function updateJobReturnPill(id){
+  let p=document.getElementById('job-return-pill');
+  const onJobScreen=JOB_SCREENS[id]||id.indexOf('s-step-')===0;
+  if(!jobId||onJobScreen||id==='s-login'||id==='s-setup'){if(p)p.style.display='none';return;}
+  if(!p){
+    p=document.createElement('div');
+    p.id='job-return-pill';
+    p.style.cssText='position:fixed;bottom:76px;left:50%;transform:translateX(-50%);z-index:9998;background:var(--sf-ink,#1A1D23);color:#E8A85C;font-family:var(--font);font-weight:800;font-size:12px;padding:10px 18px;border-radius:22px;border:1.5px solid rgba(232,168,92,.5);box-shadow:0 4px 14px rgba(0,0,0,.3);cursor:pointer;white-space:nowrap;max-width:86vw;overflow:hidden;text-overflow:ellipsis;';
+    p.onclick=function(){go('s-dash');};
+    document.body.appendChild(p);
+  }
+  p.textContent='↩ Back to Job'+(jobData&&jobData.customer?' — '+jobData.customer:'');
+  p.style.display='block';
+}
 
 // ── UI HELPERS ──
 window.chk=el=>el.classList.toggle('chk');
@@ -5136,7 +5320,7 @@ window.authSubmit=async function(){
     // onAuthStateChanged routes onward
   }catch(e){err.textContent=friendlyAuthErr(e);err.style.display='block';btn.disabled=false;btn.textContent=label;}
 };
-window.authSignOut=async function(){try{await signOut(auth);}catch(e){}profile=null;jobId=null;jobData={};go('s-login');};
+window.authSignOut=async function(){try{await signOut(auth);}catch(e){}try{localStorage.removeItem('psos_active_job');}catch(e){}profile=null;jobId=null;jobData={};frIntentJob=null;go('s-login');};
 
 init();
 </script>
